@@ -27,26 +27,3 @@ dataSources:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/vela-token.ts
-  - kind: ethereum
-    name: VaultUtils
-    network: arbitrum-one
-    source:
-      address: "0xDa1a7ea276fbdB16ebaBB5b38257b1D56B302E4a"
-      abi: ERC20
-      startBlock: 56425513
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - DecreasePosition
-        - IncreasePosition
-      abis:
-        - name: VaultUtils
-          file: ./abis/VaultUtils.json
-      eventHandlers:
-        - event: DecreasePosition(bytes32 3,indexed address, indexed address, bool, uint256, int256, uint256)
-          handler: handleApproval
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
-      file: ./src/vela-token.ts

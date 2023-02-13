@@ -1,0 +1,29 @@
+specVersion: 0.0.5
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: VelaToken
+    network: arbitrum-one
+    source:
+      address: "0x088cd8f5eF3652623c22D48b1605DCfE860Cd704"
+      abi: ERC20
+      startBlock: 48386698
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Account
+        - Token
+        - TokenApproval
+        - TokenBalance
+      abis:
+        - name: ERC20
+          file: VelaToken/abis/ERC20.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: VelaToken/VelaToken.wasm

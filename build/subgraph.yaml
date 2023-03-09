@@ -27,3 +27,93 @@ dataSources:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: VelaToken/VelaToken.wasm
+  - kind: ethereum
+    name: VaultUtils
+    network: arbitrum-one
+    source:
+      address: "0xDa1a7ea276fbdB16ebaBB5b38257b1D56B302E4a"
+      abi: VaultUtils
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ClosePosition
+        - DecreasePosition
+        - GlobalInfo
+        - IncreasePosition
+        - LiquidatePosition
+        - PositionStat
+        - TradeVolume
+        - UserTradeStat
+        - StrandedUSDCAmount
+      abis:
+        - name: VaultUtils
+          file: VaultUtils/abis/VaultUtils.json
+      eventHandlers:
+        - event: ClosePosition(bytes32,int256,uint256,uint256)
+          handler: handleClosePosition
+        - event: DecreasePosition(bytes32,indexed address,indexed
+            address,bool,uint256,int256,uint256[7])
+          handler: handleDecreasePosition
+        - event: IncreasePosition(bytes32,indexed address,indexed address,bool,uint256,uint256[7])
+          handler: handleIncreasePosition
+        - event: LiquidatePosition(bytes32,int256,uint256,uint256)
+          handler: handleLiquidatePosition
+      file: VaultUtils/VaultUtils.wasm
+  - kind: ethereum
+    name: PositionVault
+    network: arbitrum-one
+    source:
+      address: "0x79e04946F0eD05a60395F3c9A4ae4A7D84eca80e"
+      abi: PositionVault
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - PositionStat
+        - UserTradeStat
+        - TradeVolume
+        - ConfirmDelayTransaction
+      abis:
+        - name: PositionVault
+          file: PositionVault/abis/PositionVault.json
+      eventHandlers:
+        - event: NewOrder(bytes32,indexed address,address,bool,uint256,uint256,uint8,uint256[])
+          handler: handleNewOrder
+        - event: UpdateOrder(bytes32,uint256,uint8)
+          handler: handleUpdateOrder
+        - event: ConfirmDelayTransaction(indexed bytes32,bool,uint256,uint256,uint256)
+          handler: handleConfirmDelayTransaction
+        - event: AddOrRemoveCollateral(indexed bytes32,bool,uint256,uint256,uint256,uint256)
+          handler: handleAddOrRemoveCollateral
+        - event: AddPosition(indexed bytes32,bool,uint256,uint256)
+          handler: handleAddPosition
+      file: PositionVault/PositionVault.wasm
+  - kind: ethereum
+    name: Vault
+    network: arbitrum-one
+    source:
+      address: "0x5957582F020301a2f732ad17a69aB2D8B2741241"
+      abi: Vault
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Deposit
+        - Withdraw
+      abis:
+        - name: Vault
+          file: Vault/abis/Vault.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,uint256)
+          handler: handleWithdraw
+        - event: Stake(indexed address,address,uint256,uint256)
+          handler: handleStake
+        - event: Unstake(indexed address,address,uint256,uint256)
+          handler: handleUnstake
+      file: VaultUtils/VaultUtils.wasm

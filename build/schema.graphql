@@ -28,3 +28,227 @@ type TokenApproval @entity {
   spenderAccount: Account!
   value: BigDecimal!
 }
+
+type ClosePosition @entity {
+  id: ID!
+  key: String!
+  account: String!
+  indexToken: String!
+  isLong: Boolean!
+  posId: BigInt!
+  realisedPnl: BigInt!
+  markPrice: BigInt!
+  feeUsd: BigInt!
+  timestamp: Int!
+  transactionHash: String!
+}
+
+type ConfirmDelayTransaction @entity {
+  id: ID!
+  key: String!
+  confirmDelayStatus: Boolean!
+  collateral: BigInt!
+  size: BigInt!
+  feeUsd: BigInt!
+  timestamp: Int!
+  transactionHash: String!
+}
+
+type DecreasePosition @entity {
+  id: ID!
+  account: String!
+  averagePrice: BigInt!
+  collateral: BigInt!
+  entryFundingRate: BigInt!
+  feeUsd: BigInt!
+  indexToken: String!
+  isLong: Boolean!
+  key: String!
+  markPrice: BigInt!
+  posId: BigInt!
+  realisedPnl: BigInt!
+  reserveAmount: BigInt!
+  size: BigInt!
+  timestamp: Int!
+  transactionHash: String!
+}
+
+type IncreasePosition @entity {
+  id: ID!
+  key: String!
+  account: String!
+  averagePrice: BigInt!
+  collateral: BigInt!
+  indexToken: String!
+  isLong: Boolean!
+  entryFundingRate: BigInt!
+  feeUsd: BigInt
+  markPrice: BigInt!
+  posId: BigInt!
+  reserveAmount: BigInt!
+  size: BigInt!
+  timestamp: Int!
+  transactionHash: String!
+}
+
+type GlobalInfo @entity {
+  id: ID!
+  token: String!
+  realisedPnl: BigInt!
+  unRealisedPnl: BigInt!
+  fees: BigInt!
+}
+
+type StrandedUSDCAmount @entity {
+  id: ID!
+  amount: BigInt!
+}
+
+type BaseUserInfo @entity {
+  id: ID!
+  ratio: BigInt!
+  vlp: BigInt!
+  vela: BigInt!
+  minVLP: BigInt!
+}
+
+type BaseGlobalInfo @entity {
+  id: ID!
+  accumulatedSUM: BigInt!
+  totalVLP: BigInt!
+  totalUSDC: BigInt!
+  hyper_ended: Boolean!
+}
+
+type OpenInterest @entity {
+  id: ID!
+  amount: BigInt!
+}
+
+type Mint @entity {
+  id: ID!
+  account: String!
+  usdAmount: BigInt!
+  timestamp: Int!
+  token: String!
+  vlpAmount: BigInt!
+}
+
+type Redeem @entity {
+  id: ID!
+  account: String!
+  usdAmount: BigInt!
+  timestamp: Int!
+  token: String!
+  vlpAmount: BigInt!
+}
+
+type NewOrder @entity {
+  id: ID!
+  key: String!
+  account: String!
+  indexToken: String!
+  isLong: Boolean!
+  posId: BigInt!
+  positionType: String!
+  orderStatus: String!
+  timestamp: Int!
+  transactionHash: String!
+}
+
+type LiquidatePosition @entity {
+  id: ID!
+  key: String!
+  from: String!
+  account: String!
+  indexToken: String!
+  isLong: Boolean!
+  posId: BigInt!
+  realisedPnl: BigInt!
+  markPrice: BigInt!
+  feeUsd: BigInt!
+  timestamp: Int!
+  transactionHash: String!
+}
+
+type TradeVolume @entity {
+  id: ID!
+  size: BigInt!
+  vusdBalance: BigInt!
+  collateralUsage: BigInt!
+  marginUsage: BigInt!
+  openLongs: BigInt!
+  openShorts: BigInt!
+}
+
+type PositionStat @entity {
+  id: ID!
+  account: String!
+  averagePrice: BigInt!
+  collateral: BigInt!
+  closedAt: Int!
+  createdAt: Int!
+  entryFundingRate: BigInt!
+  feeUsd: BigInt!
+  indexToken: String!
+  isLong:Boolean!
+  key: String!
+  lmtPrice: BigInt!
+  markPrice: BigInt!
+  orderStatus: String!
+  pendingCollateral: BigInt!
+  pendingSize: BigInt!
+  pendingDelayCollateral: BigInt!
+  pendingDelaySize: BigInt!
+  posId: BigInt!
+  positionStatus: String!
+  positionType: String!
+  realisedPnl: BigInt!
+  reserveAmount: BigInt!
+  size: BigInt!
+  stpPrice: BigInt!
+}
+
+type PositionTrigger @entity {
+  id: ID!
+  account: String!
+  indexToken: String!
+  isLong:Boolean!
+  key: String!
+  posId: BigInt!
+  status: String!
+  triggerData: [TriggerData!]! @derivedFrom(field: "trigger")
+}
+
+type TriggerData @entity {
+  id: ID!
+  amountPercent: BigInt!
+  createdAt: Int!
+  isTP: Boolean!
+  price: BigInt!
+  status: String!
+  triggeredAmount: BigInt!
+  triggeredAt: Int!
+  trigger: PositionTrigger!
+}
+
+type UserTradeStat @entity {
+  id: ID!
+  account: String!
+  actionType: String!
+  amount: BigInt!
+  averagePrice: BigInt!
+  collateral: BigInt!
+  createdAt: Int!
+  fees: BigInt!
+  indexToken: String!
+  isLong:Boolean!
+  isPlus: Boolean!
+  isWin:Boolean!
+  key: String!
+  markPrice: BigInt!
+  posId: BigInt!
+  positionType: String!
+  profitLoss: BigInt!
+  tradeVolume: BigInt!
+}

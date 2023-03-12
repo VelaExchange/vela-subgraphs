@@ -98,7 +98,9 @@ const getRewardAmount = (vlpAmount: BigInt, totalVLP: BigInt): BigInt => {
       baseUserInfo.vlp = BigInt.fromString('0') 
       baseUserInfo.vela = BigInt.fromString('0') 
       baseUserInfo.ratio = BigInt.fromString('0') 
-      baseUserInfo.minVLP = BigInt.fromString('0') 
+      baseUserInfo.baseVLP = BigInt.fromString('0') 
+      baseUserInfo.minimumVLP = BigInt.fromString('0') 
+      baseUserInfo.mintedVLP = BigInt.fromString('0') 
     }
     if (!baseGlobalInfo.hyper_ended && baseGlobalInfo.totalUSDC.le(MAX_VLP_FOR_Hyper)) {
       let rewardAmount = getRewardAmount(event.params.mintAmount, baseGlobalInfo.totalVLP)
@@ -107,16 +109,21 @@ const getRewardAmount = (vlpAmount: BigInt, totalVLP: BigInt): BigInt => {
       baseUserInfo.vlp = baseUserInfo.vlp.plus(event.params.mintAmount)
       baseUserInfo.vela = baseUserInfo.vela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
       baseUserInfo.ratio = baseUserInfo.vela.times(BigInt.fromString('1000')).div(baseUserInfo.vlp)
-      baseUserInfo.minVLP = baseUserInfo.minVLP.plus(event.params.mintAmount)
+      baseUserInfo.baseVLP = baseUserInfo.baseVLP.plus(event.params.mintAmount)
+      baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
+      baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
       if (baseGlobalInfo.totalUSDC.ge(MAX_VLP_FOR_Hyper)) {
         baseGlobalInfo.hyper_ended = true
       }
     } else {
       baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
       baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minVLP.times(baseUserInfo.ratio))
-      baseUserInfo.minVLP = baseUserInfo.minVLP.plus(event.params.mintAmount)
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minVLP.times(baseUserInfo.ratio))
+      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.ratio))
+      baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
+      if (baseUserInfo.mintedVLP.lt(baseUserInfo.minimumVLP)) {
+        baseUserInfo.minimumVLP = baseUserInfo.mintedVLP
+      }
+      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.ratio))
     }
     baseGlobalInfo.save()
     baseUserInfo.save()
@@ -144,14 +151,19 @@ const getRewardAmount = (vlpAmount: BigInt, totalVLP: BigInt): BigInt => {
       baseUserInfo.vlp = BigInt.fromString('0') 
       baseUserInfo.vela = BigInt.fromString('0') 
       baseUserInfo.ratio = BigInt.fromString('0') 
-      baseUserInfo.minVLP = BigInt.fromString('0') 
+      baseUserInfo.baseVLP = BigInt.fromString('0') 
+      baseUserInfo.minimumVLP = BigInt.fromString('0') 
+      baseUserInfo.mintedVLP = BigInt.fromString('0') 
     }
     if (baseGlobalInfo.hyper_ended) {
       baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.minus(event.params.vlpAmount)
       baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.minus(event.params.amountOut)
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minVLP.times(baseUserInfo.ratio))
-      baseUserInfo.minVLP = baseUserInfo.minVLP.minus(event.params.vlpAmount)
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minVLP.times(baseUserInfo.ratio))
+      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.ratio))
+      baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.minus(event.params.vlpAmount)
+      if (baseUserInfo.mintedVLP.lt(baseUserInfo.minimumVLP)) {
+        baseUserInfo.minimumVLP = baseUserInfo.mintedVLP
+      }
+      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.ratio))
     } else {
       baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.minus(event.params.vlpAmount)
       baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.minus(event.params.amountOut)

@@ -100,7 +100,7 @@ const getRewardAmount = (vlpAmount: BigInt, totalVLP: BigInt): BigInt => {
       baseUserInfo.ratio = BigInt.fromString('0') 
       baseUserInfo.minVLP = BigInt.fromString('0') 
     }
-    if (!baseGlobalInfo.hyper_ended && baseGlobalInfo.totalVLP.le(MAX_VLP_FOR_Hyper)) {
+    if (!baseGlobalInfo.hyper_ended && baseGlobalInfo.totalUSDC.le(MAX_VLP_FOR_Hyper)) {
       let rewardAmount = getRewardAmount(event.params.mintAmount, baseGlobalInfo.totalVLP)
       baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
       baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)

@@ -109,7 +109,9 @@ type BaseUserInfo @entity {
   ratio: BigInt!
   vlp: BigInt!
   vela: BigInt!
-  minVLP: BigInt!
+  baseVLP: BigInt!
+  minimumVLP: BigInt!
+  mintedVLP: BigInt!
 }
 
 type BaseGlobalInfo @entity {

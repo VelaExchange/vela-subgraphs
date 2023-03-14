@@ -28,23 +28,23 @@ import {
 import { BigInt } from "@graphprotocol/graph-ts"
 import { VLP_DECIMALS, MAX_VLP_FOR_Hyper } from "./constants"
 
-const getRewardAmount = (vlpAmount: BigInt, totalVLP: BigInt): BigInt => {
-  if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('500000').times(VLP_DECIMALS))) {
-    return BigInt.fromString('500')
-  } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('1500000').times(VLP_DECIMALS))) {
-    return BigInt.fromString('375')
-  } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('3000000').times(VLP_DECIMALS))) {
-    return BigInt.fromString('333')
-  } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('5000000').times(VLP_DECIMALS))) {
-    return BigInt.fromString('250')
-  } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('7500000').times(VLP_DECIMALS))) {
-    return BigInt.fromString('200')
-  } else if ((totalVLP.plus(vlpAmount)).le(BigInt.fromString('10000000').times(VLP_DECIMALS))) {
-    return BigInt.fromString('150')
-  } else {
-    return BigInt.fromString('0')
+  const getRewardAmount = (vlpAmount: BigInt, totalVLP: BigInt): BigInt => {
+    if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('500000').times(VLP_DECIMALS))) {
+      return BigInt.fromString('500')
+    } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('1500000').times(VLP_DECIMALS))) {
+      return BigInt.fromString('375')
+    } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('3000000').times(VLP_DECIMALS))) {
+      return BigInt.fromString('333')
+    } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('5000000').times(VLP_DECIMALS))) {
+      return BigInt.fromString('250')
+    } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('7500000').times(VLP_DECIMALS))) {
+      return BigInt.fromString('200')
+    } else if ((totalVLP.plus(vlpAmount)).le(BigInt.fromString('10000000').times(VLP_DECIMALS))) {
+      return BigInt.fromString('150')
+    } else {
+      return BigInt.fromString('0')
+    }
   }
-}
 
   export function handleDeposit(event: DepositEvent): void {
     let tradeVolume = TradeVolume.load(event.params.account.toHexString());
@@ -102,7 +102,7 @@ const getRewardAmount = (vlpAmount: BigInt, totalVLP: BigInt): BigInt => {
       baseUserInfo.minimumVLP = BigInt.fromString('0') 
       baseUserInfo.mintedVLP = BigInt.fromString('0') 
     }
-    if (!baseGlobalInfo.hyper_ended && baseGlobalInfo.totalUSDC.le(MAX_VLP_FOR_Hyper)) {
+    if (!baseGlobalInfo.hyper_ended && baseGlobalInfo.totalVLP.le(MAX_VLP_FOR_Hyper)) {
       let rewardAmount = getRewardAmount(event.params.mintAmount, baseGlobalInfo.totalVLP)
       baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
       baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
@@ -112,7 +112,7 @@ const getRewardAmount = (vlpAmount: BigInt, totalVLP: BigInt): BigInt => {
       baseUserInfo.baseVLP = baseUserInfo.baseVLP.plus(event.params.mintAmount)
       baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
       baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
-      if (baseGlobalInfo.totalUSDC.ge(MAX_VLP_FOR_Hyper)) {
+      if (baseGlobalInfo.totalVLP.ge(MAX_VLP_FOR_Hyper)) {
         baseGlobalInfo.hyper_ended = true
       }
     } else {

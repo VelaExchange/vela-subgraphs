@@ -978,10 +978,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       baseUserInfo.minimumVLP = BigInt.fromString('0') 
       baseUserInfo.mintedVLP = BigInt.fromString('0') 
     }
-    baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
-    baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
     if (!baseGlobalInfo.hyper_ended && baseGlobalInfo.totalVLP.le(MAX_VLP_FOR_Hyper)) {
       let rewardAmount = BigInt.fromString('0')
+      baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
+      baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
       baseUserInfo.baseVLP = baseUserInfo.baseVLP.plus(event.params.mintAmount)
       let rewardTier = getRewardTier(event.params.mintAmount, baseGlobalInfo.totalVLP)
       if (add_hyper_whitelist.includes(event.params.account.toHexString())) {
@@ -1019,6 +1019,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         baseGlobalInfo.hyper_ended = true
       }
     } else {
+      baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
+      baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
       baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
       baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
       if (baseUserInfo.mintedVLP.lt(baseUserInfo.minimumVLP)) {

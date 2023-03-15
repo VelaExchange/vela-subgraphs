@@ -106,9 +106,8 @@ type StrandedUSDCAmount @entity {
 
 type BaseUserInfo @entity {
   id: ID!
-  ratio: BigInt!
-  vlp: BigInt!
-  vela: BigInt!
+  baseRatio: BigInt!
+  baseVela: BigInt!
   baseVLP: BigInt!
   minimumVLP: BigInt!
   mintedVLP: BigInt!
@@ -231,7 +230,7 @@ type TriggerData @entity {
   status: String!
   triggeredAmount: BigInt!
   triggeredAt: Int!
-  trigger: PositionTrigger!
+  trigger: PositionTrigger
 }
 
 type UserTradeStat @entity {

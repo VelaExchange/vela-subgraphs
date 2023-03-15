@@ -106,9 +106,8 @@ type StrandedUSDCAmount @entity {
 
 type BaseUserInfo @entity {
   id: ID!
-  ratio: BigInt!
-  vlp: BigInt!
-  vela: BigInt!
+  baseRatio: BigInt!
+  baseVela: BigInt!
   baseVLP: BigInt!
   minimumVLP: BigInt!
   mintedVLP: BigInt!

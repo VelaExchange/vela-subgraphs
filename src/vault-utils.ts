@@ -14,7 +14,9 @@ import {
     Mint,
     LiquidatePosition,
     PositionStat,
+    PositionTrigger,
     Redeem,
+    TriggerData,
     TradeVolume,
     UserTradeStat,
     GlobalInfo,
@@ -1123,6 +1125,11 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(event.params.realisedPnl)
       positionStatsEntity.positionStatus = "CLOSED"
       positionStatsEntity.save()
+      let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+      if (positionTriggerEntity) {
+        positionTriggerEntity.status = "CANCELED";
+        positionTriggerEntity.save()
+      }
       let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
       if (!globaInfo) {
         globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
@@ -1399,15 +1406,147 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
   }
   
   export function handleExecuteTriggerOrders(event: ExecuteTriggerOrdersEvent): void {
-
+    let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+    if (!positionTriggerEntity) {
+      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+      if (positionStatsEntity) {
+        positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
+        positionTriggerEntity.account = positionStatsEntity.account
+        positionTriggerEntity.indexToken = positionTriggerEntity.indexToken
+        positionTriggerEntity.isLong = positionTriggerEntity.isLong
+        positionTriggerEntity.posId = positionStatsEntity.posId
+        positionTriggerEntity.key = positionStatsEntity.key
+        positionTriggerEntity.triggerData = []
+        positionTriggerEntity.status = "OPEN"
+        positionTriggerEntity.save()
+      }
+    }
+    // let triggerArrays = []
+    if (positionTriggerEntity) {
+      for (let i = 0; i < event.params.slPrices.length; i++) {
+        let triggerData = TriggerData.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
+        if (!triggerData) {
+          triggerData = new TriggerData(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
+          triggerData.createdAt = event.block.timestamp.toI32()
+          triggerData.triggeredAt = 0
+          triggerData.isTP = false
+          triggerData.trigger = positionTriggerEntity.id
+          triggerData.price = event.params.slPrices[i]
+          triggerData.amountPercent = event.params.slAmountPercents[i]
+          triggerData.status = "OPEN"
+        }
+        if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && triggerData.triggeredAt == 0) {
+          triggerData.triggeredAt = event.block.timestamp.toI32()
+          triggerData.triggeredAmount = event.params.slTriggeredAmounts[i]
+          triggerData.status = "TRIGGERED"
+        }
+        triggerData.save()
+        // triggerArrays.push(triggerData.id)
+      }
+      for (let i = 0; i < event.params.tpPrices.length; i++) {
+        let triggerData = TriggerData.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+        if (!triggerData) {
+          triggerData = new TriggerData(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+          triggerData.createdAt = event.block.timestamp.toI32()
+          triggerData.triggeredAt = 0
+          triggerData.isTP = true
+          triggerData.trigger = positionTriggerEntity.id
+          triggerData.status = "OPEN"
+          triggerData.price = event.params.tpPrices[i]
+          triggerData.amountPercent = event.params.tpAmountPercents[i]
+        }
+        if (event.params.tpTriggeredAmounts[i].gt(BigInt.fromString('0')) && triggerData.triggeredAt == 0) {
+          triggerData.triggeredAt = event.block.timestamp.toI32()
+          triggerData.triggeredAmount = event.params.tpTriggeredAmounts[i]
+          triggerData.status = "TRIGGERED"
+        }
+        triggerData.save()
+        // triggerArrays.push(triggerData.id)
+      }
+      // positionTriggerEntity.triggerData = triggerArrays;
+      positionTriggerEntity.save()
+    }
   }
 
   export function handleUpdateTriggerOrders(event: UpdateTriggerOrdersEvent): void {
-
+    let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+    if (!positionTriggerEntity) {
+      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+      if (positionStatsEntity) {
+        positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
+        positionTriggerEntity.account = positionStatsEntity.account
+        positionTriggerEntity.indexToken = positionTriggerEntity.indexToken
+        positionTriggerEntity.isLong = positionTriggerEntity.isLong
+        positionTriggerEntity.posId = positionStatsEntity.posId
+        positionTriggerEntity.key = positionStatsEntity.key
+        positionTriggerEntity.triggerData = []
+        positionTriggerEntity.status = "OPEN"
+        positionTriggerEntity.save()
+      }
+    }
+    // let triggerArrays = []
+    if (positionTriggerEntity) {
+      for (let i = 0; i < event.params.slPrices.length; i++) {
+        let triggerData = TriggerData.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
+        if (!triggerData) {
+          triggerData = new TriggerData(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
+          triggerData.createdAt = event.block.timestamp.toI32()
+          triggerData.triggeredAt = 0
+          triggerData.isTP = false
+          triggerData.trigger = positionTriggerEntity.id
+          triggerData.price = event.params.slPrices[i]
+          triggerData.amountPercent = event.params.slAmountPercents[i]
+          triggerData.status = "OPEN"
+        }
+        if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && triggerData.triggeredAt == 0) {
+          triggerData.triggeredAt = event.block.timestamp.toI32()
+          triggerData.triggeredAmount = event.params.slTriggeredAmounts[i]
+          triggerData.status = "TRIGGERED"
+        }
+        triggerData.save()
+        // triggerArrays.push(triggerData.id)
+      }
+      for (let i = 0; i < event.params.tpPrices.length; i++) {
+        let triggerData = TriggerData.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+        if (!triggerData) {
+          triggerData = new TriggerData(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+          triggerData.createdAt = event.block.timestamp.toI32()
+          triggerData.triggeredAt = 0
+          triggerData.isTP = true
+          triggerData.trigger = positionTriggerEntity.id
+          triggerData.status = "OPEN"
+          triggerData.price = event.params.tpPrices[i]
+          triggerData.amountPercent = event.params.tpAmountPercents[i]
+        }
+        if (event.params.tpTriggeredAmounts[i].gt(BigInt.fromString('0')) && triggerData.triggeredAt == 0) {
+          triggerData.triggeredAt = event.block.timestamp.toI32()
+          triggerData.triggeredAmount = event.params.tpTriggeredAmounts[i]
+          triggerData.status = "TRIGGERED"
+        }
+        triggerData.save()
+        // triggerArrays.push(triggerData.id)
+      }
+      // positionTriggerEntity.triggerData = triggerArrays;
+      positionTriggerEntity.save()
+    }
   }
 
   export function handleUpdateTriggerStatus(event: UpdateTriggerStatusEvent): void {
-
+    let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+    if (!positionTriggerEntity) {
+      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+      if (positionStatsEntity) {
+        positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
+        positionTriggerEntity.account = positionStatsEntity.account
+        positionTriggerEntity.indexToken = positionTriggerEntity.indexToken
+        positionTriggerEntity.isLong = positionTriggerEntity.isLong
+        positionTriggerEntity.posId = positionStatsEntity.posId
+        positionTriggerEntity.key = positionStatsEntity.key
+        positionTriggerEntity.triggerData = []
+        positionTriggerEntity.status = "CANCELED"
+        positionTriggerEntity.save()
+      }
+    }
   }
 
   export function handleLiquidatePosition(event: LiquidatePositionEvent): void {
@@ -1462,6 +1601,11 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.realisedPnl = BigInt.fromString('-1').times(positionStatsEntity.collateral)
       positionStatsEntity.positionStatus = "LIQUIDATED"
       positionStatsEntity.save()
+      let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+      if (positionTriggerEntity) {
+        positionTriggerEntity.status = "CANCELED";
+        positionTriggerEntity.save()
+      }
       let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
       if (!globaInfo) {
         globaInfo = new GlobalInfo(positionStatsEntity.indexToken)

@@ -117,3 +117,27 @@ dataSources:
         - event: Unstake(indexed address,address,uint256,uint256)
           handler: handleUnstake
       file: ./src/vault-utils.ts
+  - kind: ethereum
+    name: TriggerOrderManager
+    network: arbitrum-one
+    source:
+      address: "0xb9803F107C6102CAceD5039062Df8B9251Cb9A94"
+      abi: TriggerOrderManager
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Deposit
+        - Withdraw
+      abis:
+        - name: TriggerOrderManager
+          file: ./abis/TriggerOrderManager.json
+      eventHandlers:
+        - event: ExecuteTriggerOrders(bytes32,uint256[],uint256[],uint256[],uint256[],uint256[],uint256[],uint8)
+          handler: handleExecuteTriggerOrders
+        - event: UpdateTriggerOrders(bytes32,uint256[],uint256[],uint256[],uint256[],uint256[],uint256[],uint8)
+          handler: handleUpdateTriggerOrders
+        - event: UpdateTriggerStatus(bytes32,uint8)
+          handler: handleUpdateTriggerStatus
+      file: ./src/vault-utils.ts

@@ -4,7 +4,8 @@ import {
     IncreasePosition as IncreasePositionEvent,
     LiquidatePosition as LiquidatePositionEvent,
   } from "../generated/VaultUtils/VaultUtils"
-  import {
+
+import {
     BaseGlobalInfo,
     BaseUserInfo,
     ClosePosition,
@@ -19,7 +20,7 @@ import {
     GlobalInfo,
     StrandedUSDCAmount
   } from "../generated/schema"
-  import {
+import {
     Deposit as DepositEvent,
     Stake as StakeEvent,
     Unstake as UnstakeEvent,
@@ -27,10 +28,15 @@ import {
   } from "../generated/Vault/Vault"
 import { BigInt } from "@graphprotocol/graph-ts"
 import { VLP_DECIMALS, MAX_VLP_FOR_Hyper, 
-  add_hyper_whitelist, 
-  remove_hyper_whitelist
-} from "./constants"
+    add_hyper_whitelist, 
+    remove_hyper_whitelist
+  } from "./constants"
 
+import {
+  UpdateTriggerOrders as UpdateTriggerOrdersEvent,
+  ExecuteTriggerOrders as ExecuteTriggerOrdersEvent,
+  UpdateTriggerStatus as UpdateTriggerStatusEvent
+} from "../generated/TriggerOrderManager/TriggerOrderManager"
 const getTier1ForRemove = (account: String): i32 => {
   if (account=='0x0688ff6b3a932fd33720176e3e3fb22f135391e2') {
     return 3;
@@ -1392,6 +1398,18 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     increasePositionEntity.save()
   }
   
+  export function handleExecuteTriggerOrders(event: ExecuteTriggerOrdersEvent): void {
+
+  }
+
+  export function handleUpdateTriggerOrders(event: UpdateTriggerOrdersEvent): void {
+
+  }
+
+  export function handleUpdateTriggerStatus(event: UpdateTriggerStatusEvent): void {
+
+  }
+
   export function handleLiquidatePosition(event: LiquidatePositionEvent): void {
     let liquidatePositionEntity = new LiquidatePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
     let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
@@ -1490,3 +1508,4 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     liquidatePositionEntity.transactionHash = event.transaction.hash.toHexString()
     liquidatePositionEntity.save()
   }
+

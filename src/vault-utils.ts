@@ -1421,8 +1421,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionTriggerEntity.save()
       }
     }
-    // let triggerArrays = []
     if (positionTriggerEntity) {
+      let triggerArray: string[] = new Array<string>(event.params.slPrices.length + event.params.tpPrices.length);
       for (let i = 0; i < event.params.slPrices.length; i++) {
         let triggerData = TriggerData.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
         if (!triggerData) {
@@ -1441,7 +1441,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           triggerData.status = "TRIGGERED"
         }
         triggerData.save()
-        // triggerArrays.push(triggerData.id)
+        triggerArray.push(triggerData.id)
       }
       for (let i = 0; i < event.params.tpPrices.length; i++) {
         let triggerData = TriggerData.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
@@ -1461,9 +1461,18 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           triggerData.status = "TRIGGERED"
         }
         triggerData.save()
-        // triggerArrays.push(triggerData.id)
+        triggerArray.push(triggerData.id)
       }
-      // positionTriggerEntity.triggerData = triggerArrays;
+      for (let i = 0; i < positionTriggerEntity.triggerData.length; i++) {
+        if (!triggerArray.includes(positionTriggerEntity.triggerData[i])) {
+          let triggerTempData = TriggerData.load(positionTriggerEntity.triggerData[i])
+          if (triggerTempData) {
+            triggerTempData.trigger = "null"
+            triggerTempData.save()
+          }
+        }
+      }
+      positionTriggerEntity.triggerData = triggerArray
       positionTriggerEntity.save()
     }
   }
@@ -1484,8 +1493,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionTriggerEntity.save()
       }
     }
-    // let triggerArrays = []
     if (positionTriggerEntity) {
+      let triggerArray: string[] = new Array<string>(event.params.slPrices.length + event.params.tpPrices.length);
       for (let i = 0; i < event.params.slPrices.length; i++) {
         let triggerData = TriggerData.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
         if (!triggerData) {
@@ -1504,7 +1513,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           triggerData.status = "TRIGGERED"
         }
         triggerData.save()
-        // triggerArrays.push(triggerData.id)
+        triggerArray.push(triggerData.id)
       }
       for (let i = 0; i < event.params.tpPrices.length; i++) {
         let triggerData = TriggerData.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
@@ -1524,9 +1533,18 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           triggerData.status = "TRIGGERED"
         }
         triggerData.save()
-        // triggerArrays.push(triggerData.id)
+        triggerArray.push(triggerData.id)
       }
-      // positionTriggerEntity.triggerData = triggerArrays;
+      for (let i = 0; i < positionTriggerEntity.triggerData.length; i++) {
+        if (!triggerArray.includes(positionTriggerEntity.triggerData[i])) {
+          let triggerTempData = TriggerData.load(positionTriggerEntity.triggerData[i])
+          if (triggerTempData) {
+            triggerTempData.trigger = "null"
+            triggerTempData.save()
+          }
+        }
+      }
+      positionTriggerEntity.triggerData = triggerArray
       positionTriggerEntity.save()
     }
   }

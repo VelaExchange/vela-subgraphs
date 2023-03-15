@@ -230,7 +230,7 @@ type TriggerData @entity {
   status: String!
   triggeredAmount: BigInt!
   triggeredAt: Int!
-  trigger: PositionTrigger!
+  trigger: PositionTrigger
 }
 
 type UserTradeStat @entity {

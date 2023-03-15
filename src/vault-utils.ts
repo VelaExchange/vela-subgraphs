@@ -1414,8 +1414,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       if (positionStatsEntity) {
         positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
         positionTriggerEntity.account = positionStatsEntity.account
-        positionTriggerEntity.indexToken = positionTriggerEntity.indexToken
-        positionTriggerEntity.isLong = positionTriggerEntity.isLong
+        positionTriggerEntity.indexToken = positionStatsEntity.indexToken
+        positionTriggerEntity.isLong = positionStatsEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
         positionTriggerEntity.triggerData = []
@@ -1486,8 +1486,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       if (positionStatsEntity) {
         positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
         positionTriggerEntity.account = positionStatsEntity.account
-        positionTriggerEntity.indexToken = positionTriggerEntity.indexToken
-        positionTriggerEntity.isLong = positionTriggerEntity.isLong
+        positionTriggerEntity.indexToken = positionStatsEntity.indexToken
+        positionTriggerEntity.isLong = positionStatsEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
         positionTriggerEntity.triggerData = []

@@ -210,7 +210,7 @@ type PositionStat @entity {
   stpPrice: BigInt!
 }
 
-type PositionTrigger @entity(immutable: true) {
+type PositionTrigger @entity {
   id: ID!
   account: String!
   indexToken: String!
@@ -218,7 +218,7 @@ type PositionTrigger @entity(immutable: true) {
   key: String!
   posId: BigInt!
   status: String!
-  triggers: [Trigger!] @derivedFrom(field: "order")
+  triggers: [Trigger!]! @derivedFrom(field: "order")
 }
 
 type Trigger @entity {

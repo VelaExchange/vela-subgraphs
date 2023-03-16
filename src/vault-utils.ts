@@ -1420,6 +1420,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionTriggerEntity.isLong = positionStatsEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
+        // positionTriggerEntity.triggers = []
         positionTriggerEntity.status = "OPEN"
         positionTriggerEntity.save()
       }
@@ -1430,15 +1431,16 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         let trigger = Trigger.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
         if (!trigger) {
           trigger = new Trigger(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
-          trigger.createdAt = event.block.timestamp.toI32()
-          trigger.triggeredAt = 0
-          trigger.isTP = false
-          trigger.order = positionTriggerEntity.id
-          trigger.price = event.params.slPrices[i]
           trigger.amountPercent = event.params.slAmountPercents[i]
+          trigger.createdAt = event.block.timestamp.toI32()
+          trigger.isTP = false
+          trigger.price = event.params.slPrices[i]
           trigger.status = "OPEN"
+          trigger.triggeredAmount = BigInt.fromString('0')
+          trigger.triggeredAt = 0
+          trigger.order = positionTriggerEntity.id
           trigger.save()
-          positionTriggerEntity.triggers.push(trigger.id)
+          // positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1452,15 +1454,16 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         let trigger = Trigger.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
         if (!trigger) {
           trigger = new Trigger(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+          trigger.amountPercent = event.params.tpAmountPercents[i]
           trigger.createdAt = event.block.timestamp.toI32()
-          trigger.triggeredAt = 0
           trigger.isTP = true
           trigger.order = positionTriggerEntity.id
-          trigger.status = "OPEN"
           trigger.price = event.params.tpPrices[i]
-          trigger.amountPercent = event.params.tpAmountPercents[i]
+          trigger.status = "OPEN"
+          trigger.triggeredAmount = BigInt.fromString('0')
+          trigger.triggeredAt = 0
           trigger.save()
-          positionTriggerEntity.triggers.push(trigger.id)
+          // positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.tpTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1470,17 +1473,17 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         trigger.save()
         triggerArray.push(trigger.id)
       }
-      for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
-        if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
-          let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
-          if (triggerTempData) {
-            triggerTempData.order = "null"
-            triggerTempData.save()
-          }
-          let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
-          positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
-        }
-      }
+      // for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
+      //   if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
+      //     let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
+      //     if (triggerTempData) {
+      //       triggerTempData.order = "null"
+      //       triggerTempData.save()
+      //     }
+      //     // let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
+      //     // positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
+      //   }
+      // }
       positionTriggerEntity.save()
     }
   }
@@ -1496,6 +1499,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionTriggerEntity.isLong = positionStatsEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
+        // positionTriggerEntity.triggers = []
         positionTriggerEntity.status = "OPEN"
         positionTriggerEntity.save()
       }
@@ -1506,15 +1510,16 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         let trigger = Trigger.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
         if (!trigger) {
           trigger = new Trigger(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
+          trigger.amountPercent = event.params.slAmountPercents[i]
           trigger.createdAt = event.block.timestamp.toI32()
-          trigger.triggeredAt = 0
           trigger.isTP = false
           trigger.order = positionTriggerEntity.id
           trigger.price = event.params.slPrices[i]
-          trigger.amountPercent = event.params.slAmountPercents[i]
           trigger.status = "OPEN"
+          trigger.triggeredAmount = BigInt.fromString('0')
+          trigger.triggeredAt = 0
           trigger.save()
-          positionTriggerEntity.triggers.push(trigger.id)
+          // positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1528,15 +1533,16 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         let trigger = Trigger.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
         if (!trigger) {
           trigger = new Trigger(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+          trigger.amountPercent = event.params.tpAmountPercents[i]
           trigger.createdAt = event.block.timestamp.toI32()
-          trigger.triggeredAt = 0
           trigger.isTP = true
           trigger.order = positionTriggerEntity.id
-          trigger.status = "OPEN"
           trigger.price = event.params.tpPrices[i]
-          trigger.amountPercent = event.params.tpAmountPercents[i]
+          trigger.status = "OPEN"
+          trigger.triggeredAmount = BigInt.fromString('0')
+          trigger.triggeredAt = 0
           trigger.save()
-          positionTriggerEntity.triggers.push(trigger.id)
+          // positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.tpTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1546,17 +1552,17 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         trigger.save()
         triggerArray.push(trigger.id)
       }
-      for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
-        if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
-          let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
-          if (triggerTempData) {
-            triggerTempData.order = "null"
-            triggerTempData.save()
-          }
-          let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
-          positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
-        }
-      }
+      // for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
+      //   if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
+      //     let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
+      //     if (triggerTempData) {
+      //       triggerTempData.order = "null"
+      //       triggerTempData.save()
+      //     }
+      //     // let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
+      //     // positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
+      //   }
+      // }
       positionTriggerEntity.save()
     }
   }
@@ -1572,6 +1578,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionTriggerEntity.isLong = positionTriggerEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
+        // positionTriggerEntity.triggers = []
         positionTriggerEntity.status = "CANCELED"
         positionTriggerEntity.save()
       }

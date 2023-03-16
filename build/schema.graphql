@@ -218,7 +218,7 @@ type PositionTrigger @entity(immutable: true) {
   key: String!
   posId: BigInt!
   status: String!
-  triggers: [Trigger!]! @derivedFrom(field: "order")
+  triggers: [Trigger!] @derivedFrom(field: "order")
 }
 
 type Trigger @entity {

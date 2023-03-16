@@ -128,8 +128,8 @@ dataSources:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - Deposit
-        - Withdraw
+        - PositionTrigger
+        - Trigger
       abis:
         - name: TriggerOrderManager
           file: TriggerOrderManager/abis/TriggerOrderManager.json

@@ -987,33 +987,40 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       if (add_hyper_whitelist.includes(event.params.account.toHexString())) {
         let toTier = getTier1ForAdd(event.params.account.toHexString())
         rewardAmount = getRewardAmount2(toTier)
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
         baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
         baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
-        
         baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
         baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
       } else if (remove_hyper_whitelist.includes(event.params.account.toHexString())) {
         let fromTier = getTier1ForRemove(event.params.account.toHexString())
         if (fromTier == rewardTier) {
           let toTier = getTier2ForRemove(event.params.account.toHexString())
           rewardAmount = getRewardAmount2(toTier)
+          baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
           baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
           baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
           baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
           baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
+          baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
         } else {
           rewardAmount = getRewardAmount2(rewardTier)
+          baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
           baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
           baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
           baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
           baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
+          baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
         }
       } else {
         rewardAmount = getRewardAmount2(rewardTier)
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
         baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
         baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
         baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
         baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
       }
       if (baseGlobalInfo.totalVLP.ge(MAX_VLP_FOR_Hyper)) {
         baseGlobalInfo.hyper_ended = true
@@ -1021,12 +1028,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     } else {
       baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
       baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
       baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
-      if (baseUserInfo.mintedVLP.lt(baseUserInfo.minimumVLP)) {
-        baseUserInfo.minimumVLP = baseUserInfo.mintedVLP
-      }
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
     }
     baseGlobalInfo.save()
     baseUserInfo.save()
@@ -1436,6 +1438,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           triggerData.price = event.params.slPrices[i]
           triggerData.amountPercent = event.params.slAmountPercents[i]
           triggerData.status = "OPEN"
+          positionTriggerEntity.triggerData.push(triggerData.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && triggerData.triggeredAt == 0) {
           triggerData.triggeredAt = event.block.timestamp.toI32()
@@ -1472,9 +1475,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
             triggerTempData.trigger = "null"
             triggerTempData.save()
           }
+          let indexToRemove = positionTriggerEntity.triggerData.indexOf(positionTriggerEntity.triggerData[i])
+          positionTriggerEntity.triggerData = positionTriggerEntity.triggerData.splice(indexToRemove, 1)
         }
       }
-      positionTriggerEntity.triggerData = triggerArray
       positionTriggerEntity.save()
     }
   }
@@ -1508,6 +1512,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           triggerData.price = event.params.slPrices[i]
           triggerData.amountPercent = event.params.slAmountPercents[i]
           triggerData.status = "OPEN"
+          positionTriggerEntity.triggerData.push(triggerData.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && triggerData.triggeredAt == 0) {
           triggerData.triggeredAt = event.block.timestamp.toI32()
@@ -1544,9 +1549,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
             triggerTempData.trigger = "null"
             triggerTempData.save()
           }
+          let indexToRemove = positionTriggerEntity.triggerData.indexOf(positionTriggerEntity.triggerData[i])
+          positionTriggerEntity.triggerData = positionTriggerEntity.triggerData.splice(indexToRemove, 1)
         }
       }
-      positionTriggerEntity.triggerData = triggerArray
       positionTriggerEntity.save()
     }
   }

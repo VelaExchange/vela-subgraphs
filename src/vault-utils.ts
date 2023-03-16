@@ -1436,6 +1436,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           triggerData.price = event.params.slPrices[i]
           triggerData.amountPercent = event.params.slAmountPercents[i]
           triggerData.status = "OPEN"
+          positionTriggerEntity.triggerData.push(triggerData.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && triggerData.triggeredAt == 0) {
           triggerData.triggeredAt = event.block.timestamp.toI32()
@@ -1472,9 +1473,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
             triggerTempData.trigger = "null"
             triggerTempData.save()
           }
+          let indexToRemove = positionTriggerEntity.triggerData.indexOf(positionTriggerEntity.triggerData[i])
+          positionTriggerEntity.triggerData = positionTriggerEntity.triggerData.splice(indexToRemove, 1)
         }
       }
-      positionTriggerEntity.triggerData = triggerArray
       positionTriggerEntity.save()
     }
   }
@@ -1508,6 +1510,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           triggerData.price = event.params.slPrices[i]
           triggerData.amountPercent = event.params.slAmountPercents[i]
           triggerData.status = "OPEN"
+          positionTriggerEntity.triggerData.push(triggerData.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && triggerData.triggeredAt == 0) {
           triggerData.triggeredAt = event.block.timestamp.toI32()
@@ -1544,9 +1547,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
             triggerTempData.trigger = "null"
             triggerTempData.save()
           }
+          let indexToRemove = positionTriggerEntity.triggerData.indexOf(positionTriggerEntity.triggerData[i])
+          positionTriggerEntity.triggerData = positionTriggerEntity.triggerData.splice(indexToRemove, 1)
         }
       }
-      positionTriggerEntity.triggerData = triggerArray
       positionTriggerEntity.save()
     }
   }

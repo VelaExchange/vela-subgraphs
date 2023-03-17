@@ -1473,17 +1473,17 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         trigger.save()
         triggerArray.push(trigger.id)
       }
-      for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
-        if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
-          let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
-          if (triggerTempData) {
-            triggerTempData.order = "null"
-            triggerTempData.save()
-          }
-          let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
-          positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
-        }
-      }
+      // for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
+      //   if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
+      //     let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
+      //     if (triggerTempData) {
+      //       triggerTempData.order = "null"
+      //       triggerTempData.save()
+      //     }
+      //     let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
+      //     positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
+      //   }
+      // }
       positionTriggerEntity.save()
     }
   }
@@ -1552,17 +1552,17 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         trigger.save()
         triggerArray.push(trigger.id)
       }
-      for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
-        if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
-          let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
-          if (triggerTempData) {
-            triggerTempData.order = "null"
-            triggerTempData.save()
-          }
-          let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
-          positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
-        }
-      }
+      // for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
+      //   if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
+      //     let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
+      //     if (triggerTempData) {
+      //       triggerTempData.order = "null"
+      //       triggerTempData.save()
+      //     }
+      //     let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
+      //     positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
+      //   }
+      // }
       positionTriggerEntity.save()
     }
   }

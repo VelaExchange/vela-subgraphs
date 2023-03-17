@@ -1414,14 +1414,12 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     if (!positionTriggerEntity) {
       let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
       if (positionStatsEntity) {
-        let initTriggers: string[] = []
         positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
         positionTriggerEntity.account = positionStatsEntity.account
         positionTriggerEntity.indexToken = positionStatsEntity.indexToken
         positionTriggerEntity.isLong = positionStatsEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
-        positionTriggerEntity.triggers = initTriggers
         positionTriggerEntity.status = "OPEN"
         positionTriggerEntity.save()
       }
@@ -1440,8 +1438,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           trigger.triggeredAmount = BigInt.fromString('0')
           trigger.triggeredAt = 0
           trigger.order = positionTriggerEntity.id
-          trigger.save()
-          positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1463,8 +1459,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           trigger.status = "OPEN"
           trigger.triggeredAmount = BigInt.fromString('0')
           trigger.triggeredAt = 0
-          trigger.save()
-          positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.tpTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1473,17 +1467,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         }
         trigger.save()
         triggerArray.push(trigger.id)
-      }
-      for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
-        if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
-          let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
-          if (triggerTempData) {
-            triggerTempData.order = "null"
-            triggerTempData.save()
-          }
-          // let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
-          // positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
-        }
       }
       positionTriggerEntity.save()
     }
@@ -1494,14 +1477,12 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     if (!positionTriggerEntity) {
       let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
       if (positionStatsEntity) {
-        let initTriggers: string[] = []
         positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
         positionTriggerEntity.account = positionStatsEntity.account
         positionTriggerEntity.indexToken = positionStatsEntity.indexToken
         positionTriggerEntity.isLong = positionStatsEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
-        positionTriggerEntity.triggers = initTriggers
         positionTriggerEntity.status = "OPEN"
         positionTriggerEntity.save()
       }
@@ -1520,8 +1501,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           trigger.status = "OPEN"
           trigger.triggeredAmount = BigInt.fromString('0')
           trigger.triggeredAt = 0
-          trigger.save()
-          positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1543,8 +1522,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           trigger.status = "OPEN"
           trigger.triggeredAmount = BigInt.fromString('0')
           trigger.triggeredAt = 0
-          trigger.save()
-          positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.tpTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1553,17 +1530,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         }
         trigger.save()
         triggerArray.push(trigger.id)
-      }
-      for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
-        if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
-          let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
-          if (triggerTempData) {
-            triggerTempData.order = "null"
-            triggerTempData.save()
-          }
-          // let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
-          // positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
-        }
       }
       positionTriggerEntity.save()
     }
@@ -1574,14 +1540,12 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     if (!positionTriggerEntity) {
       let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
       if (positionStatsEntity) {
-        let initTriggers: string[] = []
         positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
         positionTriggerEntity.account = positionStatsEntity.account
         positionTriggerEntity.indexToken = positionTriggerEntity.indexToken
         positionTriggerEntity.isLong = positionTriggerEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
-        positionTriggerEntity.triggers = initTriggers
         positionTriggerEntity.status = "CANCELED"
         positionTriggerEntity.save()
       }

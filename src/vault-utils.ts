@@ -1303,7 +1303,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.averagePrice = BigInt.fromString('0')
       positionStatsEntity.collateral = BigInt.fromString('0')
       positionStatsEntity.closedAt = 0
+      positionStatsEntity.closeHash = ""
       positionStatsEntity.createdAt = 0
+      positionStatsEntity.createHash = ""
       positionStatsEntity.entryFundingRate = BigInt.fromString('0')
       positionStatsEntity.feeUsd = BigInt.fromString('0')
       positionStatsEntity.indexToken = event.params.indexToken.toHexString()
@@ -1348,7 +1350,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     positionStatsEntity.averagePrice = event.params.posData[4]
     if (positionStatsEntity.positionStatus == "CLOSED" || positionStatsEntity.positionStatus == "LIQUIDATED") {
       positionStatsEntity.collateral = realCollateral
-      positionStatsEntity.createHash = event.transaction.hash.toHexString()
       positionStatsEntity.feeUsd = event.params.posData[6]
       positionStatsEntity.size = event.params.posData[1]
       positionStatsEntity.closedAt = 0
@@ -1359,6 +1360,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])
     }
     positionStatsEntity.createdAt = event.block.timestamp.toI32()
+    positionStatsEntity.createHash = event.transaction.hash.toHexString()
     positionStatsEntity.entryFundingRate = event.params.posData[3]
     positionStatsEntity.markPrice = event.params.posData[5]
     positionStatsEntity.reserveAmount = event.params.posData[2]

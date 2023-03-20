@@ -30,7 +30,9 @@ export function handleNewOrder(event: NewOrderEvent): void {
         positionStatsEntity.averagePrice = BigInt.fromString('0')
         positionStatsEntity.collateral = BigInt.fromString('0')
         positionStatsEntity.closedAt = 0
+        positionStatsEntity.closeHash = ""
         positionStatsEntity.createdAt = event.block.timestamp.toI32()
+        positionStatsEntity.createHash = event.transaction.hash.toHexString()
         positionStatsEntity.entryFundingRate = BigInt.fromString('0')
         positionStatsEntity.feeUsd = BigInt.fromString('0')
         positionStatsEntity.indexToken = event.params.indexToken.toHexString()
@@ -141,6 +143,7 @@ export function handleConfirmDelayTransaction(event: ConfirmDelayTransactionEven
         userTradeStatsEntity.positionType = positionStatsEntity.positionType
         userTradeStatsEntity.profitLoss = BigInt.fromString('0')
         userTradeStatsEntity.tradeVolume = positionStatsEntity.pendingDelaySize
+        userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
         userTradeStatsEntity.save()
         positionStatsEntity.pendingDelayCollateral = BigInt.fromString('0')
         positionStatsEntity.pendingDelaySize = BigInt.fromString('0')
@@ -169,6 +172,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
         userTradeStatsEntity.positionType = positionStatsEntity.positionType
         userTradeStatsEntity.profitLoss = BigInt.fromString('0')
         userTradeStatsEntity.tradeVolume = event.params.size
+        userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
         userTradeStatsEntity.save()
         positionStatsEntity.collateral = event.params.collateral
         positionStatsEntity.size = event.params.size

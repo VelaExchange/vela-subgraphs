@@ -1122,8 +1122,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.positionType = positionStatsEntity.positionType
       userTradeStatsEntity.profitLoss = event.params.realisedPnl
       userTradeStatsEntity.tradeVolume = positionStatsEntity.size
+      userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
+      positionStatsEntity.closeHash = event.transaction.hash.toHexString()
       positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.feeUsd)
       positionStatsEntity.markPrice = event.params.markPrice
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(event.params.realisedPnl)
@@ -1271,6 +1273,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.posId = event.params.posId
       userTradeStatsEntity.positionType = positionStatsEntity.positionType
       userTradeStatsEntity.tradeVolume = event.params.posData[1]
+      userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
     }
     let decreasePositionEntity = new DecreasePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
@@ -1345,9 +1348,11 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     positionStatsEntity.averagePrice = event.params.posData[4]
     if (positionStatsEntity.positionStatus == "CLOSED" || positionStatsEntity.positionStatus == "LIQUIDATED") {
       positionStatsEntity.collateral = realCollateral
+      positionStatsEntity.createHash = event.transaction.hash.toHexString()
       positionStatsEntity.feeUsd = event.params.posData[6]
       positionStatsEntity.size = event.params.posData[1]
       positionStatsEntity.closedAt = 0
+      positionStatsEntity.closeHash = ""
     } else {
       positionStatsEntity.collateral = positionStatsEntity.collateral.plus(realCollateral)
       positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.posData[6])
@@ -1376,6 +1381,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     userTradeStatsEntity.positionType = positionStatsEntity.positionType
     userTradeStatsEntity.profitLoss = BigInt.fromString('0')
     userTradeStatsEntity.tradeVolume = positionStatsEntity.size
+    userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
     userTradeStatsEntity.save()
     let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
     if (!globaInfo) {
@@ -1604,6 +1610,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.positionType = positionStatsEntity.positionType
       userTradeStatsEntity.profitLoss = BigInt.fromString('-1').times(positionStatsEntity.collateral)
       userTradeStatsEntity.tradeVolume = positionStatsEntity.size
+      userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.markPrice

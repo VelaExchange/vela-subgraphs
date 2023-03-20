@@ -188,7 +188,9 @@ type PositionStat @entity {
   averagePrice: BigInt!
   collateral: BigInt!
   closedAt: Int!
+  closeHash: String!
   createdAt: Int!
+  createHash: String!
   entryFundingRate: BigInt!
   feeUsd: BigInt!
   indexToken: String!
@@ -230,7 +232,7 @@ type Trigger @entity {
   status: String!
   triggeredAmount: BigInt!
   triggeredAt: Int!
-  order: PositionTrigger!
+  order: PositionTrigger! @belongsTo
 }
 
 type UserTradeStat @entity {
@@ -252,4 +254,5 @@ type UserTradeStat @entity {
   positionType: String!
   profitLoss: BigInt!
   tradeVolume: BigInt!
+  transactionHash: String!
 }

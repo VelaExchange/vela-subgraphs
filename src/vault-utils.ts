@@ -1122,8 +1122,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.positionType = positionStatsEntity.positionType
       userTradeStatsEntity.profitLoss = event.params.realisedPnl
       userTradeStatsEntity.tradeVolume = positionStatsEntity.size
+      userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
+      positionStatsEntity.closeHash = event.transaction.hash.toHexString()
       positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.feeUsd)
       positionStatsEntity.markPrice = event.params.markPrice
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(event.params.realisedPnl)
@@ -1131,7 +1133,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
       if (positionTriggerEntity) {
-        positionTriggerEntity.status = "CANCELED";
+        positionTriggerEntity.status = "CLOSED";
         positionTriggerEntity.save()
       }
       let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
@@ -1271,6 +1273,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.posId = event.params.posId
       userTradeStatsEntity.positionType = positionStatsEntity.positionType
       userTradeStatsEntity.tradeVolume = event.params.posData[1]
+      userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
     }
     let decreasePositionEntity = new DecreasePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
@@ -1343,13 +1346,22 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     tradeVolume.save()
     let realCollateral = event.params.posData[0].minus(event.params.posData[6])
     positionStatsEntity.averagePrice = event.params.posData[4]
-    positionStatsEntity.collateral = positionStatsEntity.collateral.plus(realCollateral)
+    if (positionStatsEntity.positionStatus == "CLOSED" || positionStatsEntity.positionStatus == "LIQUIDATED") {
+      positionStatsEntity.collateral = realCollateral
+      positionStatsEntity.createHash = event.transaction.hash.toHexString()
+      positionStatsEntity.feeUsd = event.params.posData[6]
+      positionStatsEntity.size = event.params.posData[1]
+      positionStatsEntity.closedAt = 0
+      positionStatsEntity.closeHash = ""
+    } else {
+      positionStatsEntity.collateral = positionStatsEntity.collateral.plus(realCollateral)
+      positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.posData[6])
+      positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])
+    }
     positionStatsEntity.createdAt = event.block.timestamp.toI32()
     positionStatsEntity.entryFundingRate = event.params.posData[3]
-    positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.posData[6])
     positionStatsEntity.markPrice = event.params.posData[5]
     positionStatsEntity.reserveAmount = event.params.posData[2]
-    positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])
     positionStatsEntity.save()
     let userTradeStatsEntity = new UserTradeStat(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
     userTradeStatsEntity.key = event.params.key.toHexString()
@@ -1369,6 +1381,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     userTradeStatsEntity.positionType = positionStatsEntity.positionType
     userTradeStatsEntity.profitLoss = BigInt.fromString('0')
     userTradeStatsEntity.tradeVolume = positionStatsEntity.size
+    userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
     userTradeStatsEntity.save()
     let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
     if (!globaInfo) {
@@ -1420,13 +1433,12 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionTriggerEntity.isLong = positionStatsEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
-        // positionTriggerEntity.triggers = []
         positionTriggerEntity.status = "OPEN"
         positionTriggerEntity.save()
       }
     }
     if (positionTriggerEntity) {
-      let triggerArray: string[] = new Array<string>(event.params.slPrices.length + event.params.tpPrices.length);
+      let triggerArray: string[] = []
       for (let i = 0; i < event.params.slPrices.length; i++) {
         let trigger = Trigger.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
         if (!trigger) {
@@ -1439,8 +1451,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           trigger.triggeredAmount = BigInt.fromString('0')
           trigger.triggeredAt = 0
           trigger.order = positionTriggerEntity.id
-          trigger.save()
-          // positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1462,8 +1472,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           trigger.status = "OPEN"
           trigger.triggeredAmount = BigInt.fromString('0')
           trigger.triggeredAt = 0
-          trigger.save()
-          // positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.tpTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1472,17 +1480,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         }
         trigger.save()
         triggerArray.push(trigger.id)
-      }
-      for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
-        if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
-          let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
-          if (triggerTempData) {
-            triggerTempData.order = "null"
-            triggerTempData.save()
-          }
-          let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
-          positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
-        }
       }
       positionTriggerEntity.save()
     }
@@ -1499,13 +1496,12 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionTriggerEntity.isLong = positionStatsEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
-        // positionTriggerEntity.triggers = []
         positionTriggerEntity.status = "OPEN"
         positionTriggerEntity.save()
       }
     }
     if (positionTriggerEntity) {
-      let triggerArray: string[] = new Array<string>(event.params.slPrices.length + event.params.tpPrices.length);
+      let triggerArray: string[] = []
       for (let i = 0; i < event.params.slPrices.length; i++) {
         let trigger = Trigger.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
         if (!trigger) {
@@ -1518,8 +1514,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           trigger.status = "OPEN"
           trigger.triggeredAmount = BigInt.fromString('0')
           trigger.triggeredAt = 0
-          trigger.save()
-          // positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.slTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1541,8 +1535,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           trigger.status = "OPEN"
           trigger.triggeredAmount = BigInt.fromString('0')
           trigger.triggeredAt = 0
-          trigger.save()
-          // positionTriggerEntity.triggers.push(trigger.id)
         }
         if (event.params.tpTriggeredAmounts[i].gt(BigInt.fromString('0')) && trigger.triggeredAt == 0) {
           trigger.triggeredAt = event.block.timestamp.toI32()
@@ -1551,17 +1543,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         }
         trigger.save()
         triggerArray.push(trigger.id)
-      }
-      for (let i = 0; i < positionTriggerEntity.triggers.length; i++) {
-        if (!triggerArray.includes(positionTriggerEntity.triggers[i])) {
-          let triggerTempData = Trigger.load(positionTriggerEntity.triggers[i])
-          if (triggerTempData) {
-            triggerTempData.order = "null"
-            triggerTempData.save()
-          }
-          let indexToRemove = positionTriggerEntity.triggers.indexOf(positionTriggerEntity.triggers[i])
-          positionTriggerEntity.triggers = positionTriggerEntity.triggers.splice(indexToRemove, 1)
-        }
       }
       positionTriggerEntity.save()
     }
@@ -1578,7 +1559,6 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionTriggerEntity.isLong = positionTriggerEntity.isLong
         positionTriggerEntity.posId = positionStatsEntity.posId
         positionTriggerEntity.key = positionStatsEntity.key
-        // positionTriggerEntity.triggers = []
         positionTriggerEntity.status = "CANCELED"
         positionTriggerEntity.save()
       }
@@ -1630,6 +1610,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.positionType = positionStatsEntity.positionType
       userTradeStatsEntity.profitLoss = BigInt.fromString('-1').times(positionStatsEntity.collateral)
       userTradeStatsEntity.tradeVolume = positionStatsEntity.size
+      userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.markPrice
@@ -1639,7 +1620,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
       if (positionTriggerEntity) {
-        positionTriggerEntity.status = "CANCELED";
+        positionTriggerEntity.status = "CLOSED";
         positionTriggerEntity.save()
       }
       let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)

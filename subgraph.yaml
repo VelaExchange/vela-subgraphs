@@ -102,8 +102,12 @@ dataSources:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
+        - Mint
+        - Redeem
         - Deposit
         - Withdraw
+        - BaseGlobalInfo
+        - BaseUserInfo
       abis:
         - name: Vault
           file: ./abis/Vault.json

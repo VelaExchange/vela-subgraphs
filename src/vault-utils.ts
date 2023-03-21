@@ -10,6 +10,7 @@ import {
     BaseUserInfo,
     ClosePosition,
     DecreasePosition,
+    Deposit,
     IncreasePosition,
     Mint,
     LiquidatePosition,
@@ -20,7 +21,8 @@ import {
     TradeVolume,
     UserTradeStat,
     GlobalInfo,
-    StrandedUSDCAmount
+    StrandedUSDCAmount,
+    Withdraw
   } from "../generated/schema"
 import {
     Deposit as DepositEvent,
@@ -924,6 +926,12 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
 }
 
   export function handleDeposit(event: DepositEvent): void {
+    let deposit = new Deposit(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
+    deposit.amount = event.params.amount
+    deposit.account = event.params.account.toHexString()
+    deposit.createdAt = event.block.timestamp.toI32()
+    deposit.trasactionHash = event.block.hash.toHexString()
+    deposit.save()
     let tradeVolume = TradeVolume.load(event.params.account.toHexString());
     if (!tradeVolume) {
       tradeVolume = new TradeVolume(event.params.account.toHexString())
@@ -939,6 +947,13 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
   }
 
   export function handleWithdraw(event: WithdrawEvent): void {
+    let withdraw = new Withdraw(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
+    withdraw.amount = event.params.amount
+    withdraw.account = event.params.account.toHexString()
+    withdraw.createdAt = event.block.timestamp.toI32()
+    withdraw.trasactionHash = event.block.hash.toHexString()
+    withdraw.save()
+    
     let tradeVolume = TradeVolume.load(event.params.account.toHexString());
     if (!tradeVolume) {
       tradeVolume = new TradeVolume(event.params.account.toHexString())

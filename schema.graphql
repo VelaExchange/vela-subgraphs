@@ -144,6 +144,22 @@ type Redeem @entity {
   vlpAmount: BigInt!
 }
 
+type Deposit @entity {
+  id: ID!
+  account: String!
+  amount: BigInt!
+  createdAt: Int!
+  trasactionHash: String!
+}
+
+type Withdraw @entity {
+  id: ID!
+  account: String!
+  amount: BigInt!
+  createdAt: Int!
+  trasactionHash: String!
+}
+
 type NewOrder @entity {
   id: ID!
   key: String!

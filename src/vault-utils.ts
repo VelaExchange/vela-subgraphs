@@ -6,13 +6,18 @@ import {
   } from "../generated/VaultUtils/VaultUtils"
 
 import {
+    AllTrades,
     BaseGlobalInfo,
     BaseUserInfo,
     ClosePosition,
+    DailyTrades,
+    DailyGlobalInfo,
     DecreasePosition,
     Deposit,
+    HourlyTrades,
     IncreasePosition,
     Mint,
+    MonthlyTrades,
     LiquidatePosition,
     PositionStat,
     PositionTrigger,
@@ -22,7 +27,8 @@ import {
     UserTradeStat,
     GlobalInfo,
     StrandedUSDCAmount,
-    Withdraw
+    Withdraw,
+    WeeklyTrades
   } from "../generated/schema"
 import {
     Deposit as DepositEvent,
@@ -33,7 +39,16 @@ import {
 import { BigInt } from "@graphprotocol/graph-ts"
 import { VLP_DECIMALS, MAX_VLP_FOR_Hyper, 
     add_hyper_whitelist, 
-    remove_hyper_whitelist
+    remove_hyper_whitelist,
+    BIG_NUM_ZERO,
+    getDayStartDate,
+    getHourStartDate,
+    getWeekStartDate,
+    getMonthStartDate,
+    getAccountDailyTradesId,
+    getAccountHourlyTradesId,
+    getAccountMonthlyTradesId,
+    getAccountWeeklyTradesId
   } from "./constants"
 
 import {
@@ -1139,6 +1154,116 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.tradeVolume = positionStatsEntity.size
       userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
+      let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let hourlyTrades = HourlyTrades.load(hourlyTradesId)
+      if (!hourlyTrades) {
+        hourlyTrades = new HourlyTrades(hourlyTradesId)
+        hourlyTrades.account = positionStatsEntity.account
+        hourlyTrades.collateral = BigInt.fromString('0')
+        hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
+        hourlyTrades.tradeVolume = BigInt.fromString('0')
+        hourlyTrades.profitLoss = BigInt.fromString('0') 
+        hourlyTrades.winCount = 0 
+        hourlyTrades.lossCount = 0
+      }
+      hourlyTrades.collateral = hourlyTrades.collateral.plus(positionStatsEntity.collateral)
+      hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(event.params.realisedPnl)
+      hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
+      if (event.params.realisedPnl.gt(BIG_NUM_ZERO)) {
+        hourlyTrades.winCount += 1
+      } else if (event.params.realisedPnl.lt(BIG_NUM_ZERO)){
+        hourlyTrades.lossCount += 1
+      }
+      hourlyTrades.save()
+      let dailyTrades = DailyTrades.load(dailyTradesId)
+      if (!dailyTrades) {
+        dailyTrades = new DailyTrades(dailyTradesId)
+        dailyTrades.account = positionStatsEntity.account
+        dailyTrades.collateral = BigInt.fromString('0')
+        dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
+        dailyTrades.tradeVolume = BigInt.fromString('0')
+        dailyTrades.profitLoss = BigInt.fromString('0') 
+        dailyTrades.winCount = 0 
+        dailyTrades.lossCount = 0
+      }
+      dailyTrades.collateral = dailyTrades.collateral.plus(positionStatsEntity.collateral)
+      dailyTrades.profitLoss = dailyTrades.profitLoss.plus(event.params.realisedPnl)
+      dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
+      if (event.params.realisedPnl.gt(BIG_NUM_ZERO)) {
+        dailyTrades.winCount += 1
+      } else if (event.params.realisedPnl.lt(BIG_NUM_ZERO)){
+        dailyTrades.lossCount += 1
+      }
+      dailyTrades.save()
+      let monthlyTrades = MonthlyTrades.load(monthlyTradesId)
+      if (!monthlyTrades) {
+        monthlyTrades = new MonthlyTrades(monthlyTradesId)
+        monthlyTrades.account = positionStatsEntity.account
+        monthlyTrades.collateral = BigInt.fromString('0')
+        monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
+        monthlyTrades.tradeVolume = BigInt.fromString('0')
+        monthlyTrades.profitLoss = BigInt.fromString('0') 
+        monthlyTrades.winCount = 0 
+        monthlyTrades.lossCount = 0
+      }
+      monthlyTrades.collateral = monthlyTrades.collateral.plus(positionStatsEntity.collateral)
+      monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(event.params.realisedPnl)
+      monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
+      if (event.params.realisedPnl.gt(BIG_NUM_ZERO)) {
+        monthlyTrades.winCount += 1
+      } else if (event.params.realisedPnl.lt(BIG_NUM_ZERO)){
+        monthlyTrades.lossCount += 1
+      }
+      monthlyTrades.save()
+      let weeklyTrades = WeeklyTrades.load(weeklyTradesId)
+      if (!weeklyTrades) {
+        weeklyTrades = new WeeklyTrades(weeklyTradesId)
+        weeklyTrades.account = positionStatsEntity.account
+        weeklyTrades.collateral = BigInt.fromString('0')
+        weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
+        weeklyTrades.tradeVolume = BigInt.fromString('0')
+        weeklyTrades.profitLoss = BigInt.fromString('0') 
+        weeklyTrades.winCount = 0 
+        weeklyTrades.lossCount = 0
+      }
+      weeklyTrades.collateral = weeklyTrades.collateral.plus(positionStatsEntity.collateral)
+      weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(event.params.realisedPnl)
+      weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
+      if (event.params.realisedPnl.gt(BIG_NUM_ZERO)) {
+        weeklyTrades.winCount += 1
+      } else if (event.params.realisedPnl.lt(BIG_NUM_ZERO)){
+        weeklyTrades.lossCount += 1
+      }
+      weeklyTrades.save()
+      let allTrades = AllTrades.load(positionStatsEntity.account)
+      if (!allTrades) {
+        allTrades = new AllTrades(positionStatsEntity.account)
+        allTrades.account = positionStatsEntity.account
+        allTrades.collateral = BigInt.fromString('0')
+        allTrades.tradeVolume = BigInt.fromString('0')
+        allTrades.profitLoss = BigInt.fromString('0') 
+        allTrades.winCount = 0 
+        allTrades.lossCount = 0
+      }
+      allTrades.collateral = allTrades.collateral.plus(positionStatsEntity.collateral)
+      allTrades.profitLoss = allTrades.profitLoss.plus(event.params.realisedPnl)
+      allTrades.tradeVolume = allTrades.tradeVolume.plus(positionStatsEntity.size)
+      allTrades.save()
+      let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
+      let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
+      if (!dailyGlobalInfo) {
+        dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
+        dailyGlobalInfo.tradeVolume = BigInt.fromString('0')
+        dailyGlobalInfo.openInterests = BigInt.fromString('0')
+        dailyGlobalInfo.tradeCounts = 0
+      }
+      dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(positionStatsEntity.size)
+      dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.minus(positionStatsEntity.size)
+      dailyGlobalInfo.tradeCounts += 1
+      dailyGlobalInfo.save()
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
       positionStatsEntity.closeHash = event.transaction.hash.toHexString()
       positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.feeUsd)
@@ -1290,6 +1415,121 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.tradeVolume = event.params.posData[1]
       userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
+      let hourlyTradesId = getAccountHourlyTradesId(event.params.account.toHexString(), event.block.timestamp)
+      let dailyTradesId = getAccountDailyTradesId(event.params.account.toHexString(), event.block.timestamp)
+      let monthlyTradesId = getAccountMonthlyTradesId(event.params.account.toHexString(), event.block.timestamp)
+      let weeklyTradesId = getAccountWeeklyTradesId(event.params.account.toHexString(), event.block.timestamp)
+      let hourlyTrades = HourlyTrades.load(hourlyTradesId)
+      if (!hourlyTrades) {
+        hourlyTrades = new HourlyTrades(hourlyTradesId)
+        hourlyTrades.account = event.params.account.toHexString()
+        hourlyTrades.collateral = BigInt.fromString('0')
+        hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
+        hourlyTrades.tradeVolume = BigInt.fromString('0')
+        hourlyTrades.profitLoss = BigInt.fromString('0') 
+        hourlyTrades.winCount = 0 
+        hourlyTrades.lossCount = 0
+      }
+      hourlyTrades.collateral = hourlyTrades.collateral.plus(event.params.posData[0])
+      hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(event.params.posData[1])
+      if (userTradeStatsEntity.profitLoss.gt(BIG_NUM_ZERO)) {
+        hourlyTrades.winCount += 1
+      } else if (userTradeStatsEntity.profitLoss.lt(BIG_NUM_ZERO)){
+        hourlyTrades.lossCount += 1
+      }
+      hourlyTrades.save()
+      let dailyTrades = DailyTrades.load(dailyTradesId)
+      if (!dailyTrades) {
+        dailyTrades = new DailyTrades(dailyTradesId)
+        dailyTrades.account = event.params.account.toHexString()
+        dailyTrades.collateral = BigInt.fromString('0')
+        dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
+        dailyTrades.tradeVolume = BigInt.fromString('0')
+        dailyTrades.profitLoss = BigInt.fromString('0') 
+        dailyTrades.winCount = 0 
+        dailyTrades.lossCount = 0
+      }
+      dailyTrades.collateral = dailyTrades.collateral.plus(event.params.posData[0])
+      dailyTrades.profitLoss = dailyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(event.params.posData[1])
+      if (userTradeStatsEntity.profitLoss.gt(BIG_NUM_ZERO)) {
+        dailyTrades.winCount += 1
+      } else if (userTradeStatsEntity.profitLoss.lt(BIG_NUM_ZERO)){
+        dailyTrades.lossCount += 1
+      }
+      dailyTrades.save()
+      let monthlyTrades = MonthlyTrades.load(monthlyTradesId)
+      if (!monthlyTrades) {
+        monthlyTrades = new MonthlyTrades(monthlyTradesId)
+        monthlyTrades.account = event.params.account.toHexString()
+        monthlyTrades.collateral = BigInt.fromString('0')
+        monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
+        monthlyTrades.tradeVolume = BigInt.fromString('0')
+        monthlyTrades.profitLoss = BigInt.fromString('0') 
+        monthlyTrades.winCount = 0 
+        monthlyTrades.lossCount = 0
+      }
+      monthlyTrades.collateral = monthlyTrades.collateral.plus(event.params.posData[0])
+      monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(event.params.posData[1])
+      if (userTradeStatsEntity.profitLoss.gt(BIG_NUM_ZERO)) {
+        monthlyTrades.winCount += 1
+      } else if (userTradeStatsEntity.profitLoss.lt(BIG_NUM_ZERO)){
+        monthlyTrades.lossCount += 1
+      }
+      monthlyTrades.save()
+      let weeklyTrades = WeeklyTrades.load(weeklyTradesId)
+      if (!weeklyTrades) {
+        weeklyTrades = new WeeklyTrades(weeklyTradesId)
+        weeklyTrades.account = event.params.account.toHexString()
+        weeklyTrades.collateral = BigInt.fromString('0')
+        weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
+        weeklyTrades.tradeVolume = BigInt.fromString('0')
+        weeklyTrades.profitLoss = BigInt.fromString('0') 
+        weeklyTrades.winCount = 0 
+        weeklyTrades.lossCount = 0
+      }
+      weeklyTrades.collateral = weeklyTrades.collateral.plus(event.params.posData[0])
+      weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(event.params.posData[1])
+      if (userTradeStatsEntity.profitLoss.gt(BIG_NUM_ZERO)) {
+        weeklyTrades.winCount += 1
+      } else if (userTradeStatsEntity.profitLoss.lt(BIG_NUM_ZERO)){
+        weeklyTrades.lossCount += 1
+      }
+      weeklyTrades.save()
+      let allTrades = AllTrades.load(event.params.account.toHexString())
+      if (!allTrades) {
+        allTrades = new AllTrades(event.params.account.toHexString())
+        allTrades.account = event.params.account.toHexString()
+        allTrades.collateral = BigInt.fromString('0')
+        allTrades.tradeVolume = BigInt.fromString('0')
+        allTrades.profitLoss = BigInt.fromString('0') 
+        allTrades.winCount = 0 
+        allTrades.lossCount = 0
+      }
+      allTrades.collateral = allTrades.collateral.plus(event.params.posData[0])
+      allTrades.profitLoss = allTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      allTrades.tradeVolume = allTrades.tradeVolume.plus(event.params.posData[1])
+      if (userTradeStatsEntity.profitLoss.gt(BIG_NUM_ZERO)) {
+        allTrades.winCount += 1
+      } else if (userTradeStatsEntity.profitLoss.lt(BIG_NUM_ZERO)){
+        allTrades.lossCount += 1
+      }
+      allTrades.save()
+      let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
+      let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
+      if (!dailyGlobalInfo) {
+        dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
+        dailyGlobalInfo.tradeVolume = BigInt.fromString('0')
+        dailyGlobalInfo.openInterests = BigInt.fromString('0')
+        dailyGlobalInfo.tradeCounts = 0
+      }
+      dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(event.params.posData[1])
+      dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.minus(event.params.posData[1])
+      dailyGlobalInfo.tradeCounts += 1
+      dailyGlobalInfo.save()
     }
     let decreasePositionEntity = new DecreasePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
     decreasePositionEntity.key = event.params.key.toHexString()
@@ -1400,6 +1640,91 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     userTradeStatsEntity.tradeVolume = positionStatsEntity.size
     userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
     userTradeStatsEntity.save()
+    let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+    let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
+    let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
+    let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
+    let hourlyTrades = HourlyTrades.load(hourlyTradesId)
+    if (!hourlyTrades) {
+      hourlyTrades = new HourlyTrades(hourlyTradesId)
+      hourlyTrades.account = positionStatsEntity.account
+      hourlyTrades.collateral = BigInt.fromString('0')
+      hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
+      hourlyTrades.tradeVolume = BigInt.fromString('0')
+      hourlyTrades.profitLoss = BigInt.fromString('0') 
+      hourlyTrades.winCount = 0 
+      hourlyTrades.lossCount = 0
+    }
+    hourlyTrades.collateral = hourlyTrades.collateral.plus(positionStatsEntity.collateral)
+    hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
+    hourlyTrades.save()
+    let dailyTrades = DailyTrades.load(dailyTradesId)
+    if (!dailyTrades) {
+      dailyTrades = new DailyTrades(dailyTradesId)
+      dailyTrades.account = positionStatsEntity.account
+      dailyTrades.collateral = BigInt.fromString('0')
+      dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
+      dailyTrades.tradeVolume = BigInt.fromString('0')
+      dailyTrades.profitLoss = BigInt.fromString('0') 
+      dailyTrades.winCount = 0 
+      dailyTrades.lossCount = 0
+    }
+    dailyTrades.collateral = dailyTrades.collateral.plus(positionStatsEntity.collateral)
+    dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
+    dailyTrades.save()
+    let monthlyTrades = MonthlyTrades.load(monthlyTradesId)
+    if (!monthlyTrades) {
+      monthlyTrades = new MonthlyTrades(monthlyTradesId)
+      monthlyTrades.account = positionStatsEntity.account
+      monthlyTrades.collateral = BigInt.fromString('0')
+      monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
+      monthlyTrades.tradeVolume = BigInt.fromString('0')
+      monthlyTrades.profitLoss = BigInt.fromString('0') 
+      monthlyTrades.winCount = 0 
+      monthlyTrades.lossCount = 0
+    }
+    monthlyTrades.collateral = monthlyTrades.collateral.plus(positionStatsEntity.collateral)
+    monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
+    monthlyTrades.save()
+    let weeklyTrades = WeeklyTrades.load(weeklyTradesId)
+    if (!weeklyTrades) {
+      weeklyTrades = new WeeklyTrades(weeklyTradesId)
+      weeklyTrades.account = positionStatsEntity.account
+      weeklyTrades.collateral = BigInt.fromString('0')
+      weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
+      weeklyTrades.tradeVolume = BigInt.fromString('0')
+      weeklyTrades.profitLoss = BigInt.fromString('0') 
+      weeklyTrades.winCount = 0 
+      weeklyTrades.lossCount = 0
+    }
+    weeklyTrades.collateral = weeklyTrades.collateral.plus(positionStatsEntity.collateral)
+    weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
+    weeklyTrades.save()
+    let allTrades = AllTrades.load(positionStatsEntity.account)
+    if (!allTrades) {
+      allTrades = new AllTrades(positionStatsEntity.account)
+      allTrades.account = positionStatsEntity.account
+      allTrades.collateral = BigInt.fromString('0')
+      allTrades.tradeVolume = BigInt.fromString('0')
+      allTrades.profitLoss = BigInt.fromString('0') 
+      allTrades.winCount = 0 
+      allTrades.lossCount = 0
+    }
+    allTrades.collateral = allTrades.collateral.plus(positionStatsEntity.collateral)
+    allTrades.tradeVolume = allTrades.tradeVolume.plus(positionStatsEntity.size)
+    allTrades.save()
+    let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
+    let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
+    if (!dailyGlobalInfo) {
+      dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
+      dailyGlobalInfo.tradeVolume = BigInt.fromString('0')
+      dailyGlobalInfo.openInterests = BigInt.fromString('0')
+      dailyGlobalInfo.tradeCounts = 0
+    }
+    dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(positionStatsEntity.size)
+    dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.plus(positionStatsEntity.size)
+    dailyGlobalInfo.tradeCounts += 1
+    dailyGlobalInfo.save()
     let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
     if (!globaInfo) {
       globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
@@ -1629,6 +1954,101 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.tradeVolume = positionStatsEntity.size
       userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
+      let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let hourlyTrades = HourlyTrades.load(hourlyTradesId)
+      if (!hourlyTrades) {
+        hourlyTrades = new HourlyTrades(hourlyTradesId)
+        hourlyTrades.account = positionStatsEntity.account
+        hourlyTrades.collateral = BigInt.fromString('0')
+        hourlyTrades.timestamp = getHourStartDate(event.block.timestamp);
+        hourlyTrades.tradeVolume = BigInt.fromString('0')
+        hourlyTrades.profitLoss = BigInt.fromString('0') 
+        hourlyTrades.winCount = 0 
+        hourlyTrades.lossCount = 0
+      }
+      hourlyTrades.collateral = hourlyTrades.collateral.plus(positionStatsEntity.collateral)
+      hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
+      hourlyTrades.lossCount += 1
+      hourlyTrades.save()
+      let dailyTrades = DailyTrades.load(dailyTradesId)
+      if (!dailyTrades) {
+        dailyTrades = new DailyTrades(dailyTradesId)
+        dailyTrades.account = positionStatsEntity.account
+        dailyTrades.collateral = BigInt.fromString('0')
+        dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
+        dailyTrades.tradeVolume = BigInt.fromString('0')
+        dailyTrades.profitLoss = BigInt.fromString('0') 
+        dailyTrades.winCount = 0 
+        dailyTrades.lossCount = 0
+      }
+      dailyTrades.collateral = dailyTrades.collateral.plus(positionStatsEntity.collateral)
+      dailyTrades.profitLoss = dailyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
+      dailyTrades.lossCount += 1
+      dailyTrades.save()
+      let monthlyTrades = MonthlyTrades.load(monthlyTradesId)
+      if (!monthlyTrades) {
+        monthlyTrades = new MonthlyTrades(monthlyTradesId)
+        monthlyTrades.account = positionStatsEntity.account      
+        monthlyTrades.collateral = BigInt.fromString('0')
+        monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
+        monthlyTrades.tradeVolume = BigInt.fromString('0')
+        monthlyTrades.profitLoss = BigInt.fromString('0') 
+        monthlyTrades.winCount = 0 
+        monthlyTrades.lossCount = 0
+      }
+      monthlyTrades.collateral = monthlyTrades.collateral.plus(positionStatsEntity.collateral)
+      monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
+      monthlyTrades.lossCount += 1
+      monthlyTrades.save()
+      let weeklyTrades = WeeklyTrades.load(weeklyTradesId)
+      if (!weeklyTrades) {
+        weeklyTrades = new WeeklyTrades(weeklyTradesId)
+        weeklyTrades.account = positionStatsEntity.account
+        weeklyTrades.collateral = BigInt.fromString('0')
+        weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
+        weeklyTrades.tradeVolume = BigInt.fromString('0')
+        weeklyTrades.profitLoss = BigInt.fromString('0') 
+        weeklyTrades.winCount = 0 
+        weeklyTrades.lossCount = 0
+      }
+      weeklyTrades.collateral = weeklyTrades.collateral.plus(positionStatsEntity.collateral)
+      weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
+      weeklyTrades.lossCount += 1
+      weeklyTrades.save()
+      let allTrades = AllTrades.load(positionStatsEntity.account)
+      if (!allTrades) {
+        allTrades = new AllTrades(positionStatsEntity.account)
+        allTrades.account = positionStatsEntity.account
+        allTrades.collateral = BigInt.fromString('0')
+        allTrades.tradeVolume = BigInt.fromString('0')
+        allTrades.profitLoss = BigInt.fromString('0') 
+        allTrades.winCount = 0 
+        allTrades.lossCount = 0
+      }
+      allTrades.collateral = allTrades.collateral.plus(positionStatsEntity.collateral)
+      allTrades.profitLoss = allTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+      allTrades.tradeVolume = allTrades.tradeVolume.plus(positionStatsEntity.size)
+      allTrades.lossCount += 1
+      allTrades.save()
+      let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
+      let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
+      if (!dailyGlobalInfo) {
+        dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
+        dailyGlobalInfo.tradeVolume = BigInt.fromString('0')
+        dailyGlobalInfo.openInterests = BigInt.fromString('0')
+        dailyGlobalInfo.tradeCounts = 0
+      }
+      dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(positionStatsEntity.size)
+      dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.minus(positionStatsEntity.size)
+      dailyGlobalInfo.tradeCounts += 1
+      dailyGlobalInfo.save()
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.markPrice
       positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.feeUsd)

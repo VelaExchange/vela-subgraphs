@@ -98,6 +98,12 @@ type GlobalInfo @entity {
   unRealisedPnl: BigInt!
   fees: BigInt!
 }
+type DailyGlobalInfo @entity {
+  id: ID!
+  tradeVolume: BigInt!
+  openInterests: BigInt!
+  tradeCounts: Int!
+}
 
 type StrandedUSDCAmount @entity {
   id: ID!
@@ -142,6 +148,60 @@ type Redeem @entity {
   timestamp: Int!
   token: String!
   vlpAmount: BigInt!
+}
+
+type HourlyTrades @entity {
+  id: ID!
+  account: String!
+  collateral: BigInt!
+  lossCount: Int!
+  profitLoss: BigInt!
+  tradeVolume: BigInt!
+  timestamp: Int!
+  winCount: Int!
+}
+
+type DailyTrades @entity {
+  id: ID!
+  account: String!
+  collateral: BigInt!
+  lossCount: Int!
+  profitLoss: BigInt!
+  tradeVolume: BigInt!
+  timestamp: Int!
+  winCount: Int!
+}
+
+type WeeklyTrades @entity {
+  id: ID!
+  account: String!
+  collateral: BigInt!
+  lossCount: Int!
+  profitLoss: BigInt!
+  tradeVolume: BigInt!
+  timestamp: Int!
+  winCount: Int!
+}
+
+type MonthlyTrades @entity {
+  id: ID!
+  account: String!
+  collateral: BigInt!
+  lossCount: Int!
+  profitLoss: BigInt!
+  tradeVolume: BigInt!
+  timestamp: Int!
+  winCount: Int!
+}
+
+type AllTrades @entity {
+  id: ID!
+  account: String!
+  collateral: BigInt!
+  lossCount: Int!
+  profitLoss: BigInt!
+  tradeVolume: BigInt!
+  winCount: Int!
 }
 
 type Deposit @entity {

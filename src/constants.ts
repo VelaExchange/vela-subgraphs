@@ -6,6 +6,11 @@ export const WEEK_IN_SECONDS = DAY_IN_SECONDS * 7
 export const MONTH_IN_SECONDS = DAY_IN_SECONDS * 30
 export const  VLP_DECIMALS = BigInt.fromString('1000000000000000000')
 export const  MAX_VLP_FOR_Hyper = BigInt.fromString('10000000').times(VLP_DECIMALS)
+export const HOUR_INFIX = '-hour-'
+export const DAY_INFIX = '-day-'
+export const WEEK_INFIX = '-week-'
+export const MONTH_INFIX = '-month-'
+export const BIG_NUM_ZERO = BigInt.fromString('0')
 
 export const WHITELISTED_TOKEN_ADDRESSES: string[] = '{{ legacy.whitelistedTokenAddresses }}'.split(',')
 
@@ -392,3 +397,45 @@ export const add_hyper_whitelist: string[] = [
     "0x6c75153de1b59cdc85796d846e5f612a4faac187",
     "0xa4815394df4a9b1c4ba1cd1ad5ff77e83e19df47",
 ]
+
+export function getHourStartDate(timestamp: BigInt): i32 {
+    let hourIndex = timestamp.toI32() / HOUR_IN_SECONDS // get unique day within unix history
+    return hourIndex * HOUR_IN_SECONDS // want the rounded effect
+}
+
+export function getDayStartDate(timestamp: BigInt): i32 {
+    let dayIndex = timestamp.toI32() / DAY_IN_SECONDS // get unique day within unix history
+    return dayIndex * DAY_IN_SECONDS // want the rounded effect
+}
+
+export function getWeekStartDate(timestamp: BigInt): i32 {
+    let weekIndex = timestamp.toI32() / WEEK_IN_SECONDS // get unique week within unix history
+    return weekIndex * WEEK_IN_SECONDS // want the rounded effect
+}
+
+export function getMonthStartDate(timestamp: BigInt): i32 {
+    let monthIndex = timestamp.toI32() / MONTH_IN_SECONDS // get unique month within unix history
+    return monthIndex * MONTH_IN_SECONDS // want the rounded effect
+}
+
+
+  
+export function getAccountDailyTradesId(account: string, timestamp: BigInt): string {
+    let startDate = getDayStartDate(timestamp)
+    return account.concat(DAY_INFIX).concat(BigInt.fromI32(startDate).toString())
+}
+
+export function getAccountHourlyTradesId(account: string, timestamp: BigInt): string {
+    let startDate = getHourStartDate(timestamp)
+    return account.concat(HOUR_INFIX).concat(BigInt.fromI32(startDate).toString())
+}
+
+export function getAccountWeeklyTradesId(account: string, timestamp: BigInt): string {
+    let startDate = getWeekStartDate(timestamp)
+    return account.concat(WEEK_INFIX).concat(BigInt.fromI32(startDate).toString())
+}
+
+export function getAccountMonthlyTradesId(account: string, timestamp: BigInt): string {
+    let startDate = getMonthStartDate(timestamp)
+    return account.concat(MONTH_INFIX).concat(BigInt.fromI32(startDate).toString())
+}

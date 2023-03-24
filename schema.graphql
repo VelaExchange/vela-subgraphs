@@ -100,6 +100,7 @@ type GlobalInfo @entity {
 }
 type DailyGlobalInfo @entity {
   id: ID!
+  fees: BigInt!
   tradeVolume: BigInt!
   openInterests: BigInt!
   tradeCounts: Int!

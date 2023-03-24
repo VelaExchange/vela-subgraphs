@@ -151,7 +151,7 @@ type Redeem @entity {
   vlpAmount: BigInt!
 }
 
-type HourlyTrades @entity {
+type HourlyTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!
@@ -162,7 +162,7 @@ type HourlyTrades @entity {
   winCount: Int!
 }
 
-type DailyTrades @entity {
+type DailyTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!
@@ -173,7 +173,7 @@ type DailyTrades @entity {
   winCount: Int!
 }
 
-type WeeklyTrades @entity {
+type WeeklyTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!
@@ -184,7 +184,7 @@ type WeeklyTrades @entity {
   winCount: Int!
 }
 
-type MonthlyTrades @entity {
+type MonthlyTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!
@@ -195,7 +195,7 @@ type MonthlyTrades @entity {
   winCount: Int!
 }
 
-type AllTrades @entity {
+type AllTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!

@@ -6,15 +6,15 @@ import {
     AddOrRemoveCollateral as AddOrRemoveCollateralEvent
   } from "../generated/PositionVault/PositionVault"
   import {
-    DailyTrades,
-    AllTrades,
-    MonthlyTrades,
-    WeeklyTrades,
+    DailyTrade,
+    AllTrade,
+    MonthlyTrade,
+    WeeklyTrade,
     PositionStat,
     UserTradeStat,
     TradeVolume,
     ConfirmDelayTransaction,
-    HourlyTrades
+    HourlyTrade
   } from "../generated/schema"
 import { BigInt } from "@graphprotocol/graph-ts"
 import { 
@@ -193,9 +193,9 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
         let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
         let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
         let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
-        let hourlyTrades = HourlyTrades.load(hourlyTradesId)
+        let hourlyTrades = HourlyTrade.load(hourlyTradesId)
         if (!hourlyTrades) {
-            hourlyTrades = new HourlyTrades(hourlyTradesId)
+            hourlyTrades = new HourlyTrade(hourlyTradesId)
             hourlyTrades.account = positionStatsEntity.account
             hourlyTrades.collateral = BigInt.fromString('0')
             hourlyTrades.timestamp = getHourStartDate(event.block.timestamp);
@@ -210,9 +210,9 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             hourlyTrades.collateral = hourlyTrades.collateral.minus(event.params.amount)
         }
         hourlyTrades.save()
-        let dailyTrades = DailyTrades.load(dailyTradesId)
+        let dailyTrades = DailyTrade.load(dailyTradesId)
         if (!dailyTrades) {
-            dailyTrades = new DailyTrades(dailyTradesId)
+            dailyTrades = new DailyTrade(dailyTradesId)
             dailyTrades.account = positionStatsEntity.account
             dailyTrades.collateral = BigInt.fromString('0')
             dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
@@ -227,9 +227,9 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             dailyTrades.collateral = dailyTrades.collateral.minus(event.params.amount)
         }
         dailyTrades.save()
-        let monthlyTrades = MonthlyTrades.load(monthlyTradesId)
+        let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
         if (!monthlyTrades) {
-            monthlyTrades = new MonthlyTrades(monthlyTradesId)
+            monthlyTrades = new MonthlyTrade(monthlyTradesId)
             monthlyTrades.account = positionStatsEntity.account
             monthlyTrades.collateral = BigInt.fromString('0')
             monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
@@ -244,9 +244,9 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             monthlyTrades.collateral = monthlyTrades.collateral.minus(event.params.amount)
         }
         monthlyTrades.save()
-        let weeklyTrades = WeeklyTrades.load(weeklyTradesId)
+        let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
         if (!weeklyTrades) {
-            weeklyTrades = new WeeklyTrades(weeklyTradesId)
+            weeklyTrades = new WeeklyTrade(weeklyTradesId)
             weeklyTrades.account = positionStatsEntity.account
             weeklyTrades.collateral = BigInt.fromString('0')
             weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
@@ -261,9 +261,9 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             weeklyTrades.collateral = weeklyTrades.collateral.minus(event.params.amount)
         }
         weeklyTrades.save()
-        let allTrades = AllTrades.load(positionStatsEntity.account)
+        let allTrades = AllTrade.load(positionStatsEntity.account)
         if (!allTrades) {
-        allTrades = new AllTrades(positionStatsEntity.account)
+        allTrades = new AllTrade(positionStatsEntity.account)
         allTrades.account = positionStatsEntity.account
         allTrades.collateral = BigInt.fromString('0')
         allTrades.tradeVolume = BigInt.fromString('0')

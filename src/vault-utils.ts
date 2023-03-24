@@ -6,18 +6,18 @@ import {
   } from "../generated/VaultUtils/VaultUtils"
 
 import {
-    AllTrades,
+    AllTrade,
     BaseGlobalInfo,
     BaseUserInfo,
     ClosePosition,
-    DailyTrades,
+    DailyTrade,
     DailyGlobalInfo,
     DecreasePosition,
     Deposit,
-    HourlyTrades,
+    HourlyTrade,
     IncreasePosition,
     Mint,
-    MonthlyTrades,
+    MonthlyTrade,
     LiquidatePosition,
     PositionStat,
     PositionTrigger,
@@ -28,7 +28,7 @@ import {
     GlobalInfo,
     StrandedUSDCAmount,
     Withdraw,
-    WeeklyTrades
+    WeeklyTrade
   } from "../generated/schema"
 import {
     Deposit as DepositEvent,
@@ -1159,9 +1159,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
       let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let hourlyTrades = HourlyTrades.load(hourlyTradesId)
+      let hourlyTrades = HourlyTrade.load(hourlyTradesId)
       if (!hourlyTrades) {
-        hourlyTrades = new HourlyTrades(hourlyTradesId)
+        hourlyTrades = new HourlyTrade(hourlyTradesId)
         hourlyTrades.account = positionStatsEntity.account
         hourlyTrades.collateral = BigInt.fromString('0')
         hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
@@ -1180,9 +1180,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         hourlyTrades.lossCount += 1
       }
       hourlyTrades.save()
-      let dailyTrades = DailyTrades.load(dailyTradesId)
+      let dailyTrades = DailyTrade.load(dailyTradesId)
       if (!dailyTrades) {
-        dailyTrades = new DailyTrades(dailyTradesId)
+        dailyTrades = new DailyTrade(dailyTradesId)
         dailyTrades.account = positionStatsEntity.account
         dailyTrades.collateral = BigInt.fromString('0')
         dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
@@ -1201,9 +1201,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         dailyTrades.lossCount += 1
       }
       dailyTrades.save()
-      let monthlyTrades = MonthlyTrades.load(monthlyTradesId)
+      let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
       if (!monthlyTrades) {
-        monthlyTrades = new MonthlyTrades(monthlyTradesId)
+        monthlyTrades = new MonthlyTrade(monthlyTradesId)
         monthlyTrades.account = positionStatsEntity.account
         monthlyTrades.collateral = BigInt.fromString('0')
         monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
@@ -1222,9 +1222,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         monthlyTrades.lossCount += 1
       }
       monthlyTrades.save()
-      let weeklyTrades = WeeklyTrades.load(weeklyTradesId)
+      let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
       if (!weeklyTrades) {
-        weeklyTrades = new WeeklyTrades(weeklyTradesId)
+        weeklyTrades = new WeeklyTrade(weeklyTradesId)
         weeklyTrades.account = positionStatsEntity.account
         weeklyTrades.collateral = BigInt.fromString('0')
         weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
@@ -1243,9 +1243,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         weeklyTrades.lossCount += 1
       }
       weeklyTrades.save()
-      let allTrades = AllTrades.load(positionStatsEntity.account)
+      let allTrades = AllTrade.load(positionStatsEntity.account)
       if (!allTrades) {
-        allTrades = new AllTrades(positionStatsEntity.account)
+        allTrades = new AllTrade(positionStatsEntity.account)
         allTrades.account = positionStatsEntity.account
         allTrades.collateral = BigInt.fromString('0')
         allTrades.tradeVolume = BigInt.fromString('0')
@@ -1439,9 +1439,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       let dailyTradesId = getAccountDailyTradesId(event.params.account.toHexString(), event.block.timestamp)
       let monthlyTradesId = getAccountMonthlyTradesId(event.params.account.toHexString(), event.block.timestamp)
       let weeklyTradesId = getAccountWeeklyTradesId(event.params.account.toHexString(), event.block.timestamp)
-      let hourlyTrades = HourlyTrades.load(hourlyTradesId)
+      let hourlyTrades = HourlyTrade.load(hourlyTradesId)
       if (!hourlyTrades) {
-        hourlyTrades = new HourlyTrades(hourlyTradesId)
+        hourlyTrades = new HourlyTrade(hourlyTradesId)
         hourlyTrades.account = event.params.account.toHexString()
         hourlyTrades.collateral = BigInt.fromString('0')
         hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
@@ -1460,9 +1460,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         hourlyTrades.lossCount += 1
       }
       hourlyTrades.save()
-      let dailyTrades = DailyTrades.load(dailyTradesId)
+      let dailyTrades = DailyTrade.load(dailyTradesId)
       if (!dailyTrades) {
-        dailyTrades = new DailyTrades(dailyTradesId)
+        dailyTrades = new DailyTrade(dailyTradesId)
         dailyTrades.account = event.params.account.toHexString()
         dailyTrades.collateral = BigInt.fromString('0')
         dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
@@ -1481,9 +1481,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         dailyTrades.lossCount += 1
       }
       dailyTrades.save()
-      let monthlyTrades = MonthlyTrades.load(monthlyTradesId)
+      let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
       if (!monthlyTrades) {
-        monthlyTrades = new MonthlyTrades(monthlyTradesId)
+        monthlyTrades = new MonthlyTrade(monthlyTradesId)
         monthlyTrades.account = event.params.account.toHexString()
         monthlyTrades.collateral = BigInt.fromString('0')
         monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
@@ -1502,9 +1502,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         monthlyTrades.lossCount += 1
       }
       monthlyTrades.save()
-      let weeklyTrades = WeeklyTrades.load(weeklyTradesId)
+      let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
       if (!weeklyTrades) {
-        weeklyTrades = new WeeklyTrades(weeklyTradesId)
+        weeklyTrades = new WeeklyTrade(weeklyTradesId)
         weeklyTrades.account = event.params.account.toHexString()
         weeklyTrades.collateral = BigInt.fromString('0')
         weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
@@ -1523,9 +1523,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         weeklyTrades.lossCount += 1
       }
       weeklyTrades.save()
-      let allTrades = AllTrades.load(event.params.account.toHexString())
+      let allTrades = AllTrade.load(event.params.account.toHexString())
       if (!allTrades) {
-        allTrades = new AllTrades(event.params.account.toHexString())
+        allTrades = new AllTrade(event.params.account.toHexString())
         allTrades.account = event.params.account.toHexString()
         allTrades.collateral = BigInt.fromString('0')
         allTrades.tradeVolume = BigInt.fromString('0')
@@ -1672,9 +1672,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
     let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
     let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let hourlyTrades = HourlyTrades.load(hourlyTradesId)
+    let hourlyTrades = HourlyTrade.load(hourlyTradesId)
     if (!hourlyTrades) {
-      hourlyTrades = new HourlyTrades(hourlyTradesId)
+      hourlyTrades = new HourlyTrade(hourlyTradesId)
       hourlyTrades.account = positionStatsEntity.account
       hourlyTrades.collateral = BigInt.fromString('0')
       hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
@@ -1688,9 +1688,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     hourlyTrades.profitLoss = hourlyTrades.profitLoss.minus(event.params.posData[6])
     hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(event.params.posData[1])
     hourlyTrades.save()
-    let dailyTrades = DailyTrades.load(dailyTradesId)
+    let dailyTrades = DailyTrade.load(dailyTradesId)
     if (!dailyTrades) {
-      dailyTrades = new DailyTrades(dailyTradesId)
+      dailyTrades = new DailyTrade(dailyTradesId)
       dailyTrades.account = positionStatsEntity.account
       dailyTrades.collateral = BigInt.fromString('0')
       dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
@@ -1704,9 +1704,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     dailyTrades.profitLoss = dailyTrades.profitLoss.minus(event.params.posData[6])
     dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(event.params.posData[1])
     dailyTrades.save()
-    let monthlyTrades = MonthlyTrades.load(monthlyTradesId)
+    let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
     if (!monthlyTrades) {
-      monthlyTrades = new MonthlyTrades(monthlyTradesId)
+      monthlyTrades = new MonthlyTrade(monthlyTradesId)
       monthlyTrades.account = positionStatsEntity.account
       monthlyTrades.collateral = BigInt.fromString('0')
       monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
@@ -1720,9 +1720,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     monthlyTrades.profitLoss = monthlyTrades.profitLoss.minus(event.params.posData[6])
     monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(event.params.posData[1])
     monthlyTrades.save()
-    let weeklyTrades = WeeklyTrades.load(weeklyTradesId)
+    let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
     if (!weeklyTrades) {
-      weeklyTrades = new WeeklyTrades(weeklyTradesId)
+      weeklyTrades = new WeeklyTrade(weeklyTradesId)
       weeklyTrades.account = positionStatsEntity.account
       weeklyTrades.collateral = BigInt.fromString('0')
       weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
@@ -1736,9 +1736,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     weeklyTrades.profitLoss = weeklyTrades.profitLoss.minus(event.params.posData[6])
     weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(event.params.posData[1])
     weeklyTrades.save()
-    let allTrades = AllTrades.load(positionStatsEntity.account)
+    let allTrades = AllTrade.load(positionStatsEntity.account)
     if (!allTrades) {
-      allTrades = new AllTrades(positionStatsEntity.account)
+      allTrades = new AllTrade(positionStatsEntity.account)
       allTrades.account = positionStatsEntity.account
       allTrades.collateral = BigInt.fromString('0')
       allTrades.tradeVolume = BigInt.fromString('0')
@@ -2000,9 +2000,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let hourlyTrades = HourlyTrades.load(hourlyTradesId)
+      let hourlyTrades = HourlyTrade.load(hourlyTradesId)
       if (!hourlyTrades) {
-        hourlyTrades = new HourlyTrades(hourlyTradesId)
+        hourlyTrades = new HourlyTrade(hourlyTradesId)
         hourlyTrades.account = positionStatsEntity.account
         hourlyTrades.collateral = BigInt.fromString('0')
         hourlyTrades.timestamp = getHourStartDate(event.block.timestamp);
@@ -2017,9 +2017,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
       hourlyTrades.lossCount += 1
       hourlyTrades.save()
-      let dailyTrades = DailyTrades.load(dailyTradesId)
+      let dailyTrades = DailyTrade.load(dailyTradesId)
       if (!dailyTrades) {
-        dailyTrades = new DailyTrades(dailyTradesId)
+        dailyTrades = new DailyTrade(dailyTradesId)
         dailyTrades.account = positionStatsEntity.account
         dailyTrades.collateral = BigInt.fromString('0')
         dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
@@ -2034,9 +2034,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
       dailyTrades.lossCount += 1
       dailyTrades.save()
-      let monthlyTrades = MonthlyTrades.load(monthlyTradesId)
+      let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
       if (!monthlyTrades) {
-        monthlyTrades = new MonthlyTrades(monthlyTradesId)
+        monthlyTrades = new MonthlyTrade(monthlyTradesId)
         monthlyTrades.account = positionStatsEntity.account      
         monthlyTrades.collateral = BigInt.fromString('0')
         monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
@@ -2051,9 +2051,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
       monthlyTrades.lossCount += 1
       monthlyTrades.save()
-      let weeklyTrades = WeeklyTrades.load(weeklyTradesId)
+      let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
       if (!weeklyTrades) {
-        weeklyTrades = new WeeklyTrades(weeklyTradesId)
+        weeklyTrades = new WeeklyTrade(weeklyTradesId)
         weeklyTrades.account = positionStatsEntity.account
         weeklyTrades.collateral = BigInt.fromString('0')
         weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
@@ -2068,9 +2068,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
       weeklyTrades.lossCount += 1
       weeklyTrades.save()
-      let allTrades = AllTrades.load(positionStatsEntity.account)
+      let allTrades = AllTrade.load(positionStatsEntity.account)
       if (!allTrades) {
-        allTrades = new AllTrades(positionStatsEntity.account)
+        allTrades = new AllTrade(positionStatsEntity.account)
         allTrades.account = positionStatsEntity.account
         allTrades.collateral = BigInt.fromString('0')
         allTrades.tradeVolume = BigInt.fromString('0')

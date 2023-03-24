@@ -422,20 +422,20 @@ export function getMonthStartDate(timestamp: BigInt): i32 {
   
 export function getAccountDailyTradesId(account: string, timestamp: BigInt): string {
     let startDate = getDayStartDate(timestamp)
-    return account.concat(DAY_INFIX).concat(BigInt.fromI32(startDate).toString())
+    return account + DAY_INFIX + BigInt.fromI32(startDate).toString()
 }
 
 export function getAccountHourlyTradesId(account: string, timestamp: BigInt): string {
     let startDate = getHourStartDate(timestamp)
-    return account.concat(HOUR_INFIX).concat(BigInt.fromI32(startDate).toString())
+    return account + HOUR_INFIX + BigInt.fromI32(startDate).toString()
 }
 
 export function getAccountWeeklyTradesId(account: string, timestamp: BigInt): string {
     let startDate = getWeekStartDate(timestamp)
-    return account.concat(WEEK_INFIX).concat(BigInt.fromI32(startDate).toString())
+    return account + WEEK_INFIX + BigInt.fromI32(startDate).toString()
 }
 
 export function getAccountMonthlyTradesId(account: string, timestamp: BigInt): string {
     let startDate = getMonthStartDate(timestamp)
-    return account.concat(MONTH_INFIX).concat(BigInt.fromI32(startDate).toString())
+    return account + MONTH_INFIX + BigInt.fromI32(startDate).toString()
 }

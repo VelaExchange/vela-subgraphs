@@ -155,6 +155,7 @@ type HourlyTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!
+  leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
   tradeVolume: BigInt!
@@ -166,6 +167,7 @@ type DailyTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!
+  leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
   tradeVolume: BigInt!
@@ -177,6 +179,7 @@ type WeeklyTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!
+  leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
   tradeVolume: BigInt!
@@ -188,6 +191,7 @@ type MonthlyTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!
+  leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
   tradeVolume: BigInt!
@@ -199,6 +203,7 @@ type AllTrade @entity {
   id: ID!
   account: String!
   collateral: BigInt!
+  leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
   tradeVolume: BigInt!

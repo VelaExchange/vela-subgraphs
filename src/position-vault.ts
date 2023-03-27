@@ -199,6 +199,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             hourlyTrades = new HourlyTrade(hourlyTradesId)
             hourlyTrades.account = positionStatsEntity.account
             hourlyTrades.collateral = BIG_NUM_ZERO
+            hourlyTrades.fees = BIG_NUM_ZERO
             hourlyTrades.timestamp = getHourStartDate(event.block.timestamp);
             hourlyTrades.tradeVolume = BIG_NUM_ZERO
             hourlyTrades.profitLoss = BIG_NUM_ZERO
@@ -222,6 +223,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             dailyTrades = new DailyTrade(dailyTradesId)
             dailyTrades.account = positionStatsEntity.account
             dailyTrades.collateral = BIG_NUM_ZERO
+            dailyTrades.fees = BIG_NUM_ZERO
             dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
             dailyTrades.tradeVolume = BIG_NUM_ZERO
             dailyTrades.profitLoss = BIG_NUM_ZERO
@@ -245,6 +247,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             monthlyTrades = new MonthlyTrade(monthlyTradesId)
             monthlyTrades.account = positionStatsEntity.account
             monthlyTrades.collateral = BIG_NUM_ZERO
+            monthlyTrades.fees = BIG_NUM_ZERO
             monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
             monthlyTrades.tradeVolume = BIG_NUM_ZERO
             monthlyTrades.profitLoss = BIG_NUM_ZERO 
@@ -268,6 +271,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             weeklyTrades = new WeeklyTrade(weeklyTradesId)
             weeklyTrades.account = positionStatsEntity.account
             weeklyTrades.collateral = BIG_NUM_ZERO
+            weeklyTrades.fees = BIG_NUM_ZERO
             weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
             weeklyTrades.tradeVolume = BIG_NUM_ZERO
             weeklyTrades.profitLoss = BIG_NUM_ZERO
@@ -291,6 +295,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
         allTrades = new AllTrade(positionStatsEntity.account)
         allTrades.account = positionStatsEntity.account
         allTrades.collateral = BIG_NUM_ZERO
+        allTrades.fees = BIG_NUM_ZERO
         allTrades.tradeVolume = BIG_NUM_ZERO
         allTrades.profitLoss = BIG_NUM_ZERO
         allTrades.winCount = 0 

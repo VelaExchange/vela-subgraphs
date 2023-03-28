@@ -269,6 +269,13 @@ type TradeVolume @entity {
   openShorts: BigInt!
 }
 
+type Volume @entity {
+  id: ID!
+  indexToken: String!
+  timestamp: Int!
+  amount: BigInt!
+}
+
 type PositionStat @entity {
   id: ID!
   account: String!

@@ -28,7 +28,8 @@ import {
     GlobalInfo,
     StrandedUSDCAmount,
     Withdraw,
-    WeeklyTrade
+    WeeklyTrade,
+    Volume
   } from "../generated/schema"
 import {
     Deposit as DepositEvent,
@@ -1157,6 +1158,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.save()
       let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
       let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
       let hourlyTrades = HourlyTrade.load(hourlyTradesId)
@@ -1188,6 +1190,15 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(hourlyTrades.collateral)
       }
       hourlyTrades.save()
+      let dailyVolume = Volume.load(dailyVolumeId)
+      if (!dailyVolume) {
+        dailyVolume = new Volume(dailyVolumeId)
+        dailyVolume.indexToken = positionStatsEntity.indexToken
+        dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+        dailyVolume.amount = BIG_NUM_ZERO
+      }
+      dailyVolume.amount = dailyVolume.amount.plus(positionStatsEntity.size)
+      dailyVolume.save()
       let dailyTrades = DailyTrade.load(dailyTradesId)
       if (!dailyTrades) {
         dailyTrades = new DailyTrade(dailyTradesId)
@@ -1476,6 +1487,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
       let hourlyTradesId = getAccountHourlyTradesId(event.params.account.toHexString(), event.block.timestamp)
+      let dailyVolumeId = getAccountDailyTradesId(event.params.indexToken.toHexString(), event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(event.params.account.toHexString(), event.block.timestamp)
       let monthlyTradesId = getAccountMonthlyTradesId(event.params.account.toHexString(), event.block.timestamp)
       let weeklyTradesId = getAccountWeeklyTradesId(event.params.account.toHexString(), event.block.timestamp)
@@ -1508,6 +1520,15 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(hourlyTrades.collateral)
       }
       hourlyTrades.save()
+      let dailyVolumes = Volume.load(dailyVolumeId)
+      if (!dailyVolumes) {
+        dailyVolumes = new Volume(dailyVolumeId)
+        dailyVolumes.indexToken = event.params.indexToken.toHexString()
+        dailyVolumes.timestamp = getDayStartDate(event.block.timestamp)
+        dailyVolumes.amount = BIG_NUM_ZERO
+      }
+      dailyVolumes.amount = dailyVolumes.amount.plus(event.params.posData[1])
+      dailyVolumes.save()
       let dailyTrades = DailyTrade.load(dailyTradesId)
       if (!dailyTrades) {
         dailyTrades = new DailyTrade(dailyTradesId)
@@ -1748,6 +1769,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     userTradeStatsEntity.tradeVolume = positionStatsEntity.size
     userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
     userTradeStatsEntity.save()
+    let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
     let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
     let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
     let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
@@ -1798,6 +1820,15 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString('1000')).div(dailyTrades.collateral)
     }
     dailyTrades.save()
+    let dailyVolumes = Volume.load(dailyVolumeId)
+    if (!dailyVolumes) {
+      dailyVolumes = new Volume(dailyVolumeId)
+      dailyVolumes.indexToken = event.params.indexToken.toHexString()
+      dailyVolumes.timestamp = getDayStartDate(event.block.timestamp)
+      dailyVolumes.amount = BIG_NUM_ZERO
+    }
+    dailyVolumes.amount = dailyVolumes.amount.plus(event.params.posData[1])
+    dailyVolumes.save()
     let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
     if (!monthlyTrades) {
       monthlyTrades = new MonthlyTrade(monthlyTradesId)
@@ -2112,6 +2143,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
       let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
       let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
@@ -2165,6 +2197,15 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString('1000')).div(dailyTrades.collateral)
       }
       dailyTrades.save()
+      let dailyVolume = Volume.load(dailyVolumeId)
+      if (!dailyVolume) {
+        dailyVolume = new Volume(dailyVolumeId)
+        dailyVolume.indexToken = positionStatsEntity.indexToken
+        dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+        dailyVolume.amount = BIG_NUM_ZERO
+      }
+      dailyVolume.amount = dailyVolume.amount.plus(positionStatsEntity.size)
+      dailyVolume.save()
       let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
       if (!monthlyTrades) {
         monthlyTrades = new MonthlyTrade(monthlyTradesId)

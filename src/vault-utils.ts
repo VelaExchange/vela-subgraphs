@@ -1170,6 +1170,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
         hourlyTrades.tradeVolume = BIG_NUM_ZERO
         hourlyTrades.profitLoss = BIG_NUM_ZERO
+        hourlyTrades.tradeCount = 0
         hourlyTrades.winCount = 0 
         hourlyTrades.lossCount = 0
         hourlyTrades.leverage = BIG_NUM_ZERO
@@ -1179,6 +1180,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       hourlyTrades.fees = hourlyTrades.fees.plus(event.params.feeUsd)
       hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(event.params.realisedPnl)
       hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
+      hourlyTrades.tradeCount = hourlyTrades.tradeCount + 1
       if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
         hourlyTrades.winCount += 1
       } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
@@ -1206,6 +1208,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         dailyTrades.collateral = BIG_NUM_ZERO
         dailyTrades.fees = BIG_NUM_ZERO
         dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
+        dailyTrades.tradeCount = 0
         dailyTrades.tradeVolume = BIG_NUM_ZERO
         dailyTrades.profitLoss = BIG_NUM_ZERO
         dailyTrades.winCount = 0 
@@ -1217,6 +1220,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyTrades.fees = dailyTrades.fees.plus(event.params.feeUsd)
       dailyTrades.profitLoss = dailyTrades.profitLoss.plus(event.params.realisedPnl)
       dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
+      dailyTrades.tradeCount = dailyTrades.tradeCount + 1
       if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
         dailyTrades.winCount += 1
       } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
@@ -1237,6 +1241,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
         monthlyTrades.tradeVolume = BIG_NUM_ZERO
         monthlyTrades.profitLoss = BIG_NUM_ZERO
+        monthlyTrades.tradeCount = 0
         monthlyTrades.winCount = 0 
         monthlyTrades.lossCount = 0
         monthlyTrades.leverage = BIG_NUM_ZERO
@@ -1246,6 +1251,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       monthlyTrades.fees = monthlyTrades.fees.plus(event.params.feeUsd)
       monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(event.params.realisedPnl)
       monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
+      monthlyTrades.tradeCount = monthlyTrades.tradeCount + 1
       if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
         monthlyTrades.winCount += 1
       } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
@@ -1265,6 +1271,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         weeklyTrades.fees = BIG_NUM_ZERO
         weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
         weeklyTrades.tradeVolume = BIG_NUM_ZERO
+        weeklyTrades.tradeCount = 0
         weeklyTrades.profitLoss = BIG_NUM_ZERO
         weeklyTrades.winCount = 0 
         weeklyTrades.lossCount = 0
@@ -1275,6 +1282,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       weeklyTrades.fees = weeklyTrades.fees.plus(event.params.feeUsd)
       weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(event.params.realisedPnl)
       weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
+      weeklyTrades.tradeCount = weeklyTrades.tradeCount + 1
       if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
         weeklyTrades.winCount += 1
       } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
@@ -1294,6 +1302,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         allTrades.fees = BIG_NUM_ZERO
         allTrades.tradeVolume = BIG_NUM_ZERO
         allTrades.profitLoss = BIG_NUM_ZERO
+        allTrades.tradeCount = 0
         allTrades.winCount = 0 
         allTrades.lossCount = 0
         allTrades.leverage = BIG_NUM_ZERO
@@ -1303,6 +1312,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       allTrades.fees = allTrades.fees.plus(event.params.feeUsd)
       allTrades.profitLoss = allTrades.profitLoss.plus(event.params.realisedPnl)
       allTrades.tradeVolume = allTrades.tradeVolume.plus(positionStatsEntity.size)
+      allTrades.tradeCount = allTrades.tradeCount + 1
       if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
         allTrades.winCount += 1
       } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
@@ -1499,7 +1509,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         hourlyTrades.fees = BIG_NUM_ZERO
         hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
         hourlyTrades.tradeVolume = BIG_NUM_ZERO
-        hourlyTrades.profitLoss = BIG_NUM_ZERO 
+        hourlyTrades.profitLoss = BIG_NUM_ZERO
+        hourlyTrades.tradeCount = 0
         hourlyTrades.winCount = 0 
         hourlyTrades.lossCount = 0
         hourlyTrades.leverage = BIG_NUM_ZERO
@@ -1509,6 +1520,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       hourlyTrades.fees = hourlyTrades.fees.plus(event.params.posData[6])
       hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(event.params.posData[1])
+      hourlyTrades.tradeCount = hourlyTrades.tradeCount + 1
       if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
         hourlyTrades.winCount += 1
       } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
@@ -1538,6 +1550,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
         dailyTrades.tradeVolume = BIG_NUM_ZERO
         dailyTrades.profitLoss = BIG_NUM_ZERO
+        dailyTrades.tradeCount = 0
         dailyTrades.winCount = 0 
         dailyTrades.lossCount = 0
         dailyTrades.leverage = BIG_NUM_ZERO
@@ -1547,6 +1560,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyTrades.fees = dailyTrades.fees.plus(event.params.posData[6])
       dailyTrades.profitLoss = dailyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(event.params.posData[1])
+      dailyTrades.tradeCount = dailyTrades.tradeCount + 1
       if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
         dailyTrades.winCount += 1
       } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
@@ -1567,6 +1581,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
         monthlyTrades.tradeVolume = BIG_NUM_ZERO
         monthlyTrades.profitLoss = BIG_NUM_ZERO
+        monthlyTrades.tradeCount = 0
         monthlyTrades.winCount = 0 
         monthlyTrades.lossCount = 0
         monthlyTrades.leverage = BIG_NUM_ZERO
@@ -1576,6 +1591,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       monthlyTrades.fees = monthlyTrades.fees.plus(event.params.posData[6])
       monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(event.params.posData[1])
+      monthlyTrades.tradeCount = monthlyTrades.tradeCount + 1
       if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
         monthlyTrades.winCount += 1
       } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
@@ -1596,6 +1612,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
         weeklyTrades.tradeVolume = BIG_NUM_ZERO
         weeklyTrades.profitLoss = BIG_NUM_ZERO
+        weeklyTrades.tradeCount = 0
         weeklyTrades.winCount = 0 
         weeklyTrades.lossCount = 0
         weeklyTrades.leverage = BIG_NUM_ZERO
@@ -1605,6 +1622,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       weeklyTrades.fees = weeklyTrades.fees.plus(event.params.posData[6])
       weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(event.params.posData[1])
+      weeklyTrades.tradeCount = weeklyTrades.tradeCount + 1
       if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
         weeklyTrades.winCount += 1
       } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
@@ -1624,6 +1642,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         allTrades.fees = BIG_NUM_ZERO
         allTrades.tradeVolume = BIG_NUM_ZERO
         allTrades.profitLoss = BIG_NUM_ZERO
+        allTrades.tradeCount = 0
         allTrades.winCount = 0 
         allTrades.lossCount = 0
         allTrades.leverage = BIG_NUM_ZERO
@@ -1633,6 +1652,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       allTrades.fees = allTrades.fees.plus(event.params.posData[6])
       allTrades.profitLoss = allTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       allTrades.tradeVolume = allTrades.tradeVolume.plus(event.params.posData[1])
+      allTrades.tradeCount = allTrades.tradeCount + 1
       if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
         allTrades.winCount += 1
       } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
@@ -1782,7 +1802,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       hourlyTrades.fees = BIG_NUM_ZERO
       hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
       hourlyTrades.tradeVolume = BIG_NUM_ZERO
-      hourlyTrades.profitLoss = BIG_NUM_ZERO 
+      hourlyTrades.profitLoss = BIG_NUM_ZERO
+      hourlyTrades.tradeCount = 0
       hourlyTrades.winCount = 0 
       hourlyTrades.lossCount = 0
       hourlyTrades.leverage = BIG_NUM_ZERO
@@ -1791,6 +1812,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     hourlyTrades.collateral = hourlyTrades.collateral.plus(realCollateral)
     hourlyTrades.fees = hourlyTrades.fees.plus(event.params.posData[6])
     hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(event.params.posData[1])
+    hourlyTrades.tradeCount = hourlyTrades.tradeCount + 1
     if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
       hourlyTrades.leverage = BIG_NUM_ZERO
     } else {
@@ -1806,6 +1828,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
       dailyTrades.tradeVolume = BIG_NUM_ZERO
       dailyTrades.profitLoss = BIG_NUM_ZERO
+      dailyTrades.tradeCount = 0
       dailyTrades.winCount = 0 
       dailyTrades.lossCount = 0
       dailyTrades.leverage = BIG_NUM_ZERO
@@ -1814,6 +1837,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     dailyTrades.collateral = dailyTrades.collateral.plus(realCollateral)
     dailyTrades.fees  = dailyTrades.fees.plus(event.params.posData[6])
     dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(event.params.posData[1])
+    dailyTrades.tradeCount = dailyTrades.tradeCount + 1
     if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
       dailyTrades.leverage = BIG_NUM_ZERO
     } else {
@@ -1838,6 +1862,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
       monthlyTrades.tradeVolume = BIG_NUM_ZERO
       monthlyTrades.profitLoss = BIG_NUM_ZERO
+      monthlyTrades.tradeCount = 0
       monthlyTrades.winCount = 0 
       monthlyTrades.lossCount = 0
       monthlyTrades.leverage = BIG_NUM_ZERO
@@ -1846,6 +1871,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     monthlyTrades.collateral = monthlyTrades.collateral.plus(realCollateral)
     monthlyTrades.fees = monthlyTrades.fees.plus(event.params.posData[6])
     monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(event.params.posData[1])
+    monthlyTrades.tradeCount = monthlyTrades.tradeCount + 1
     if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
       monthlyTrades.leverage = BIG_NUM_ZERO
     } else {
@@ -1861,6 +1887,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
       weeklyTrades.tradeVolume = BIG_NUM_ZERO
       weeklyTrades.profitLoss = BIG_NUM_ZERO
+      weeklyTrades.tradeCount = 0
       weeklyTrades.winCount = 0 
       weeklyTrades.lossCount = 0
       weeklyTrades.leverage = BIG_NUM_ZERO
@@ -1869,6 +1896,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     weeklyTrades.collateral = weeklyTrades.collateral.plus(realCollateral)
     weeklyTrades.fees = weeklyTrades.fees.plus(event.params.posData[6])
     weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(event.params.posData[1])
+    weeklyTrades.tradeCount = weeklyTrades.tradeCount + 1
     if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
       weeklyTrades.leverage = BIG_NUM_ZERO
     } else {
@@ -1883,6 +1911,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       allTrades.fees = BIG_NUM_ZERO
       allTrades.tradeVolume = BIG_NUM_ZERO
       allTrades.profitLoss = BIG_NUM_ZERO
+      allTrades.tradeCount = 0
       allTrades.winCount = 0 
       allTrades.lossCount = 0
       allTrades.leverage = BIG_NUM_ZERO
@@ -1891,6 +1920,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     allTrades.collateral = allTrades.collateral.plus(realCollateral)
     allTrades.fees = allTrades.fees.plus(event.params.posData[6])
     allTrades.tradeVolume = allTrades.tradeVolume.plus(event.params.posData[1])
+    allTrades.tradeCount = allTrades.tradeCount + 1
     if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
       allTrades.leverage = BIG_NUM_ZERO
     } else {
@@ -2156,6 +2186,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         hourlyTrades.timestamp = getHourStartDate(event.block.timestamp);
         hourlyTrades.tradeVolume = BIG_NUM_ZERO
         hourlyTrades.profitLoss = BIG_NUM_ZERO
+        hourlyTrades.tradeCount = 0
         hourlyTrades.winCount = 0 
         hourlyTrades.lossCount = 0
         hourlyTrades.leverage = BIG_NUM_ZERO
@@ -2165,6 +2196,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       hourlyTrades.fees = hourlyTrades.fees.plus(event.params.feeUsd)
       hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
+      hourlyTrades.tradeCount = hourlyTrades.tradeCount + 1
       hourlyTrades.lossCount += 1
       if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
         hourlyTrades.leverage = BIG_NUM_ZERO
@@ -2181,6 +2213,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
         dailyTrades.tradeVolume = BIG_NUM_ZERO
         dailyTrades.profitLoss = BIG_NUM_ZERO
+        dailyTrades.tradeCount = 0
         dailyTrades.winCount = 0 
         dailyTrades.lossCount = 0
         dailyTrades.leverage = BIG_NUM_ZERO
@@ -2190,6 +2223,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyTrades.fees = dailyTrades.fees.plus(event.params.feeUsd)
       dailyTrades.profitLoss = dailyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
+      dailyTrades.tradeCount += 1
       dailyTrades.lossCount += 1
       if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
         dailyTrades.leverage = BIG_NUM_ZERO
@@ -2215,6 +2249,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
         monthlyTrades.tradeVolume = BIG_NUM_ZERO
         monthlyTrades.profitLoss = BIG_NUM_ZERO
+        monthlyTrades.tradeCount = 0
         monthlyTrades.winCount = 0 
         monthlyTrades.lossCount = 0
         monthlyTrades.leverage = BIG_NUM_ZERO
@@ -2225,6 +2260,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
       monthlyTrades.lossCount += 1
+      monthlyTrades.tradeCount += 1
       if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
         monthlyTrades.leverage = BIG_NUM_ZERO
       } else {
@@ -2240,6 +2276,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
         weeklyTrades.tradeVolume = BIG_NUM_ZERO
         weeklyTrades.profitLoss = BIG_NUM_ZERO
+        weeklyTrades.tradeCount = 0
         weeklyTrades.winCount = 0 
         weeklyTrades.lossCount = 0
         weeklyTrades.leverage = BIG_NUM_ZERO
@@ -2250,6 +2287,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
       weeklyTrades.lossCount += 1
+      weeklyTrades.tradeCount += 1
       if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
         weeklyTrades.leverage = BIG_NUM_ZERO
       } else {
@@ -2264,6 +2302,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         allTrades.fees = BIG_NUM_ZERO
         allTrades.tradeVolume = BIG_NUM_ZERO
         allTrades.profitLoss = BIG_NUM_ZERO
+        allTrades.tradeCount = 0
         allTrades.winCount = 0 
         allTrades.lossCount = 0
         allTrades.leverage = BIG_NUM_ZERO
@@ -2274,6 +2313,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       allTrades.profitLoss = allTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       allTrades.tradeVolume = allTrades.tradeVolume.plus(positionStatsEntity.size)
       allTrades.lossCount += 1
+      allTrades.tradeCount += 1
       if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
         allTrades.leverage = BIG_NUM_ZERO
       } else {

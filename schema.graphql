@@ -159,6 +159,7 @@ type HourlyTrade @entity {
   leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
+  tradeCount: Int!
   tradeVolume: BigInt!
   timestamp: Int!
   winCount: Int!
@@ -172,6 +173,7 @@ type DailyTrade @entity {
   leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
+  tradeCount: Int!
   tradeVolume: BigInt!
   timestamp: Int!
   winCount: Int!
@@ -185,6 +187,7 @@ type WeeklyTrade @entity {
   leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
+  tradeCount: Int!
   tradeVolume: BigInt!
   timestamp: Int!
   winCount: Int!
@@ -198,6 +201,7 @@ type MonthlyTrade @entity {
   leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
+  tradeCount: Int!
   tradeVolume: BigInt!
   timestamp: Int!
   winCount: Int!
@@ -211,6 +215,7 @@ type AllTrade @entity {
   leverage: BigInt!
   lossCount: Int!
   profitLoss: BigInt!
+  tradeCount: Int!
   tradeVolume: BigInt!
   winCount: Int!
 }

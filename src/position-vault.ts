@@ -203,6 +203,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             hourlyTrades.timestamp = getHourStartDate(event.block.timestamp);
             hourlyTrades.tradeVolume = BIG_NUM_ZERO
             hourlyTrades.profitLoss = BIG_NUM_ZERO
+            hourlyTrades.tradeCount = 0
             hourlyTrades.winCount = 0 
             hourlyTrades.lossCount = 0
             hourlyTrades.leverage = BIG_NUM_ZERO
@@ -227,6 +228,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
             dailyTrades.tradeVolume = BIG_NUM_ZERO
             dailyTrades.profitLoss = BIG_NUM_ZERO
+            dailyTrades.tradeCount = 0
             dailyTrades.winCount = 0 
             dailyTrades.lossCount = 0
             dailyTrades.leverage = BIG_NUM_ZERO
@@ -250,7 +252,8 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             monthlyTrades.fees = BIG_NUM_ZERO
             monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
             monthlyTrades.tradeVolume = BIG_NUM_ZERO
-            monthlyTrades.profitLoss = BIG_NUM_ZERO 
+            monthlyTrades.profitLoss = BIG_NUM_ZERO
+            monthlyTrades.tradeCount = 0
             monthlyTrades.winCount = 0 
             monthlyTrades.lossCount = 0
             monthlyTrades.leverage = BIG_NUM_ZERO
@@ -275,6 +278,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
             weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
             weeklyTrades.tradeVolume = BIG_NUM_ZERO
             weeklyTrades.profitLoss = BIG_NUM_ZERO
+            weeklyTrades.tradeCount = 0
             weeklyTrades.winCount = 0 
             weeklyTrades.lossCount = 0
             weeklyTrades.leverage = BIG_NUM_ZERO
@@ -298,6 +302,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
         allTrades.fees = BIG_NUM_ZERO
         allTrades.tradeVolume = BIG_NUM_ZERO
         allTrades.profitLoss = BIG_NUM_ZERO
+        allTrades.tradeCount = 0
         allTrades.winCount = 0 
         allTrades.lossCount = 0
         allTrades.leverage = BIG_NUM_ZERO

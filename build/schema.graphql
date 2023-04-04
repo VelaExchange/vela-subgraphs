@@ -96,10 +96,12 @@ type GlobalInfo @entity {
   token: String!
   realisedPnl: BigInt!
   unRealisedPnl: BigInt!
+  volume: BigInt!
   fees: BigInt!
 }
 type DailyGlobalInfo @entity {
   id: ID!
+  timestamp: Int!
   fees: BigInt!
   tradeVolume: BigInt!
   openInterests: BigInt!
@@ -130,6 +132,7 @@ type BaseGlobalInfo @entity {
 
 type OpenInterest @entity {
   id: ID!
+  token: String!
   amount: BigInt!
 }
 
@@ -266,12 +269,21 @@ type LiquidatePosition @entity {
 
 type TradeVolume @entity {
   id: ID!
+  account: String!
   size: BigInt!
   vusdBalance: BigInt!
   collateralUsage: BigInt!
   marginUsage: BigInt!
   openLongs: BigInt!
   openShorts: BigInt!
+}
+
+type HourlyVolume @entity {
+  id: ID!
+  amount: BigInt!
+  indexToken: String!
+  timestamp: Int!
+  tradeCounts: Int!
 }
 
 type Volume @entity {

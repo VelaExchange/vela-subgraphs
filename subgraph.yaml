@@ -154,3 +154,25 @@ dataSources:
         - event: UpdateTriggerStatus(bytes32,uint8)
           handler: handleUpdateTriggerStatus
       file: ./src/vault-utils.ts
+  - kind: ethereum
+    name: VUSD
+    network: arbitrum-one
+    source:
+      address: "0x79BAbB5CB4477ee39bfd75408557844750E9155E"
+      abi: VUSD
+      startBlock: 56425299
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TradeVolume
+      abis:
+        - name: VUSD
+          file: ./abis/VUSD.json
+      eventHandlers:
+        - event: Mint(indexed address,uint256)
+          handler: handleMint
+        - event: Burn(indexed address,uint256)
+          handler: handleBurn
+      file: ./src/vault-utils.ts

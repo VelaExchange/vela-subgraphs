@@ -324,6 +324,7 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
         let tradeVolume = TradeVolume.load(positionStatsEntity.account);
         if (!tradeVolume) {
           tradeVolume = new TradeVolume(positionStatsEntity.account)
+          tradeVolume.account = positionStatsEntity.account
           tradeVolume.size = BIG_NUM_ZERO
           tradeVolume.openLongs = BIG_NUM_ZERO
           tradeVolume.openShorts = BIG_NUM_ZERO
@@ -333,10 +334,8 @@ export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateralEvent): 
         }
         if (event.params.isPlus) {
             tradeVolume.collateralUsage = tradeVolume.collateralUsage.plus(event.params.amount)
-            tradeVolume.vusdBalance = tradeVolume.vusdBalance.minus(event.params.amount)
         } else {
             tradeVolume.collateralUsage = tradeVolume.collateralUsage.minus(event.params.amount)
-            tradeVolume.vusdBalance = tradeVolume.vusdBalance.plus(event.params.amount)
         }
         tradeVolume.save()
     }

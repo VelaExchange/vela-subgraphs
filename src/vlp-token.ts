@@ -1,5 +1,3 @@
-import { BigDecimal, ethereum } from "@graphprotocol/graph-ts";
-
 import { Transfer } from "../generated/VelaToken/ERC20";
 import {
   VLPInfo,

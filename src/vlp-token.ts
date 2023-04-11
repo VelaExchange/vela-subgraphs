@@ -1,13 +1,20 @@
-import { Transfer } from "../generated/VelaToken/ERC20";
+import { Transfer as TransferEvent } from "../generated/VelaToken/ERC20";
 import {
   VLPInfo,
+  Transfer,
 } from "../generated/schema";
 import { BIG_NUM_ZERO } from "./constants";
 
 const zeroAddress = '0x0000000000000000000000000000000000000000';
+const deadAddress = '0x000000000000000000000000000000000000dead'
 const tokenFarm = '0xfc527781ae973f8131dc26dddb2adb080c1c1f59'
-export function handleTransfer(event: Transfer): void {
-  if (event.params.from.toHexString() != tokenFarm || event.params.to.toHexString() != zeroAddress) {
+export function handleTransfer(event: TransferEvent): void {
+  let transfer = new Transfer(event.transaction.hash.toHexString())
+  transfer.from = event.params.from.toHexString()
+  transfer.to = event.params.to.toHexString()
+  transfer.value = event.params.value
+  transfer.save()
+  if (event.params.from.toHexString() != tokenFarm || !(event.params.to.toHexString() == zeroAddress || event.params.to.toHexString() == deadAddress)) {
     if (event.params.from.toHexString() == zeroAddress) {
       let vlpInfo = VLPInfo.load(event.params.to.toHexString());
       if (!vlpInfo) {
@@ -59,7 +66,7 @@ export function handleTransfer(event: Transfer): void {
     }
     vlpInfo.farmBalance = vlpInfo.farmBalance.minus(event.params.value)
     vlpInfo.save()
-  } else if (event.params.to.toHexString() == zeroAddress) {
+  } else if (event.params.to.toHexString() == deadAddress || event.params.to.toHexString() == zeroAddress) {
     let fromVlpInfo = VLPInfo.load(event.params.from.toHexString());
     if (!fromVlpInfo) {
       fromVlpInfo = new VLPInfo(event.params.from.toHexString());

@@ -4,3 +4,10 @@ type VLPInfo @entity {
   balance: BigInt!
   farmBalance: BigInt!
 }
+
+type Transfer @entity {
+  id: ID!
+  from: String!
+  to: String!
+  value: BigInt!
+}

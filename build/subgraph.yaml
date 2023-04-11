@@ -15,6 +15,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - VLPInfo
+        - Transfer
       abis:
         - name: ERC20
           file: VelaToken/abis/ERC20.json

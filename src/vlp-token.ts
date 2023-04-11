@@ -13,6 +13,7 @@ export function handleTransfer(event: TransferEvent): void {
   transfer.from = event.params.from.toHexString()
   transfer.to = event.params.to.toHexString()
   transfer.value = event.params.value
+  transfer.timestamp = event.block.timestamp.toI32()
   transfer.save()
   if (event.params.from.toHexString() != tokenFarm || !(event.params.to.toHexString() == zeroAddress || event.params.to.toHexString() == deadAddress)) {
     if (event.params.from.toHexString() == zeroAddress) {

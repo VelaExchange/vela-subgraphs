@@ -967,81 +967,75 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
   }
 
   export function handleMint(event: MintEvent): void {
-    let tradeVolume = TradeVolume.load(event.params.beneficiary.toHexString());
-    if (!tradeVolume) {
-      tradeVolume = new TradeVolume(event.params.beneficiary.toHexString())
-      tradeVolume.account = event.params.beneficiary.toHexString()
-      tradeVolume.size = BIG_NUM_ZERO
-      tradeVolume.openLongs = BIG_NUM_ZERO
-      tradeVolume.openShorts = BIG_NUM_ZERO
-      tradeVolume.collateralUsage = BIG_NUM_ZERO
-      tradeVolume.marginUsage = BIG_NUM_ZERO
-      tradeVolume.vusdBalance = BIG_NUM_ZERO
+    if (event.block.number.toI32() < 79518835) {
+      let tradeVolume = TradeVolume.load(event.params.beneficiary.toHexString());
+      if (!tradeVolume) {
+        tradeVolume = new TradeVolume(event.params.beneficiary.toHexString())
+        tradeVolume.account = event.params.beneficiary.toHexString()
+        tradeVolume.size = BIG_NUM_ZERO
+        tradeVolume.openLongs = BIG_NUM_ZERO
+        tradeVolume.openShorts = BIG_NUM_ZERO
+        tradeVolume.collateralUsage = BIG_NUM_ZERO
+        tradeVolume.marginUsage = BIG_NUM_ZERO
+        tradeVolume.vusdBalance = BIG_NUM_ZERO
+      }
+      tradeVolume.vusdBalance = tradeVolume.vusdBalance.plus(event.params.value)
+      tradeVolume.save()
     }
-    tradeVolume.vusdBalance = tradeVolume.vusdBalance.plus(event.params.value)
-    tradeVolume.save()
   }
 
   export function handleBurn(event: BurnEvent): void {
-    let tradeVolume = TradeVolume.load(event.params.account.toHexString());
-    if (!tradeVolume) {
-      tradeVolume = new TradeVolume(event.params.account.toHexString())
-      tradeVolume.account = event.params.account.toHexString()
-      tradeVolume.size = BIG_NUM_ZERO
-      tradeVolume.openLongs = BIG_NUM_ZERO
-      tradeVolume.openShorts = BIG_NUM_ZERO
-      tradeVolume.collateralUsage = BIG_NUM_ZERO
-      tradeVolume.marginUsage = BIG_NUM_ZERO
-      tradeVolume.vusdBalance = BIG_NUM_ZERO
+    if (event.block.number.toI32() < 79518835) {
+      let tradeVolume = TradeVolume.load(event.params.account.toHexString());
+      if (!tradeVolume) {
+        tradeVolume = new TradeVolume(event.params.account.toHexString())
+        tradeVolume.account = event.params.account.toHexString()
+        tradeVolume.size = BIG_NUM_ZERO
+        tradeVolume.openLongs = BIG_NUM_ZERO
+        tradeVolume.openShorts = BIG_NUM_ZERO
+        tradeVolume.collateralUsage = BIG_NUM_ZERO
+        tradeVolume.marginUsage = BIG_NUM_ZERO
+        tradeVolume.vusdBalance = BIG_NUM_ZERO
+      }
+      tradeVolume.vusdBalance = tradeVolume.vusdBalance.minus(event.params.value)
+      tradeVolume.save()
     }
-    tradeVolume.vusdBalance = tradeVolume.vusdBalance.minus(event.params.value)
-    tradeVolume.save()
   }
   
   export function handleStake(event: StakeEvent): void {
-    let vlpMint = new Mint(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
-    vlpMint.account = event.params.account.toHexString()
-    vlpMint.timestamp = event.block.timestamp.toI32()
-    vlpMint.token = event.params.token.toHexString()
-    vlpMint.usdAmount = event.params.amount 
-    vlpMint.vlpAmount = event.params.mintAmount
-    vlpMint.save()
-    let baseGlobalInfo = BaseGlobalInfo.load("global")
-    if (!baseGlobalInfo) {
-      baseGlobalInfo = new BaseGlobalInfo("global")
-      baseGlobalInfo.accumulatedSUM = BIG_NUM_ZERO
-      baseGlobalInfo.totalVLP = BIG_NUM_ZERO
-      baseGlobalInfo.totalUSDC = BIG_NUM_ZERO
-      baseGlobalInfo.hyper_ended = false
-    }
-    let baseUserInfo = BaseUserInfo.load(event.params.account.toHexString())
-    if (!baseUserInfo) {
-      baseUserInfo = new BaseUserInfo(event.params.account.toHexString())
-      baseUserInfo.baseVela = BIG_NUM_ZERO
-      baseUserInfo.baseRatio = BIG_NUM_ZERO
-      baseUserInfo.baseVLP = BIG_NUM_ZERO
-      baseUserInfo.minimumVLP = BIG_NUM_ZERO
-      baseUserInfo.mintedVLP = BIG_NUM_ZERO
-    }
-    if (!baseGlobalInfo.hyper_ended && baseGlobalInfo.totalVLP.le(MAX_VLP_FOR_Hyper)) {
-      let rewardAmount = BIG_NUM_ZERO
-      baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
-      baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
-      baseUserInfo.baseVLP = baseUserInfo.baseVLP.plus(event.params.mintAmount)
-      let rewardTier = getRewardTier(event.params.mintAmount, baseGlobalInfo.totalVLP)
-      if (add_hyper_whitelist.includes(event.params.account.toHexString())) {
-        let toTier = getTier1ForAdd(event.params.account.toHexString())
-        rewardAmount = getRewardAmount2(toTier)
-        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
-        baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
-        baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
-        baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
-        baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
-        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
-      } else if (remove_hyper_whitelist.includes(event.params.account.toHexString())) {
-        let fromTier = getTier1ForRemove(event.params.account.toHexString())
-        if (fromTier == rewardTier) {
-          let toTier = getTier2ForRemove(event.params.account.toHexString())
+    if (event.block.number.toI32() < 79518835) {
+      let vlpMint = new Mint(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
+      vlpMint.account = event.params.account.toHexString()
+      vlpMint.timestamp = event.block.timestamp.toI32()
+      vlpMint.token = event.params.token.toHexString()
+      vlpMint.usdAmount = event.params.amount 
+      vlpMint.vlpAmount = event.params.mintAmount
+      vlpMint.save()
+      let baseGlobalInfo = BaseGlobalInfo.load("global")
+      if (!baseGlobalInfo) {
+        baseGlobalInfo = new BaseGlobalInfo("global")
+        baseGlobalInfo.accumulatedSUM = BIG_NUM_ZERO
+        baseGlobalInfo.totalVLP = BIG_NUM_ZERO
+        baseGlobalInfo.totalUSDC = BIG_NUM_ZERO
+        baseGlobalInfo.hyper_ended = false
+      }
+      let baseUserInfo = BaseUserInfo.load(event.params.account.toHexString())
+      if (!baseUserInfo) {
+        baseUserInfo = new BaseUserInfo(event.params.account.toHexString())
+        baseUserInfo.baseVela = BIG_NUM_ZERO
+        baseUserInfo.baseRatio = BIG_NUM_ZERO
+        baseUserInfo.baseVLP = BIG_NUM_ZERO
+        baseUserInfo.minimumVLP = BIG_NUM_ZERO
+        baseUserInfo.mintedVLP = BIG_NUM_ZERO
+      }
+      if (!baseGlobalInfo.hyper_ended && baseGlobalInfo.totalVLP.le(MAX_VLP_FOR_Hyper)) {
+        let rewardAmount = BIG_NUM_ZERO
+        baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
+        baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
+        baseUserInfo.baseVLP = baseUserInfo.baseVLP.plus(event.params.mintAmount)
+        let rewardTier = getRewardTier(event.params.mintAmount, baseGlobalInfo.totalVLP)
+        if (add_hyper_whitelist.includes(event.params.account.toHexString())) {
+          let toTier = getTier1ForAdd(event.params.account.toHexString())
           rewardAmount = getRewardAmount2(toTier)
           baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
           baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
@@ -1049,6 +1043,26 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
           baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
           baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+        } else if (remove_hyper_whitelist.includes(event.params.account.toHexString())) {
+          let fromTier = getTier1ForRemove(event.params.account.toHexString())
+          if (fromTier == rewardTier) {
+            let toTier = getTier2ForRemove(event.params.account.toHexString())
+            rewardAmount = getRewardAmount2(toTier)
+            baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+            baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
+            baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
+            baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
+            baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
+            baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+          } else {
+            rewardAmount = getRewardAmount2(rewardTier)
+            baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+            baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
+            baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
+            baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
+            baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
+            baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+          }
         } else {
           rewardAmount = getRewardAmount2(rewardTier)
           baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
@@ -1058,77 +1072,402 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
           baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
         }
+        if (baseGlobalInfo.totalVLP.ge(MAX_VLP_FOR_Hyper)) {
+          baseGlobalInfo.hyper_ended = true
+        }
       } else {
-        rewardAmount = getRewardAmount2(rewardTier)
-        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
-        baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
-        baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
+        baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
+        baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
         baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
-        baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
-        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
       }
-      if (baseGlobalInfo.totalVLP.ge(MAX_VLP_FOR_Hyper)) {
-        baseGlobalInfo.hyper_ended = true
-      }
-    } else {
-      baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
-      baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
-      baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
+      baseGlobalInfo.save()
+      baseUserInfo.save()
     }
-    baseGlobalInfo.save()
-    baseUserInfo.save()
   }
 
   export function handleUnstake(event: UnstakeEvent): void {
-    let vlpRedeem = new Redeem(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
-    vlpRedeem.account = event.params.account.toHexString()
-    vlpRedeem.timestamp = event.block.timestamp.toI32()
-    vlpRedeem.token = event.params.token.toHexString()
-    vlpRedeem.usdAmount = event.params.amountOut 
-    vlpRedeem.vlpAmount = event.params.vlpAmount
-    vlpRedeem.save()
-    let baseGlobalInfo = BaseGlobalInfo.load("global")
-    if (!baseGlobalInfo) {
-      baseGlobalInfo = new BaseGlobalInfo("global")
-      baseGlobalInfo.accumulatedSUM = BIG_NUM_ZERO
-      baseGlobalInfo.totalVLP = BIG_NUM_ZERO
-      baseGlobalInfo.totalUSDC = BIG_NUM_ZERO
-      baseGlobalInfo.hyper_ended = false
-    }
-    let baseUserInfo = BaseUserInfo.load(event.params.account.toHexString())
-    if (!baseUserInfo) {
-      baseUserInfo = new BaseUserInfo(event.params.account.toHexString())
-      baseUserInfo.baseVela = BIG_NUM_ZERO
-      baseUserInfo.baseRatio = BIG_NUM_ZERO
-      baseUserInfo.baseVLP = BIG_NUM_ZERO
-      baseUserInfo.minimumVLP = BIG_NUM_ZERO
-      baseUserInfo.mintedVLP = BIG_NUM_ZERO
-    }
-    if (baseGlobalInfo.hyper_ended) {
-      baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.minus(event.params.vlpAmount)
-      baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.minus(event.params.amountOut)
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
-      baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.minus(event.params.vlpAmount)
-      if (baseUserInfo.mintedVLP.lt(baseUserInfo.minimumVLP)) {
-        baseUserInfo.minimumVLP = baseUserInfo.mintedVLP
+    if (event.block.number.toI32() < 79518835) {
+      let vlpRedeem = new Redeem(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
+      vlpRedeem.account = event.params.account.toHexString()
+      vlpRedeem.timestamp = event.block.timestamp.toI32()
+      vlpRedeem.token = event.params.token.toHexString()
+      vlpRedeem.usdAmount = event.params.amountOut 
+      vlpRedeem.vlpAmount = event.params.vlpAmount
+      vlpRedeem.save()
+      let baseGlobalInfo = BaseGlobalInfo.load("global")
+      if (!baseGlobalInfo) {
+        baseGlobalInfo = new BaseGlobalInfo("global")
+        baseGlobalInfo.accumulatedSUM = BIG_NUM_ZERO
+        baseGlobalInfo.totalVLP = BIG_NUM_ZERO
+        baseGlobalInfo.totalUSDC = BIG_NUM_ZERO
+        baseGlobalInfo.hyper_ended = false
       }
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
-    } else {
-      baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.minus(event.params.vlpAmount)
-      baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.minus(event.params.amountOut)
+      let baseUserInfo = BaseUserInfo.load(event.params.account.toHexString())
+      if (!baseUserInfo) {
+        baseUserInfo = new BaseUserInfo(event.params.account.toHexString())
+        baseUserInfo.baseVela = BIG_NUM_ZERO
+        baseUserInfo.baseRatio = BIG_NUM_ZERO
+        baseUserInfo.baseVLP = BIG_NUM_ZERO
+        baseUserInfo.minimumVLP = BIG_NUM_ZERO
+        baseUserInfo.mintedVLP = BIG_NUM_ZERO
+      }
+      if (baseGlobalInfo.hyper_ended) {
+        baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.minus(event.params.vlpAmount)
+        baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.minus(event.params.amountOut)
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+        baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.minus(event.params.vlpAmount)
+        if (baseUserInfo.mintedVLP.lt(baseUserInfo.minimumVLP)) {
+          baseUserInfo.minimumVLP = baseUserInfo.mintedVLP
+        }
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+      } else {
+        baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.minus(event.params.vlpAmount)
+        baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.minus(event.params.amountOut)
+      }
+      baseGlobalInfo.save()
+      baseUserInfo.save()
     }
-    baseGlobalInfo.save()
-    baseUserInfo.save()
   }
 
   export function handleClosePosition(event: ClosePositionEvent): void {
-    let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
-    let closePositionEntity = new ClosePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
-    if (positionStatsEntity) {
-      let tradeVolumeEntity = TradeVolume.load(positionStatsEntity.account);
+    if (event.block.number.toI32() < 79518835) {
+      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+      let closePositionEntity = new ClosePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
+      if (positionStatsEntity) {
+        let tradeVolumeEntity = TradeVolume.load(positionStatsEntity.account);
+        if (!tradeVolumeEntity) {
+          tradeVolumeEntity = new TradeVolume(positionStatsEntity.account)
+          tradeVolumeEntity.account = positionStatsEntity.account
+          tradeVolumeEntity.size = BIG_NUM_ZERO
+          tradeVolumeEntity.openLongs = BIG_NUM_ZERO
+          tradeVolumeEntity.openShorts = BIG_NUM_ZERO
+          tradeVolumeEntity.collateralUsage = BIG_NUM_ZERO
+          tradeVolumeEntity.marginUsage = BIG_NUM_ZERO
+          tradeVolumeEntity.vusdBalance = BIG_NUM_ZERO
+          tradeVolumeEntity.save()
+        }
+        if (positionStatsEntity.isLong) {
+          tradeVolumeEntity.openLongs = tradeVolumeEntity.openLongs.minus(positionStatsEntity.size)
+        } else {
+          tradeVolumeEntity.openShorts = tradeVolumeEntity.openShorts.minus(positionStatsEntity.size)
+        }
+        tradeVolumeEntity.collateralUsage = tradeVolumeEntity.collateralUsage.minus(positionStatsEntity.collateral)
+        tradeVolumeEntity.marginUsage = tradeVolumeEntity.marginUsage.plus(event.params.feeUsd)
+        tradeVolumeEntity.size = tradeVolumeEntity.size.plus(positionStatsEntity.size)
+        tradeVolumeEntity.save()
+        closePositionEntity.account = positionStatsEntity.account
+        closePositionEntity.indexToken = positionStatsEntity.indexToken
+        closePositionEntity.isLong = positionStatsEntity.isLong
+        closePositionEntity.posId = positionStatsEntity.posId
+        let userTradeStatsEntity = new UserTradeStat(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
+        userTradeStatsEntity.key = event.params.key.toHexString()
+        userTradeStatsEntity.account = positionStatsEntity.account
+        userTradeStatsEntity.actionType = "CLOSE_POSITION"
+        userTradeStatsEntity.amount = BIG_NUM_ZERO
+        userTradeStatsEntity.averagePrice = positionStatsEntity.averagePrice
+        userTradeStatsEntity.collateral = positionStatsEntity.collateral
+        userTradeStatsEntity.createdAt = event.block.timestamp.toI32()
+        userTradeStatsEntity.fees = event.params.feeUsd
+        userTradeStatsEntity.indexToken = positionStatsEntity.indexToken
+        userTradeStatsEntity.isLong = positionStatsEntity.isLong
+        userTradeStatsEntity.isPlus = true
+        userTradeStatsEntity.isWin = true
+        userTradeStatsEntity.markPrice = event.params.markPrice
+        userTradeStatsEntity.posId = positionStatsEntity.posId
+        userTradeStatsEntity.positionType = positionStatsEntity.positionType
+        userTradeStatsEntity.profitLoss = event.params.realisedPnl
+        userTradeStatsEntity.tradeVolume = positionStatsEntity.size
+        userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
+        userTradeStatsEntity.save()
+        let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
+        let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+        let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
+        let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
+        let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
+        let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
+        let hourlyTrades = HourlyTrade.load(hourlyTradesId)
+        if (!hourlyTrades) {
+          hourlyTrades = new HourlyTrade(hourlyTradesId)
+          hourlyTrades.account = positionStatsEntity.account
+          hourlyTrades.collateral = BIG_NUM_ZERO
+          hourlyTrades.fees = BIG_NUM_ZERO
+          hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
+          hourlyTrades.tradeVolume = BIG_NUM_ZERO
+          hourlyTrades.profitLoss = BIG_NUM_ZERO
+          hourlyTrades.tradeCount = 0
+          hourlyTrades.winCount = 0 
+          hourlyTrades.lossCount = 0
+          hourlyTrades.leverage = BIG_NUM_ZERO
+          hourlyTrades.save()
+        }
+        hourlyTrades.collateral = hourlyTrades.collateral.plus(positionStatsEntity.collateral)
+        hourlyTrades.fees = hourlyTrades.fees.plus(event.params.feeUsd)
+        hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(event.params.realisedPnl)
+        hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
+        hourlyTrades.tradeCount += 1
+        if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
+          hourlyTrades.winCount += 1
+        } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
+          hourlyTrades.lossCount += 1
+        }
+        if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          hourlyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(hourlyTrades.collateral)
+        }
+        hourlyTrades.save()
+        let dailyVolume = Volume.load(dailyVolumeId)
+        if (!dailyVolume) {
+          dailyVolume = new Volume(dailyVolumeId)
+          dailyVolume.indexToken = positionStatsEntity.indexToken
+          dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+          dailyVolume.amount = BIG_NUM_ZERO
+        }
+        dailyVolume.amount = dailyVolume.amount.plus(positionStatsEntity.size)
+        dailyVolume.save()
+        let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
+        if (!hourlyVolume) {
+          hourlyVolume = new HourlyVolume(hourlyVolumeId)
+          hourlyVolume.amount = BIG_NUM_ZERO
+          hourlyVolume.indexToken = positionStatsEntity.indexToken
+          hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
+          hourlyVolume.tradeCounts = 0
+        }
+        hourlyVolume.amount = hourlyVolume.amount.plus(positionStatsEntity.size)
+        hourlyVolume.tradeCounts += 1
+        hourlyVolume.save()
+        let dailyTrades = DailyTrade.load(dailyTradesId)
+        if (!dailyTrades) {
+          dailyTrades = new DailyTrade(dailyTradesId)
+          dailyTrades.account = positionStatsEntity.account
+          dailyTrades.collateral = BIG_NUM_ZERO
+          dailyTrades.fees = BIG_NUM_ZERO
+          dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
+          dailyTrades.tradeVolume = BIG_NUM_ZERO
+          dailyTrades.profitLoss = BIG_NUM_ZERO
+          dailyTrades.tradeCount = 0
+          dailyTrades.winCount = 0 
+          dailyTrades.lossCount = 0
+          dailyTrades.leverage = BIG_NUM_ZERO
+          dailyTrades.save()
+        }
+        dailyTrades.collateral = dailyTrades.collateral.plus(positionStatsEntity.collateral)
+        dailyTrades.fees = dailyTrades.fees.plus(event.params.feeUsd)
+        dailyTrades.profitLoss = dailyTrades.profitLoss.plus(event.params.realisedPnl)
+        dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
+        dailyTrades.tradeCount += 1
+        if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
+          dailyTrades.winCount += 1
+        } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
+          dailyTrades.lossCount += 1
+        }
+        if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          dailyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString('1000')).div(dailyTrades.collateral)
+        }
+        dailyTrades.save()
+        let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
+        if (!monthlyTrades) {
+          monthlyTrades = new MonthlyTrade(monthlyTradesId)
+          monthlyTrades.account = positionStatsEntity.account
+          monthlyTrades.collateral = BIG_NUM_ZERO
+          monthlyTrades.fees = BIG_NUM_ZERO
+          monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
+          monthlyTrades.tradeVolume = BIG_NUM_ZERO
+          monthlyTrades.profitLoss = BIG_NUM_ZERO
+          monthlyTrades.tradeCount = 0
+          monthlyTrades.winCount = 0 
+          monthlyTrades.lossCount = 0
+          monthlyTrades.leverage = BIG_NUM_ZERO
+          monthlyTrades.save()
+        }
+        monthlyTrades.collateral = monthlyTrades.collateral.plus(positionStatsEntity.collateral)
+        monthlyTrades.fees = monthlyTrades.fees.plus(event.params.feeUsd)
+        monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(event.params.realisedPnl)
+        monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
+        monthlyTrades.tradeCount += 1
+        if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
+          monthlyTrades.winCount += 1
+        } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
+          monthlyTrades.lossCount += 1
+        }
+        if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          monthlyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          monthlyTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(monthlyTrades.collateral)
+        }
+        monthlyTrades.save()
+        let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
+        if (!weeklyTrades) {
+          weeklyTrades = new WeeklyTrade(weeklyTradesId)
+          weeklyTrades.account = positionStatsEntity.account
+          weeklyTrades.collateral = BIG_NUM_ZERO
+          weeklyTrades.fees = BIG_NUM_ZERO
+          weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
+          weeklyTrades.tradeVolume = BIG_NUM_ZERO
+          weeklyTrades.profitLoss = BIG_NUM_ZERO
+          weeklyTrades.tradeCount = 0
+          weeklyTrades.winCount = 0 
+          weeklyTrades.lossCount = 0
+          weeklyTrades.leverage = BIG_NUM_ZERO
+          weeklyTrades.save()
+        }
+        weeklyTrades.collateral = weeklyTrades.collateral.plus(positionStatsEntity.collateral)
+        weeklyTrades.fees = weeklyTrades.fees.plus(event.params.feeUsd)
+        weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(event.params.realisedPnl)
+        weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
+        weeklyTrades.tradeCount += 1
+        if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
+          weeklyTrades.winCount += 1
+        } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
+          weeklyTrades.lossCount += 1
+        }
+        if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          weeklyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          weeklyTrades.leverage = weeklyTrades.tradeVolume.times(BigInt.fromString('1000')).div(weeklyTrades.collateral)
+        }
+        weeklyTrades.save()
+        let allTrades = AllTrade.load(positionStatsEntity.account)
+        if (!allTrades) {
+          allTrades = new AllTrade(positionStatsEntity.account)
+          allTrades.account = positionStatsEntity.account
+          allTrades.collateral = BIG_NUM_ZERO
+          allTrades.fees = BIG_NUM_ZERO
+          allTrades.tradeVolume = BIG_NUM_ZERO
+          allTrades.profitLoss = BIG_NUM_ZERO
+          allTrades.tradeCount = 0
+          allTrades.winCount = 0 
+          allTrades.lossCount = 0
+          allTrades.leverage = BIG_NUM_ZERO
+          allTrades.save()
+        }
+        allTrades.collateral = allTrades.collateral.plus(positionStatsEntity.collateral)
+        allTrades.fees = allTrades.fees.plus(event.params.feeUsd)
+        allTrades.profitLoss = allTrades.profitLoss.plus(event.params.realisedPnl)
+        allTrades.tradeVolume = allTrades.tradeVolume.plus(positionStatsEntity.size)
+        allTrades.tradeCount += 1
+        if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
+          allTrades.winCount += 1
+        } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
+          allTrades.lossCount += 1
+        }
+        if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
+          allTrades.leverage = BIG_NUM_ZERO
+        } else {
+          allTrades.leverage = allTrades.tradeVolume.times(BigInt.fromString('1000')).div(allTrades.collateral)
+        }
+        allTrades.save()
+        let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
+        let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
+        if (!dailyGlobalInfo) {
+          dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
+          dailyGlobalInfo.fees = BIG_NUM_ZERO
+          dailyGlobalInfo.timestamp = getDayStartDate(event.block.timestamp)
+          dailyGlobalInfo.openInterests = BIG_NUM_ZERO
+          dailyGlobalInfo.tradeVolume = BIG_NUM_ZERO
+          dailyGlobalInfo.tradeCounts = 0
+        }
+        dailyGlobalInfo.fees = dailyGlobalInfo.fees.plus(event.params.feeUsd)
+        dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.minus(positionStatsEntity.size)
+        dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(positionStatsEntity.size)
+        dailyGlobalInfo.tradeCounts += 1
+        dailyGlobalInfo.save()
+        let allOpenInterest = OpenInterest.load("all")
+        if (!allOpenInterest) {
+          allOpenInterest = new OpenInterest("all")
+          allOpenInterest.token = "all"
+          allOpenInterest.amount = BIG_NUM_ZERO
+        }
+        allOpenInterest.amount = allOpenInterest.amount.minus(positionStatsEntity.size)
+        allOpenInterest.save()
+
+        let tokenOpenInterest = OpenInterest.load(positionStatsEntity.indexToken)
+        if (!tokenOpenInterest) {
+          tokenOpenInterest = new OpenInterest(positionStatsEntity.indexToken)
+          tokenOpenInterest.token = positionStatsEntity.indexToken
+          tokenOpenInterest.amount = BIG_NUM_ZERO
+        }
+        tokenOpenInterest.amount = tokenOpenInterest.amount.minus(positionStatsEntity.size)
+        allOpenInterest.save()
+        positionStatsEntity.closedAt = event.block.timestamp.toI32()
+        positionStatsEntity.closeHash = event.transaction.hash.toHexString()
+        positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.feeUsd)
+        positionStatsEntity.markPrice = event.params.markPrice
+        positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(event.params.realisedPnl)
+        positionStatsEntity.positionStatus = "CLOSED"
+        positionStatsEntity.save()
+        let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+        if (positionTriggerEntity) {
+          positionTriggerEntity.status = "CLOSED";
+          positionTriggerEntity.save()
+        }
+        let allGlobaInfo = GlobalInfo.load("all")
+        if (!allGlobaInfo) {
+          allGlobaInfo = new GlobalInfo("all")
+          allGlobaInfo.token = "all"
+          allGlobaInfo.realisedPnl = BIG_NUM_ZERO
+          allGlobaInfo.unRealisedPnl = BIG_NUM_ZERO
+          allGlobaInfo.fees = BIG_NUM_ZERO
+          allGlobaInfo.volume = BIG_NUM_ZERO
+          allGlobaInfo.save()
+        }
+        allGlobaInfo.realisedPnl = allGlobaInfo.realisedPnl.minus(event.params.realisedPnl)
+        allGlobaInfo.fees = allGlobaInfo.fees.plus(event.params.feeUsd)
+        allGlobaInfo.volume = allGlobaInfo.volume.plus(positionStatsEntity.size)
+        allGlobaInfo.save()
+        let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
+        if (!globaInfo) {
+          globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
+          globaInfo.token = positionStatsEntity.indexToken
+          globaInfo.realisedPnl = BIG_NUM_ZERO
+          globaInfo.unRealisedPnl = BIG_NUM_ZERO
+          globaInfo.fees = BIG_NUM_ZERO
+          globaInfo.volume = BIG_NUM_ZERO
+          globaInfo.save()
+        }
+        globaInfo.realisedPnl = globaInfo.realisedPnl.minus(event.params.realisedPnl)
+        globaInfo.fees = globaInfo.fees.plus(event.params.feeUsd)
+        globaInfo.volume = globaInfo.volume.plus(positionStatsEntity.size)
+        globaInfo.save()
+        let side = positionStatsEntity.isLong ? "long" : "short"
+        let sideGlobalInfo = GlobalInfo.load(positionStatsEntity.indexToken + "-" + side)
+        if (!sideGlobalInfo) {
+          sideGlobalInfo = new GlobalInfo(positionStatsEntity.indexToken + "-" + side)
+          sideGlobalInfo.token = positionStatsEntity.indexToken
+          sideGlobalInfo.realisedPnl = BIG_NUM_ZERO
+          sideGlobalInfo.unRealisedPnl = BIG_NUM_ZERO
+          sideGlobalInfo.fees = BIG_NUM_ZERO
+          sideGlobalInfo.volume = BIG_NUM_ZERO
+          sideGlobalInfo.save()
+        }
+        sideGlobalInfo.realisedPnl = sideGlobalInfo.realisedPnl.minus(event.params.realisedPnl)
+        sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.feeUsd)
+        sideGlobalInfo.volume = sideGlobalInfo.volume.plus(positionStatsEntity.size)
+        sideGlobalInfo.save()
+      } else {
+        closePositionEntity.account = '0x0000000000000000000000000000000000000420'
+        closePositionEntity.indexToken = '0x0000000000000000000000000000000000000420'
+        closePositionEntity.isLong = false
+        closePositionEntity.posId = BIG_NUM_ZERO
+      }
+      closePositionEntity.key = event.params.key.toHexString()
+      closePositionEntity.realisedPnl = event.params.realisedPnl
+      closePositionEntity.markPrice = event.params.markPrice
+      closePositionEntity.feeUsd = event.params.feeUsd
+      closePositionEntity.timestamp = event.block.timestamp.toI32()
+      closePositionEntity.transactionHash = event.transaction.hash.toHexString()
+      closePositionEntity.save()
+    }
+  }
+  
+  export function handleDecreasePosition(event: DecreasePositionEvent): void {
+    if (event.block.number.toI32() < 79518835) {
+      let tradeVolumeEntity = TradeVolume.load(event.params.account.toHexString());
       if (!tradeVolumeEntity) {
-        tradeVolumeEntity = new TradeVolume(positionStatsEntity.account)
-        tradeVolumeEntity.account = positionStatsEntity.account
+        tradeVolumeEntity = new TradeVolume(event.params.account.toHexString())
+        tradeVolumeEntity.account = event.params.account.toHexString()
         tradeVolumeEntity.size = BIG_NUM_ZERO
         tradeVolumeEntity.openLongs = BIG_NUM_ZERO
         tradeVolumeEntity.openShorts = BIG_NUM_ZERO
@@ -1137,43 +1476,450 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         tradeVolumeEntity.vusdBalance = BIG_NUM_ZERO
         tradeVolumeEntity.save()
       }
-      if (positionStatsEntity.isLong) {
-        tradeVolumeEntity.openLongs = tradeVolumeEntity.openLongs.minus(positionStatsEntity.size)
+      if (event.params.isLong) {
+        tradeVolumeEntity.openLongs = tradeVolumeEntity.openLongs.minus(event.params.posData[1])
       } else {
-        tradeVolumeEntity.openShorts = tradeVolumeEntity.openShorts.minus(positionStatsEntity.size)
+        tradeVolumeEntity.openShorts = tradeVolumeEntity.openShorts.minus(event.params.posData[1])
       }
-      tradeVolumeEntity.collateralUsage = tradeVolumeEntity.collateralUsage.minus(positionStatsEntity.collateral)
-      tradeVolumeEntity.marginUsage = tradeVolumeEntity.marginUsage.plus(event.params.feeUsd)
-      tradeVolumeEntity.size = tradeVolumeEntity.size.plus(positionStatsEntity.size)
+      tradeVolumeEntity.collateralUsage = tradeVolumeEntity.collateralUsage.minus(event.params.posData[0])
+      tradeVolumeEntity.marginUsage = tradeVolumeEntity.marginUsage.plus(event.params.posData[6])
+      tradeVolumeEntity.size = tradeVolumeEntity.size.plus(event.params.posData[1])
       tradeVolumeEntity.save()
-      closePositionEntity.account = positionStatsEntity.account
-      closePositionEntity.indexToken = positionStatsEntity.indexToken
-      closePositionEntity.isLong = positionStatsEntity.isLong
-      closePositionEntity.posId = positionStatsEntity.posId
+      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+      if (positionStatsEntity) {
+        positionStatsEntity.size = positionStatsEntity.size.minus(event.params.posData[1])
+        positionStatsEntity.collateral = positionStatsEntity.collateral.minus(event.params.posData[0])
+        positionStatsEntity.reserveAmount = event.params.posData[2]
+        positionStatsEntity.entryFundingRate = event.params.posData[3]
+        let userTradeStatsEntity = new UserTradeStat(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
+        if (positionStatsEntity.averagePrice.ge(BIG_NUM_ZERO)) {
+          let realisedPnl = event.params.posData[1].times(event.params.posData[5].minus(positionStatsEntity.averagePrice)).div(positionStatsEntity.averagePrice)
+          positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
+          userTradeStatsEntity.profitLoss = realisedPnl
+          let allGlobaInfo = GlobalInfo.load("all")
+          if (!allGlobaInfo) {
+            allGlobaInfo = new GlobalInfo("all")
+            allGlobaInfo.token = "all"
+            allGlobaInfo.realisedPnl = BIG_NUM_ZERO
+            allGlobaInfo.unRealisedPnl = BIG_NUM_ZERO
+            allGlobaInfo.fees = BIG_NUM_ZERO
+            allGlobaInfo.volume = BIG_NUM_ZERO
+            allGlobaInfo.save()
+          }
+          allGlobaInfo.realisedPnl = allGlobaInfo.realisedPnl.minus(realisedPnl)
+          allGlobaInfo.fees = allGlobaInfo.fees.plus(event.params.posData[6])
+          allGlobaInfo.volume = allGlobaInfo.volume.plus(event.params.posData[1])
+          allGlobaInfo.save()
+          let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
+          if (!globaInfo) {
+            globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
+            globaInfo.token = positionStatsEntity.indexToken
+            globaInfo.realisedPnl = BIG_NUM_ZERO
+            globaInfo.unRealisedPnl = BIG_NUM_ZERO
+            globaInfo.fees = BIG_NUM_ZERO
+            globaInfo.volume = BIG_NUM_ZERO
+            globaInfo.save()
+          }
+          globaInfo.realisedPnl = globaInfo.realisedPnl.minus(realisedPnl)
+          globaInfo.fees = globaInfo.fees.plus(event.params.posData[6])
+          globaInfo.volume = globaInfo.volume.plus(event.params.posData[1])
+          globaInfo.save()
+          let side = positionStatsEntity.isLong ? "long" : "short"
+          let sideGlobalInfo = GlobalInfo.load(positionStatsEntity.indexToken + "-" + side)
+          if (!sideGlobalInfo) {
+            sideGlobalInfo = new GlobalInfo(positionStatsEntity.indexToken + "-" + side)
+            sideGlobalInfo.token = positionStatsEntity.indexToken
+            sideGlobalInfo.realisedPnl = BIG_NUM_ZERO
+            sideGlobalInfo.unRealisedPnl = BIG_NUM_ZERO
+            sideGlobalInfo.fees = BIG_NUM_ZERO
+            sideGlobalInfo.volume = BIG_NUM_ZERO
+            sideGlobalInfo.save()
+          }
+          sideGlobalInfo.realisedPnl = sideGlobalInfo.realisedPnl.minus(realisedPnl)
+          sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.posData[6])
+          sideGlobalInfo.volume = sideGlobalInfo.volume.plus(event.params.posData[1])
+          sideGlobalInfo.save()
+        } else {
+          userTradeStatsEntity.profitLoss = BIG_NUM_ZERO
+          let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
+          if (!globaInfo) {
+            globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
+            globaInfo.token = positionStatsEntity.indexToken
+            globaInfo.realisedPnl = BIG_NUM_ZERO
+            globaInfo.unRealisedPnl = BIG_NUM_ZERO
+            globaInfo.fees = BIG_NUM_ZERO
+            globaInfo.volume = BIG_NUM_ZERO
+            globaInfo.save()
+          }
+          globaInfo.fees = globaInfo.fees.plus(event.params.posData[6])
+          globaInfo.volume = globaInfo.volume.plus(event.params.posData[1])
+          globaInfo.save()
+          let side = positionStatsEntity.isLong ? "long" : "short"
+          let sideGlobalInfo = GlobalInfo.load(positionStatsEntity.indexToken + "-" + side)
+          if (!sideGlobalInfo) {
+            sideGlobalInfo = new GlobalInfo(positionStatsEntity.indexToken + "-" + side)
+            sideGlobalInfo.token = positionStatsEntity.indexToken
+            sideGlobalInfo.realisedPnl = BIG_NUM_ZERO
+            sideGlobalInfo.unRealisedPnl = BIG_NUM_ZERO
+            sideGlobalInfo.fees = BIG_NUM_ZERO
+            sideGlobalInfo.volume = BIG_NUM_ZERO
+            sideGlobalInfo.save()
+          }
+          sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.posData[6])
+          sideGlobalInfo.volume = sideGlobalInfo.volume.plus(event.params.posData[1])
+          sideGlobalInfo.save()
+        }
+        positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.posData[6])
+        positionStatsEntity.averagePrice = event.params.posData[4]
+        positionStatsEntity.markPrice = event.params.posData[5]
+        positionStatsEntity.save()
+        userTradeStatsEntity.key = event.params.key.toHexString()
+        userTradeStatsEntity.account = event.params.account.toHexString()
+        userTradeStatsEntity.actionType = "DECREASE_POSITION"
+        userTradeStatsEntity.amount = BIG_NUM_ZERO
+        userTradeStatsEntity.averagePrice = positionStatsEntity.averagePrice
+        userTradeStatsEntity.collateral = event.params.posData[0]
+        userTradeStatsEntity.createdAt = event.block.timestamp.toI32()
+        userTradeStatsEntity.fees = event.params.posData[6]
+        userTradeStatsEntity.indexToken = event.params.indexToken.toHexString()
+        userTradeStatsEntity.isLong = event.params.isLong
+        userTradeStatsEntity.isPlus = true
+        userTradeStatsEntity.isWin = true
+        userTradeStatsEntity.markPrice = event.params.posData[5]
+        userTradeStatsEntity.posId = event.params.posId
+        userTradeStatsEntity.positionType = positionStatsEntity.positionType
+        userTradeStatsEntity.tradeVolume = event.params.posData[1]
+        userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
+        userTradeStatsEntity.save()
+        let hourlyTradesId = getAccountHourlyTradesId(event.params.account.toHexString(), event.block.timestamp)
+        let dailyVolumeId = getAccountDailyTradesId(event.params.indexToken.toHexString(), event.block.timestamp)
+        let hourlyVolumeId = getAccountHourlyTradesId(event.params.indexToken.toHexString(), event.block.timestamp)
+        let dailyTradesId = getAccountDailyTradesId(event.params.account.toHexString(), event.block.timestamp)
+        let monthlyTradesId = getAccountMonthlyTradesId(event.params.account.toHexString(), event.block.timestamp)
+        let weeklyTradesId = getAccountWeeklyTradesId(event.params.account.toHexString(), event.block.timestamp)
+        let hourlyTrades = HourlyTrade.load(hourlyTradesId)
+        if (!hourlyTrades) {
+          hourlyTrades = new HourlyTrade(hourlyTradesId)
+          hourlyTrades.account = event.params.account.toHexString()
+          hourlyTrades.collateral = BIG_NUM_ZERO
+          hourlyTrades.fees = BIG_NUM_ZERO
+          hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
+          hourlyTrades.tradeVolume = BIG_NUM_ZERO
+          hourlyTrades.profitLoss = BIG_NUM_ZERO
+          hourlyTrades.tradeCount = 0
+          hourlyTrades.winCount = 0 
+          hourlyTrades.lossCount = 0
+          hourlyTrades.leverage = BIG_NUM_ZERO
+          hourlyTrades.save()
+        }
+        hourlyTrades.collateral = hourlyTrades.collateral.plus(event.params.posData[0])
+        hourlyTrades.fees = hourlyTrades.fees.plus(event.params.posData[6])
+        hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(event.params.posData[1])
+        hourlyTrades.tradeCount += 1
+        if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
+          hourlyTrades.winCount += 1
+        } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
+          hourlyTrades.lossCount += 1
+        }
+        if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          hourlyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(hourlyTrades.collateral)
+        }
+        hourlyTrades.save()
+        let dailyVolume = Volume.load(dailyVolumeId)
+        if (!dailyVolume) {
+          dailyVolume = new Volume(dailyVolumeId)
+          dailyVolume.indexToken = event.params.indexToken.toHexString()
+          dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+          dailyVolume.amount = BIG_NUM_ZERO
+        }
+        dailyVolume.amount = dailyVolume.amount.plus(event.params.posData[1])
+        dailyVolume.save()
+        let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
+        if (!hourlyVolume) {
+          hourlyVolume = new HourlyVolume(hourlyVolumeId)
+          hourlyVolume.amount = BIG_NUM_ZERO
+          hourlyVolume.indexToken = event.params.indexToken.toHexString()
+          hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
+          hourlyVolume.tradeCounts = 0
+        }
+        hourlyVolume.amount = hourlyVolume.amount.plus(event.params.posData[1])
+        hourlyVolume.tradeCounts += 1
+        hourlyVolume.save()
+        let dailyTrades = DailyTrade.load(dailyTradesId)
+        if (!dailyTrades) {
+          dailyTrades = new DailyTrade(dailyTradesId)
+          dailyTrades.account = event.params.account.toHexString()
+          dailyTrades.collateral = BIG_NUM_ZERO
+          dailyTrades.fees = BIG_NUM_ZERO
+          dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
+          dailyTrades.tradeVolume = BIG_NUM_ZERO
+          dailyTrades.profitLoss = BIG_NUM_ZERO
+          dailyTrades.tradeCount = 0
+          dailyTrades.winCount = 0 
+          dailyTrades.lossCount = 0
+          dailyTrades.leverage = BIG_NUM_ZERO
+          dailyTrades.save()
+        }
+        dailyTrades.collateral = dailyTrades.collateral.plus(event.params.posData[0])
+        dailyTrades.fees = dailyTrades.fees.plus(event.params.posData[6])
+        dailyTrades.profitLoss = dailyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(event.params.posData[1])
+        dailyTrades.tradeCount += 1
+        if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
+          dailyTrades.winCount += 1
+        } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
+          dailyTrades.lossCount += 1
+        }
+        if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          dailyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString('1000')).div(dailyTrades.collateral)
+        }
+        dailyTrades.save()
+        let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
+        if (!monthlyTrades) {
+          monthlyTrades = new MonthlyTrade(monthlyTradesId)
+          monthlyTrades.account = event.params.account.toHexString()
+          monthlyTrades.collateral = BIG_NUM_ZERO
+          monthlyTrades.fees = BIG_NUM_ZERO
+          monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
+          monthlyTrades.tradeVolume = BIG_NUM_ZERO
+          monthlyTrades.profitLoss = BIG_NUM_ZERO
+          monthlyTrades.tradeCount = 0
+          monthlyTrades.winCount = 0 
+          monthlyTrades.lossCount = 0
+          monthlyTrades.leverage = BIG_NUM_ZERO
+          monthlyTrades.save()
+        }
+        monthlyTrades.collateral = monthlyTrades.collateral.plus(event.params.posData[0])
+        monthlyTrades.fees = monthlyTrades.fees.plus(event.params.posData[6])
+        monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(event.params.posData[1])
+        monthlyTrades.tradeCount += 1
+        if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
+          monthlyTrades.winCount += 1
+        } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
+          monthlyTrades.lossCount += 1
+        }
+        if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          monthlyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          monthlyTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(monthlyTrades.collateral)
+        }
+        monthlyTrades.save()
+        let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
+        if (!weeklyTrades) {
+          weeklyTrades = new WeeklyTrade(weeklyTradesId)
+          weeklyTrades.account = event.params.account.toHexString()
+          weeklyTrades.collateral = BIG_NUM_ZERO
+          weeklyTrades.fees = BIG_NUM_ZERO
+          weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
+          weeklyTrades.tradeVolume = BIG_NUM_ZERO
+          weeklyTrades.profitLoss = BIG_NUM_ZERO
+          weeklyTrades.tradeCount = 0
+          weeklyTrades.winCount = 0 
+          weeklyTrades.lossCount = 0
+          weeklyTrades.leverage = BIG_NUM_ZERO
+          weeklyTrades.save()
+        }
+        weeklyTrades.collateral = weeklyTrades.collateral.plus(event.params.posData[0])
+        weeklyTrades.fees = weeklyTrades.fees.plus(event.params.posData[6])
+        weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(event.params.posData[1])
+        weeklyTrades.tradeCount += 1
+        if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
+          weeklyTrades.winCount += 1
+        } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
+          weeklyTrades.lossCount += 1
+        }
+        if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          weeklyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          weeklyTrades.leverage = weeklyTrades.tradeVolume.times(BigInt.fromString('1000')).div(weeklyTrades.collateral)
+        }
+        weeklyTrades.save()
+        let allTrades = AllTrade.load(event.params.account.toHexString())
+        if (!allTrades) {
+          allTrades = new AllTrade(event.params.account.toHexString())
+          allTrades.account = event.params.account.toHexString()
+          allTrades.collateral = BIG_NUM_ZERO
+          allTrades.fees = BIG_NUM_ZERO
+          allTrades.tradeVolume = BIG_NUM_ZERO
+          allTrades.profitLoss = BIG_NUM_ZERO
+          allTrades.tradeCount = 0
+          allTrades.winCount = 0 
+          allTrades.lossCount = 0
+          allTrades.leverage = BIG_NUM_ZERO
+          allTrades.save()
+        }
+        allTrades.collateral = allTrades.collateral.plus(event.params.posData[0])
+        allTrades.fees = allTrades.fees.plus(event.params.posData[6])
+        allTrades.profitLoss = allTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        allTrades.tradeVolume = allTrades.tradeVolume.plus(event.params.posData[1])
+        allTrades.tradeCount += 1
+        if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
+          allTrades.winCount += 1
+        } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
+          allTrades.lossCount += 1
+        }
+        if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
+          allTrades.leverage = BIG_NUM_ZERO
+        } else {
+          allTrades.leverage = weeklyTrades.tradeVolume.times(BigInt.fromString('1000')).div(allTrades.collateral)
+        }
+        allTrades.save()
+        let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
+        let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
+        if (!dailyGlobalInfo) {
+          dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
+          dailyGlobalInfo.timestamp = getDayStartDate(event.block.timestamp)
+          dailyGlobalInfo.fees = BIG_NUM_ZERO
+          dailyGlobalInfo.openInterests = BIG_NUM_ZERO
+          dailyGlobalInfo.tradeVolume = BIG_NUM_ZERO
+          dailyGlobalInfo.tradeCounts = 0
+          dailyGlobalInfo.save()
+        }
+        dailyGlobalInfo.fees = dailyGlobalInfo.fees.plus(event.params.posData[6])
+        dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.minus(event.params.posData[1])
+        dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(event.params.posData[1])
+        dailyGlobalInfo.tradeCounts += 1
+        dailyGlobalInfo.save()
+        let allOpenInterest = OpenInterest.load("all")
+        if (!allOpenInterest) {
+          allOpenInterest = new OpenInterest("all")
+          allOpenInterest.token = "all"
+          allOpenInterest.amount = BIG_NUM_ZERO
+        }
+        allOpenInterest.amount = allOpenInterest.amount.minus(event.params.posData[1])
+        allOpenInterest.save()
+
+        let tokenOpenInterest = OpenInterest.load(positionStatsEntity.indexToken)
+        if (!tokenOpenInterest) {
+          tokenOpenInterest = new OpenInterest(positionStatsEntity.indexToken)
+          tokenOpenInterest.token = positionStatsEntity.indexToken
+          tokenOpenInterest.amount = BIG_NUM_ZERO
+        }
+        tokenOpenInterest.amount = tokenOpenInterest.amount.minus(event.params.posData[1])
+        tokenOpenInterest.save()
+      }
+      let decreasePositionEntity = new DecreasePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
+      decreasePositionEntity.key = event.params.key.toHexString()
+      decreasePositionEntity.account = event.params.account.toHexString()
+      decreasePositionEntity.averagePrice = event.params.posData[4]
+      decreasePositionEntity.collateral = event.params.posData[0]
+      decreasePositionEntity.entryFundingRate = event.params.posData[3]
+      decreasePositionEntity.feeUsd = event.params.posData[6]
+      decreasePositionEntity.indexToken = event.params.indexToken.toHexString()
+      decreasePositionEntity.isLong = event.params.isLong
+      decreasePositionEntity.markPrice = event.params.posData[5]
+      decreasePositionEntity.posId = event.params.posId
+      decreasePositionEntity.realisedPnl = event.params.realisedPnl
+      decreasePositionEntity.reserveAmount = event.params.posData[2]
+      decreasePositionEntity.size = event.params.posData[1]
+      decreasePositionEntity.timestamp = event.block.timestamp.toI32()
+      decreasePositionEntity.transactionHash = event.transaction.hash.toHexString()
+      decreasePositionEntity.save()
+    }
+  }
+  
+  export function handleIncreasePosition(event: IncreasePositionEvent): void {
+    if (event.block.number.toI32() < 79518835) {
+      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+      if (!positionStatsEntity) {
+        positionStatsEntity = new PositionStat(event.params.key.toHexString())
+        positionStatsEntity.account = event.params.account.toHexString()
+        positionStatsEntity.averagePrice = BIG_NUM_ZERO
+        positionStatsEntity.collateral = BIG_NUM_ZERO
+        positionStatsEntity.closedAt = 0
+        positionStatsEntity.closeHash = ""
+        positionStatsEntity.createdAt = 0
+        positionStatsEntity.createHash = ""
+        positionStatsEntity.entryFundingRate = BIG_NUM_ZERO
+        positionStatsEntity.feeUsd = BIG_NUM_ZERO
+        positionStatsEntity.indexToken = event.params.indexToken.toHexString()
+        positionStatsEntity.isLong = event.params.isLong
+        positionStatsEntity.key = event.params.key.toHexString()
+        positionStatsEntity.lmtPrice = BIG_NUM_ZERO
+        positionStatsEntity.markPrice = BIG_NUM_ZERO
+        positionStatsEntity.orderStatus = "FILLED"
+        positionStatsEntity.pendingCollateral = BIG_NUM_ZERO
+        positionStatsEntity.pendingDelayCollateral = BIG_NUM_ZERO
+        positionStatsEntity.pendingDelaySize = BIG_NUM_ZERO
+        positionStatsEntity.pendingSize = BIG_NUM_ZERO
+        positionStatsEntity.posId = event.params.posId
+        positionStatsEntity.positionStatus = "OPEN"
+        positionStatsEntity.positionType = "Market Order"
+        positionStatsEntity.realisedPnl = BIG_NUM_ZERO
+        positionStatsEntity.reserveAmount = BIG_NUM_ZERO
+        positionStatsEntity.size = BIG_NUM_ZERO
+        positionStatsEntity.stpPrice = BIG_NUM_ZERO
+      }
+      let tradeVolume = TradeVolume.load(event.params.account.toHexString());
+      if (!tradeVolume) {
+        tradeVolume = new TradeVolume(event.params.account.toHexString())
+        tradeVolume.account = event.params.account.toHexString()
+        tradeVolume.size = BIG_NUM_ZERO
+        tradeVolume.openLongs = BIG_NUM_ZERO
+        tradeVolume.openShorts = BIG_NUM_ZERO
+        tradeVolume.collateralUsage = BIG_NUM_ZERO
+        tradeVolume.marginUsage = BIG_NUM_ZERO
+        tradeVolume.vusdBalance = BIG_NUM_ZERO
+      }
+      if (event.params.isLong) {
+        tradeVolume.openLongs = tradeVolume.openLongs.plus(event.params.posData[1])
+      } else {
+        tradeVolume.openShorts = tradeVolume.openShorts.plus(event.params.posData[1])
+      }
+      tradeVolume.collateralUsage = tradeVolume.collateralUsage.plus(event.params.posData[0].minus(event.params.posData[6]))
+      tradeVolume.marginUsage = tradeVolume.marginUsage.plus(event.params.posData[6])
+      tradeVolume.size = tradeVolume.size.plus(event.params.posData[1])
+      tradeVolume.save()
+      let realCollateral = event.params.posData[0].minus(event.params.posData[6])
+      positionStatsEntity.averagePrice = event.params.posData[4]
+      if (positionStatsEntity.positionStatus == "CLOSED" || positionStatsEntity.positionStatus == "LIQUIDATED") {
+        positionStatsEntity.collateral = realCollateral
+        positionStatsEntity.feeUsd = event.params.posData[6]
+        positionStatsEntity.size = event.params.posData[1]
+        positionStatsEntity.closedAt = 0
+        positionStatsEntity.closeHash = ""
+      } else {
+        positionStatsEntity.collateral = positionStatsEntity.collateral.plus(realCollateral)
+        positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.posData[6])
+        positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])
+      }
+      positionStatsEntity.createdAt = event.block.timestamp.toI32()
+      positionStatsEntity.createHash = event.transaction.hash.toHexString()
+      positionStatsEntity.entryFundingRate = event.params.posData[3]
+      positionStatsEntity.markPrice = event.params.posData[5]
+      positionStatsEntity.reserveAmount = event.params.posData[2]
+      positionStatsEntity.save()
       let userTradeStatsEntity = new UserTradeStat(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
       userTradeStatsEntity.key = event.params.key.toHexString()
-      userTradeStatsEntity.account = positionStatsEntity.account
-      userTradeStatsEntity.actionType = "CLOSE_POSITION"
+      userTradeStatsEntity.account = event.params.account.toHexString()
+      userTradeStatsEntity.actionType = "OPEN_POSITION"
       userTradeStatsEntity.amount = BIG_NUM_ZERO
-      userTradeStatsEntity.averagePrice = positionStatsEntity.averagePrice
-      userTradeStatsEntity.collateral = positionStatsEntity.collateral
+      userTradeStatsEntity.averagePrice = event.params.posData[4]
+      userTradeStatsEntity.collateral = event.params.posData[0].minus(event.params.posData[6])
       userTradeStatsEntity.createdAt = event.block.timestamp.toI32()
-      userTradeStatsEntity.fees = event.params.feeUsd
-      userTradeStatsEntity.indexToken = positionStatsEntity.indexToken
-      userTradeStatsEntity.isLong = positionStatsEntity.isLong
+      userTradeStatsEntity.fees = event.params.posData[6]
+      userTradeStatsEntity.indexToken = event.params.indexToken.toHexString()
+      userTradeStatsEntity.isLong = event.params.isLong
       userTradeStatsEntity.isPlus = true
       userTradeStatsEntity.isWin = true
-      userTradeStatsEntity.markPrice = event.params.markPrice
-      userTradeStatsEntity.posId = positionStatsEntity.posId
+      userTradeStatsEntity.markPrice = event.params.posData[5]
+      userTradeStatsEntity.posId = event.params.posId
       userTradeStatsEntity.positionType = positionStatsEntity.positionType
-      userTradeStatsEntity.profitLoss = event.params.realisedPnl
-      userTradeStatsEntity.tradeVolume = positionStatsEntity.size
+      userTradeStatsEntity.profitLoss = BIG_NUM_ZERO
+      userTradeStatsEntity.tradeVolume = event.params.posData[1]
       userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
       userTradeStatsEntity.save()
-      let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
       let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
       let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
+      let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
       let hourlyTrades = HourlyTrade.load(hourlyTradesId)
@@ -1191,42 +1937,16 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         hourlyTrades.leverage = BIG_NUM_ZERO
         hourlyTrades.save()
       }
-      hourlyTrades.collateral = hourlyTrades.collateral.plus(positionStatsEntity.collateral)
-      hourlyTrades.fees = hourlyTrades.fees.plus(event.params.feeUsd)
-      hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(event.params.realisedPnl)
-      hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
+      hourlyTrades.collateral = hourlyTrades.collateral.plus(realCollateral)
+      hourlyTrades.fees = hourlyTrades.fees.plus(event.params.posData[6])
+      hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(event.params.posData[1])
       hourlyTrades.tradeCount += 1
-      if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
-        hourlyTrades.winCount += 1
-      } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
-        hourlyTrades.lossCount += 1
-      }
       if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
         hourlyTrades.leverage = BIG_NUM_ZERO
       } else {
         hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(hourlyTrades.collateral)
       }
       hourlyTrades.save()
-      let dailyVolume = Volume.load(dailyVolumeId)
-      if (!dailyVolume) {
-        dailyVolume = new Volume(dailyVolumeId)
-        dailyVolume.indexToken = positionStatsEntity.indexToken
-        dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
-        dailyVolume.amount = BIG_NUM_ZERO
-      }
-      dailyVolume.amount = dailyVolume.amount.plus(positionStatsEntity.size)
-      dailyVolume.save()
-      let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
-      if (!hourlyVolume) {
-        hourlyVolume = new HourlyVolume(hourlyVolumeId)
-        hourlyVolume.amount = BIG_NUM_ZERO
-        hourlyVolume.indexToken = positionStatsEntity.indexToken
-        hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
-        hourlyVolume.tradeCounts = 0
-      }
-      hourlyVolume.amount = hourlyVolume.amount.plus(positionStatsEntity.size)
-      hourlyVolume.tradeCounts += 1
-      hourlyVolume.save()
       let dailyTrades = DailyTrade.load(dailyTradesId)
       if (!dailyTrades) {
         dailyTrades = new DailyTrade(dailyTradesId)
@@ -1242,381 +1962,16 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         dailyTrades.leverage = BIG_NUM_ZERO
         dailyTrades.save()
       }
-      dailyTrades.collateral = dailyTrades.collateral.plus(positionStatsEntity.collateral)
-      dailyTrades.fees = dailyTrades.fees.plus(event.params.feeUsd)
-      dailyTrades.profitLoss = dailyTrades.profitLoss.plus(event.params.realisedPnl)
-      dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
+      dailyTrades.collateral = dailyTrades.collateral.plus(realCollateral)
+      dailyTrades.fees  = dailyTrades.fees.plus(event.params.posData[6])
+      dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(event.params.posData[1])
       dailyTrades.tradeCount += 1
-      if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
-        dailyTrades.winCount += 1
-      } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
-        dailyTrades.lossCount += 1
-      }
       if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
         dailyTrades.leverage = BIG_NUM_ZERO
       } else {
         dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString('1000')).div(dailyTrades.collateral)
       }
       dailyTrades.save()
-      let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
-      if (!monthlyTrades) {
-        monthlyTrades = new MonthlyTrade(monthlyTradesId)
-        monthlyTrades.account = positionStatsEntity.account
-        monthlyTrades.collateral = BIG_NUM_ZERO
-        monthlyTrades.fees = BIG_NUM_ZERO
-        monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
-        monthlyTrades.tradeVolume = BIG_NUM_ZERO
-        monthlyTrades.profitLoss = BIG_NUM_ZERO
-        monthlyTrades.tradeCount = 0
-        monthlyTrades.winCount = 0 
-        monthlyTrades.lossCount = 0
-        monthlyTrades.leverage = BIG_NUM_ZERO
-        monthlyTrades.save()
-      }
-      monthlyTrades.collateral = monthlyTrades.collateral.plus(positionStatsEntity.collateral)
-      monthlyTrades.fees = monthlyTrades.fees.plus(event.params.feeUsd)
-      monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(event.params.realisedPnl)
-      monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
-      monthlyTrades.tradeCount += 1
-      if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
-        monthlyTrades.winCount += 1
-      } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
-        monthlyTrades.lossCount += 1
-      }
-      if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        monthlyTrades.leverage = BIG_NUM_ZERO
-      } else {
-        monthlyTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(monthlyTrades.collateral)
-      }
-      monthlyTrades.save()
-      let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
-      if (!weeklyTrades) {
-        weeklyTrades = new WeeklyTrade(weeklyTradesId)
-        weeklyTrades.account = positionStatsEntity.account
-        weeklyTrades.collateral = BIG_NUM_ZERO
-        weeklyTrades.fees = BIG_NUM_ZERO
-        weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
-        weeklyTrades.tradeVolume = BIG_NUM_ZERO
-        weeklyTrades.profitLoss = BIG_NUM_ZERO
-        weeklyTrades.tradeCount = 0
-        weeklyTrades.winCount = 0 
-        weeklyTrades.lossCount = 0
-        weeklyTrades.leverage = BIG_NUM_ZERO
-        weeklyTrades.save()
-      }
-      weeklyTrades.collateral = weeklyTrades.collateral.plus(positionStatsEntity.collateral)
-      weeklyTrades.fees = weeklyTrades.fees.plus(event.params.feeUsd)
-      weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(event.params.realisedPnl)
-      weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
-      weeklyTrades.tradeCount += 1
-      if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
-        weeklyTrades.winCount += 1
-      } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
-        weeklyTrades.lossCount += 1
-      }
-      if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        weeklyTrades.leverage = BIG_NUM_ZERO
-      } else {
-        weeklyTrades.leverage = weeklyTrades.tradeVolume.times(BigInt.fromString('1000')).div(weeklyTrades.collateral)
-      }
-      weeklyTrades.save()
-      let allTrades = AllTrade.load(positionStatsEntity.account)
-      if (!allTrades) {
-        allTrades = new AllTrade(positionStatsEntity.account)
-        allTrades.account = positionStatsEntity.account
-        allTrades.collateral = BIG_NUM_ZERO
-        allTrades.fees = BIG_NUM_ZERO
-        allTrades.tradeVolume = BIG_NUM_ZERO
-        allTrades.profitLoss = BIG_NUM_ZERO
-        allTrades.tradeCount = 0
-        allTrades.winCount = 0 
-        allTrades.lossCount = 0
-        allTrades.leverage = BIG_NUM_ZERO
-        allTrades.save()
-      }
-      allTrades.collateral = allTrades.collateral.plus(positionStatsEntity.collateral)
-      allTrades.fees = allTrades.fees.plus(event.params.feeUsd)
-      allTrades.profitLoss = allTrades.profitLoss.plus(event.params.realisedPnl)
-      allTrades.tradeVolume = allTrades.tradeVolume.plus(positionStatsEntity.size)
-      allTrades.tradeCount += 1
-      if ((event.params.realisedPnl.minus(event.params.feeUsd)).gt(BIG_NUM_ZERO)) {
-        allTrades.winCount += 1
-      } else if ((event.params.realisedPnl.minus(event.params.feeUsd)).lt(BIG_NUM_ZERO)){
-        allTrades.lossCount += 1
-      }
-      if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
-        allTrades.leverage = BIG_NUM_ZERO
-      } else {
-        allTrades.leverage = allTrades.tradeVolume.times(BigInt.fromString('1000')).div(allTrades.collateral)
-      }
-      allTrades.save()
-      let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
-      let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
-      if (!dailyGlobalInfo) {
-        dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
-        dailyGlobalInfo.fees = BIG_NUM_ZERO
-        dailyGlobalInfo.timestamp = getDayStartDate(event.block.timestamp)
-        dailyGlobalInfo.openInterests = BIG_NUM_ZERO
-        dailyGlobalInfo.tradeVolume = BIG_NUM_ZERO
-        dailyGlobalInfo.tradeCounts = 0
-      }
-      dailyGlobalInfo.fees = dailyGlobalInfo.fees.plus(event.params.feeUsd)
-      dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.minus(positionStatsEntity.size)
-      dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(positionStatsEntity.size)
-      dailyGlobalInfo.tradeCounts += 1
-      dailyGlobalInfo.save()
-      let allOpenInterest = OpenInterest.load("all")
-      if (!allOpenInterest) {
-        allOpenInterest = new OpenInterest("all")
-        allOpenInterest.token = "all"
-        allOpenInterest.amount = BIG_NUM_ZERO
-      }
-      allOpenInterest.amount = allOpenInterest.amount.minus(positionStatsEntity.size)
-      allOpenInterest.save()
-
-      let tokenOpenInterest = OpenInterest.load(positionStatsEntity.indexToken)
-      if (!tokenOpenInterest) {
-        tokenOpenInterest = new OpenInterest(positionStatsEntity.indexToken)
-        tokenOpenInterest.token = positionStatsEntity.indexToken
-        tokenOpenInterest.amount = BIG_NUM_ZERO
-      }
-      tokenOpenInterest.amount = tokenOpenInterest.amount.minus(positionStatsEntity.size)
-      allOpenInterest.save()
-      positionStatsEntity.closedAt = event.block.timestamp.toI32()
-      positionStatsEntity.closeHash = event.transaction.hash.toHexString()
-      positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.feeUsd)
-      positionStatsEntity.markPrice = event.params.markPrice
-      positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(event.params.realisedPnl)
-      positionStatsEntity.positionStatus = "CLOSED"
-      positionStatsEntity.save()
-      let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
-      if (positionTriggerEntity) {
-        positionTriggerEntity.status = "CLOSED";
-        positionTriggerEntity.save()
-      }
-      let allGlobaInfo = GlobalInfo.load("all")
-      if (!allGlobaInfo) {
-        allGlobaInfo = new GlobalInfo("all")
-        allGlobaInfo.token = "all"
-        allGlobaInfo.realisedPnl = BIG_NUM_ZERO
-        allGlobaInfo.unRealisedPnl = BIG_NUM_ZERO
-        allGlobaInfo.fees = BIG_NUM_ZERO
-        allGlobaInfo.volume = BIG_NUM_ZERO
-        allGlobaInfo.save()
-      }
-      allGlobaInfo.realisedPnl = allGlobaInfo.realisedPnl.minus(event.params.realisedPnl)
-      allGlobaInfo.fees = allGlobaInfo.fees.plus(event.params.feeUsd)
-      allGlobaInfo.volume = allGlobaInfo.volume.plus(positionStatsEntity.size)
-      allGlobaInfo.save()
-      let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
-      if (!globaInfo) {
-        globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
-        globaInfo.token = positionStatsEntity.indexToken
-        globaInfo.realisedPnl = BIG_NUM_ZERO
-        globaInfo.unRealisedPnl = BIG_NUM_ZERO
-        globaInfo.fees = BIG_NUM_ZERO
-        globaInfo.volume = BIG_NUM_ZERO
-        globaInfo.save()
-      }
-      globaInfo.realisedPnl = globaInfo.realisedPnl.minus(event.params.realisedPnl)
-      globaInfo.fees = globaInfo.fees.plus(event.params.feeUsd)
-      globaInfo.volume = globaInfo.volume.plus(positionStatsEntity.size)
-      globaInfo.save()
-      let side = positionStatsEntity.isLong ? "long" : "short"
-      let sideGlobalInfo = GlobalInfo.load(positionStatsEntity.indexToken + "-" + side)
-      if (!sideGlobalInfo) {
-        sideGlobalInfo = new GlobalInfo(positionStatsEntity.indexToken + "-" + side)
-        sideGlobalInfo.token = positionStatsEntity.indexToken
-        sideGlobalInfo.realisedPnl = BIG_NUM_ZERO
-        sideGlobalInfo.unRealisedPnl = BIG_NUM_ZERO
-        sideGlobalInfo.fees = BIG_NUM_ZERO
-        sideGlobalInfo.volume = BIG_NUM_ZERO
-        sideGlobalInfo.save()
-      }
-      sideGlobalInfo.realisedPnl = sideGlobalInfo.realisedPnl.minus(event.params.realisedPnl)
-      sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.feeUsd)
-      sideGlobalInfo.volume = sideGlobalInfo.volume.plus(positionStatsEntity.size)
-      sideGlobalInfo.save()
-    } else {
-      closePositionEntity.account = '0x0000000000000000000000000000000000000420'
-      closePositionEntity.indexToken = '0x0000000000000000000000000000000000000420'
-      closePositionEntity.isLong = false
-      closePositionEntity.posId = BIG_NUM_ZERO
-    }
-    closePositionEntity.key = event.params.key.toHexString()
-    closePositionEntity.realisedPnl = event.params.realisedPnl
-    closePositionEntity.markPrice = event.params.markPrice
-    closePositionEntity.feeUsd = event.params.feeUsd
-    closePositionEntity.timestamp = event.block.timestamp.toI32()
-    closePositionEntity.transactionHash = event.transaction.hash.toHexString()
-    closePositionEntity.save()
-  }
-  
-  export function handleDecreasePosition(event: DecreasePositionEvent): void {
-    let tradeVolumeEntity = TradeVolume.load(event.params.account.toHexString());
-    if (!tradeVolumeEntity) {
-      tradeVolumeEntity = new TradeVolume(event.params.account.toHexString())
-      tradeVolumeEntity.account = event.params.account.toHexString()
-      tradeVolumeEntity.size = BIG_NUM_ZERO
-      tradeVolumeEntity.openLongs = BIG_NUM_ZERO
-      tradeVolumeEntity.openShorts = BIG_NUM_ZERO
-      tradeVolumeEntity.collateralUsage = BIG_NUM_ZERO
-      tradeVolumeEntity.marginUsage = BIG_NUM_ZERO
-      tradeVolumeEntity.vusdBalance = BIG_NUM_ZERO
-      tradeVolumeEntity.save()
-    }
-    if (event.params.isLong) {
-      tradeVolumeEntity.openLongs = tradeVolumeEntity.openLongs.minus(event.params.posData[1])
-    } else {
-      tradeVolumeEntity.openShorts = tradeVolumeEntity.openShorts.minus(event.params.posData[1])
-    }
-    tradeVolumeEntity.collateralUsage = tradeVolumeEntity.collateralUsage.minus(event.params.posData[0])
-    tradeVolumeEntity.marginUsage = tradeVolumeEntity.marginUsage.plus(event.params.posData[6])
-    tradeVolumeEntity.size = tradeVolumeEntity.size.plus(event.params.posData[1])
-    tradeVolumeEntity.save()
-    let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
-    if (positionStatsEntity) {
-      positionStatsEntity.size = positionStatsEntity.size.minus(event.params.posData[1])
-      positionStatsEntity.collateral = positionStatsEntity.collateral.minus(event.params.posData[0])
-      positionStatsEntity.reserveAmount = event.params.posData[2]
-      positionStatsEntity.entryFundingRate = event.params.posData[3]
-      let userTradeStatsEntity = new UserTradeStat(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
-      if (positionStatsEntity.averagePrice.ge(BIG_NUM_ZERO)) {
-        let realisedPnl = event.params.posData[1].times(event.params.posData[5].minus(positionStatsEntity.averagePrice)).div(positionStatsEntity.averagePrice)
-        positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
-        userTradeStatsEntity.profitLoss = realisedPnl
-        let allGlobaInfo = GlobalInfo.load("all")
-        if (!allGlobaInfo) {
-          allGlobaInfo = new GlobalInfo("all")
-          allGlobaInfo.token = "all"
-          allGlobaInfo.realisedPnl = BIG_NUM_ZERO
-          allGlobaInfo.unRealisedPnl = BIG_NUM_ZERO
-          allGlobaInfo.fees = BIG_NUM_ZERO
-          allGlobaInfo.volume = BIG_NUM_ZERO
-          allGlobaInfo.save()
-        }
-        allGlobaInfo.realisedPnl = allGlobaInfo.realisedPnl.minus(realisedPnl)
-        allGlobaInfo.fees = allGlobaInfo.fees.plus(event.params.posData[6])
-        allGlobaInfo.volume = allGlobaInfo.volume.plus(event.params.posData[1])
-        allGlobaInfo.save()
-        let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
-        if (!globaInfo) {
-          globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
-          globaInfo.token = positionStatsEntity.indexToken
-          globaInfo.realisedPnl = BIG_NUM_ZERO
-          globaInfo.unRealisedPnl = BIG_NUM_ZERO
-          globaInfo.fees = BIG_NUM_ZERO
-          globaInfo.volume = BIG_NUM_ZERO
-          globaInfo.save()
-        }
-        globaInfo.realisedPnl = globaInfo.realisedPnl.minus(realisedPnl)
-        globaInfo.fees = globaInfo.fees.plus(event.params.posData[6])
-        globaInfo.volume = globaInfo.volume.plus(event.params.posData[1])
-        globaInfo.save()
-        let side = positionStatsEntity.isLong ? "long" : "short"
-        let sideGlobalInfo = GlobalInfo.load(positionStatsEntity.indexToken + "-" + side)
-        if (!sideGlobalInfo) {
-          sideGlobalInfo = new GlobalInfo(positionStatsEntity.indexToken + "-" + side)
-          sideGlobalInfo.token = positionStatsEntity.indexToken
-          sideGlobalInfo.realisedPnl = BIG_NUM_ZERO
-          sideGlobalInfo.unRealisedPnl = BIG_NUM_ZERO
-          sideGlobalInfo.fees = BIG_NUM_ZERO
-          sideGlobalInfo.volume = BIG_NUM_ZERO
-          sideGlobalInfo.save()
-        }
-        sideGlobalInfo.realisedPnl = sideGlobalInfo.realisedPnl.minus(realisedPnl)
-        sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.posData[6])
-        sideGlobalInfo.volume = sideGlobalInfo.volume.plus(event.params.posData[1])
-        sideGlobalInfo.save()
-      } else {
-        userTradeStatsEntity.profitLoss = BIG_NUM_ZERO
-        let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
-        if (!globaInfo) {
-          globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
-          globaInfo.token = positionStatsEntity.indexToken
-          globaInfo.realisedPnl = BIG_NUM_ZERO
-          globaInfo.unRealisedPnl = BIG_NUM_ZERO
-          globaInfo.fees = BIG_NUM_ZERO
-          globaInfo.volume = BIG_NUM_ZERO
-          globaInfo.save()
-        }
-        globaInfo.fees = globaInfo.fees.plus(event.params.posData[6])
-        globaInfo.volume = globaInfo.volume.plus(event.params.posData[1])
-        globaInfo.save()
-        let side = positionStatsEntity.isLong ? "long" : "short"
-        let sideGlobalInfo = GlobalInfo.load(positionStatsEntity.indexToken + "-" + side)
-        if (!sideGlobalInfo) {
-          sideGlobalInfo = new GlobalInfo(positionStatsEntity.indexToken + "-" + side)
-          sideGlobalInfo.token = positionStatsEntity.indexToken
-          sideGlobalInfo.realisedPnl = BIG_NUM_ZERO
-          sideGlobalInfo.unRealisedPnl = BIG_NUM_ZERO
-          sideGlobalInfo.fees = BIG_NUM_ZERO
-          sideGlobalInfo.volume = BIG_NUM_ZERO
-          sideGlobalInfo.save()
-        }
-        sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.posData[6])
-        sideGlobalInfo.volume = sideGlobalInfo.volume.plus(event.params.posData[1])
-        sideGlobalInfo.save()
-      }
-      positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.posData[6])
-      positionStatsEntity.averagePrice = event.params.posData[4]
-      positionStatsEntity.markPrice = event.params.posData[5]
-      positionStatsEntity.save()
-      userTradeStatsEntity.key = event.params.key.toHexString()
-      userTradeStatsEntity.account = event.params.account.toHexString()
-      userTradeStatsEntity.actionType = "DECREASE_POSITION"
-      userTradeStatsEntity.amount = BIG_NUM_ZERO
-      userTradeStatsEntity.averagePrice = positionStatsEntity.averagePrice
-      userTradeStatsEntity.collateral = event.params.posData[0]
-      userTradeStatsEntity.createdAt = event.block.timestamp.toI32()
-      userTradeStatsEntity.fees = event.params.posData[6]
-      userTradeStatsEntity.indexToken = event.params.indexToken.toHexString()
-      userTradeStatsEntity.isLong = event.params.isLong
-      userTradeStatsEntity.isPlus = true
-      userTradeStatsEntity.isWin = true
-      userTradeStatsEntity.markPrice = event.params.posData[5]
-      userTradeStatsEntity.posId = event.params.posId
-      userTradeStatsEntity.positionType = positionStatsEntity.positionType
-      userTradeStatsEntity.tradeVolume = event.params.posData[1]
-      userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
-      userTradeStatsEntity.save()
-      let hourlyTradesId = getAccountHourlyTradesId(event.params.account.toHexString(), event.block.timestamp)
-      let dailyVolumeId = getAccountDailyTradesId(event.params.indexToken.toHexString(), event.block.timestamp)
-      let hourlyVolumeId = getAccountHourlyTradesId(event.params.indexToken.toHexString(), event.block.timestamp)
-      let dailyTradesId = getAccountDailyTradesId(event.params.account.toHexString(), event.block.timestamp)
-      let monthlyTradesId = getAccountMonthlyTradesId(event.params.account.toHexString(), event.block.timestamp)
-      let weeklyTradesId = getAccountWeeklyTradesId(event.params.account.toHexString(), event.block.timestamp)
-      let hourlyTrades = HourlyTrade.load(hourlyTradesId)
-      if (!hourlyTrades) {
-        hourlyTrades = new HourlyTrade(hourlyTradesId)
-        hourlyTrades.account = event.params.account.toHexString()
-        hourlyTrades.collateral = BIG_NUM_ZERO
-        hourlyTrades.fees = BIG_NUM_ZERO
-        hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
-        hourlyTrades.tradeVolume = BIG_NUM_ZERO
-        hourlyTrades.profitLoss = BIG_NUM_ZERO
-        hourlyTrades.tradeCount = 0
-        hourlyTrades.winCount = 0 
-        hourlyTrades.lossCount = 0
-        hourlyTrades.leverage = BIG_NUM_ZERO
-        hourlyTrades.save()
-      }
-      hourlyTrades.collateral = hourlyTrades.collateral.plus(event.params.posData[0])
-      hourlyTrades.fees = hourlyTrades.fees.plus(event.params.posData[6])
-      hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
-      hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(event.params.posData[1])
-      hourlyTrades.tradeCount += 1
-      if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
-        hourlyTrades.winCount += 1
-      } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
-        hourlyTrades.lossCount += 1
-      }
-      if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        hourlyTrades.leverage = BIG_NUM_ZERO
-      } else {
-        hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(hourlyTrades.collateral)
-      }
-      hourlyTrades.save()
       let dailyVolume = Volume.load(dailyVolumeId)
       if (!dailyVolume) {
         dailyVolume = new Volume(dailyVolumeId)
@@ -1637,41 +1992,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       hourlyVolume.amount = hourlyVolume.amount.plus(event.params.posData[1])
       hourlyVolume.tradeCounts += 1
       hourlyVolume.save()
-      let dailyTrades = DailyTrade.load(dailyTradesId)
-      if (!dailyTrades) {
-        dailyTrades = new DailyTrade(dailyTradesId)
-        dailyTrades.account = event.params.account.toHexString()
-        dailyTrades.collateral = BIG_NUM_ZERO
-        dailyTrades.fees = BIG_NUM_ZERO
-        dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
-        dailyTrades.tradeVolume = BIG_NUM_ZERO
-        dailyTrades.profitLoss = BIG_NUM_ZERO
-        dailyTrades.tradeCount = 0
-        dailyTrades.winCount = 0 
-        dailyTrades.lossCount = 0
-        dailyTrades.leverage = BIG_NUM_ZERO
-        dailyTrades.save()
-      }
-      dailyTrades.collateral = dailyTrades.collateral.plus(event.params.posData[0])
-      dailyTrades.fees = dailyTrades.fees.plus(event.params.posData[6])
-      dailyTrades.profitLoss = dailyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
-      dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(event.params.posData[1])
-      dailyTrades.tradeCount += 1
-      if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
-        dailyTrades.winCount += 1
-      } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
-        dailyTrades.lossCount += 1
-      }
-      if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        dailyTrades.leverage = BIG_NUM_ZERO
-      } else {
-        dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString('1000')).div(dailyTrades.collateral)
-      }
-      dailyTrades.save()
       let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
       if (!monthlyTrades) {
         monthlyTrades = new MonthlyTrade(monthlyTradesId)
-        monthlyTrades.account = event.params.account.toHexString()
+        monthlyTrades.account = positionStatsEntity.account
         monthlyTrades.collateral = BIG_NUM_ZERO
         monthlyTrades.fees = BIG_NUM_ZERO
         monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
@@ -1683,757 +2007,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         monthlyTrades.leverage = BIG_NUM_ZERO
         monthlyTrades.save()
       }
-      monthlyTrades.collateral = monthlyTrades.collateral.plus(event.params.posData[0])
+      monthlyTrades.collateral = monthlyTrades.collateral.plus(realCollateral)
       monthlyTrades.fees = monthlyTrades.fees.plus(event.params.posData[6])
-      monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
       monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(event.params.posData[1])
-      monthlyTrades.tradeCount += 1
-      if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
-        monthlyTrades.winCount += 1
-      } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
-        monthlyTrades.lossCount += 1
-      }
-      if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        monthlyTrades.leverage = BIG_NUM_ZERO
-      } else {
-        monthlyTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(monthlyTrades.collateral)
-      }
-      monthlyTrades.save()
-      let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
-      if (!weeklyTrades) {
-        weeklyTrades = new WeeklyTrade(weeklyTradesId)
-        weeklyTrades.account = event.params.account.toHexString()
-        weeklyTrades.collateral = BIG_NUM_ZERO
-        weeklyTrades.fees = BIG_NUM_ZERO
-        weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
-        weeklyTrades.tradeVolume = BIG_NUM_ZERO
-        weeklyTrades.profitLoss = BIG_NUM_ZERO
-        weeklyTrades.tradeCount = 0
-        weeklyTrades.winCount = 0 
-        weeklyTrades.lossCount = 0
-        weeklyTrades.leverage = BIG_NUM_ZERO
-        weeklyTrades.save()
-      }
-      weeklyTrades.collateral = weeklyTrades.collateral.plus(event.params.posData[0])
-      weeklyTrades.fees = weeklyTrades.fees.plus(event.params.posData[6])
-      weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
-      weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(event.params.posData[1])
-      weeklyTrades.tradeCount += 1
-      if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
-        weeklyTrades.winCount += 1
-      } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
-        weeklyTrades.lossCount += 1
-      }
-      if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        weeklyTrades.leverage = BIG_NUM_ZERO
-      } else {
-        weeklyTrades.leverage = weeklyTrades.tradeVolume.times(BigInt.fromString('1000')).div(weeklyTrades.collateral)
-      }
-      weeklyTrades.save()
-      let allTrades = AllTrade.load(event.params.account.toHexString())
-      if (!allTrades) {
-        allTrades = new AllTrade(event.params.account.toHexString())
-        allTrades.account = event.params.account.toHexString()
-        allTrades.collateral = BIG_NUM_ZERO
-        allTrades.fees = BIG_NUM_ZERO
-        allTrades.tradeVolume = BIG_NUM_ZERO
-        allTrades.profitLoss = BIG_NUM_ZERO
-        allTrades.tradeCount = 0
-        allTrades.winCount = 0 
-        allTrades.lossCount = 0
-        allTrades.leverage = BIG_NUM_ZERO
-        allTrades.save()
-      }
-      allTrades.collateral = allTrades.collateral.plus(event.params.posData[0])
-      allTrades.fees = allTrades.fees.plus(event.params.posData[6])
-      allTrades.profitLoss = allTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
-      allTrades.tradeVolume = allTrades.tradeVolume.plus(event.params.posData[1])
-      allTrades.tradeCount += 1
-      if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).gt(BIG_NUM_ZERO)) {
-        allTrades.winCount += 1
-      } else if (((userTradeStatsEntity.profitLoss).minus(event.params.posData[6])).lt(BIG_NUM_ZERO)){
-        allTrades.lossCount += 1
-      }
-      if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
-        allTrades.leverage = BIG_NUM_ZERO
-      } else {
-        allTrades.leverage = weeklyTrades.tradeVolume.times(BigInt.fromString('1000')).div(allTrades.collateral)
-      }
-      allTrades.save()
-      let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
-      let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
-      if (!dailyGlobalInfo) {
-        dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
-        dailyGlobalInfo.timestamp = getDayStartDate(event.block.timestamp)
-        dailyGlobalInfo.fees = BIG_NUM_ZERO
-        dailyGlobalInfo.openInterests = BIG_NUM_ZERO
-        dailyGlobalInfo.tradeVolume = BIG_NUM_ZERO
-        dailyGlobalInfo.tradeCounts = 0
-        dailyGlobalInfo.save()
-      }
-      dailyGlobalInfo.fees = dailyGlobalInfo.fees.plus(event.params.posData[6])
-      dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.minus(event.params.posData[1])
-      dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(event.params.posData[1])
-      dailyGlobalInfo.tradeCounts += 1
-      dailyGlobalInfo.save()
-      let allOpenInterest = OpenInterest.load("all")
-      if (!allOpenInterest) {
-        allOpenInterest = new OpenInterest("all")
-        allOpenInterest.token = "all"
-        allOpenInterest.amount = BIG_NUM_ZERO
-      }
-      allOpenInterest.amount = allOpenInterest.amount.minus(event.params.posData[1])
-      allOpenInterest.save()
-
-      let tokenOpenInterest = OpenInterest.load(positionStatsEntity.indexToken)
-      if (!tokenOpenInterest) {
-        tokenOpenInterest = new OpenInterest(positionStatsEntity.indexToken)
-        tokenOpenInterest.token = positionStatsEntity.indexToken
-        tokenOpenInterest.amount = BIG_NUM_ZERO
-      }
-      tokenOpenInterest.amount = tokenOpenInterest.amount.minus(event.params.posData[1])
-      tokenOpenInterest.save()
-    }
-    let decreasePositionEntity = new DecreasePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
-    decreasePositionEntity.key = event.params.key.toHexString()
-    decreasePositionEntity.account = event.params.account.toHexString()
-    decreasePositionEntity.averagePrice = event.params.posData[4]
-    decreasePositionEntity.collateral = event.params.posData[0]
-    decreasePositionEntity.entryFundingRate = event.params.posData[3]
-    decreasePositionEntity.feeUsd = event.params.posData[6]
-    decreasePositionEntity.indexToken = event.params.indexToken.toHexString()
-    decreasePositionEntity.isLong = event.params.isLong
-    decreasePositionEntity.markPrice = event.params.posData[5]
-    decreasePositionEntity.posId = event.params.posId
-    decreasePositionEntity.realisedPnl = event.params.realisedPnl
-    decreasePositionEntity.reserveAmount = event.params.posData[2]
-    decreasePositionEntity.size = event.params.posData[1]
-    decreasePositionEntity.timestamp = event.block.timestamp.toI32()
-    decreasePositionEntity.transactionHash = event.transaction.hash.toHexString()
-    decreasePositionEntity.save()
-  }
-  
-  export function handleIncreasePosition(event: IncreasePositionEvent): void {
-    let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
-    if (!positionStatsEntity) {
-      positionStatsEntity = new PositionStat(event.params.key.toHexString())
-      positionStatsEntity.account = event.params.account.toHexString()
-      positionStatsEntity.averagePrice = BIG_NUM_ZERO
-      positionStatsEntity.collateral = BIG_NUM_ZERO
-      positionStatsEntity.closedAt = 0
-      positionStatsEntity.closeHash = ""
-      positionStatsEntity.createdAt = 0
-      positionStatsEntity.createHash = ""
-      positionStatsEntity.entryFundingRate = BIG_NUM_ZERO
-      positionStatsEntity.feeUsd = BIG_NUM_ZERO
-      positionStatsEntity.indexToken = event.params.indexToken.toHexString()
-      positionStatsEntity.isLong = event.params.isLong
-      positionStatsEntity.key = event.params.key.toHexString()
-      positionStatsEntity.lmtPrice = BIG_NUM_ZERO
-      positionStatsEntity.markPrice = BIG_NUM_ZERO
-      positionStatsEntity.orderStatus = "FILLED"
-      positionStatsEntity.pendingCollateral = BIG_NUM_ZERO
-      positionStatsEntity.pendingDelayCollateral = BIG_NUM_ZERO
-      positionStatsEntity.pendingDelaySize = BIG_NUM_ZERO
-      positionStatsEntity.pendingSize = BIG_NUM_ZERO
-      positionStatsEntity.posId = event.params.posId
-      positionStatsEntity.positionStatus = "OPEN"
-      positionStatsEntity.positionType = "Market Order"
-      positionStatsEntity.realisedPnl = BIG_NUM_ZERO
-      positionStatsEntity.reserveAmount = BIG_NUM_ZERO
-      positionStatsEntity.size = BIG_NUM_ZERO
-      positionStatsEntity.stpPrice = BIG_NUM_ZERO
-    }
-    let tradeVolume = TradeVolume.load(event.params.account.toHexString());
-    if (!tradeVolume) {
-      tradeVolume = new TradeVolume(event.params.account.toHexString())
-      tradeVolume.account = event.params.account.toHexString()
-      tradeVolume.size = BIG_NUM_ZERO
-      tradeVolume.openLongs = BIG_NUM_ZERO
-      tradeVolume.openShorts = BIG_NUM_ZERO
-      tradeVolume.collateralUsage = BIG_NUM_ZERO
-      tradeVolume.marginUsage = BIG_NUM_ZERO
-      tradeVolume.vusdBalance = BIG_NUM_ZERO
-    }
-    if (event.params.isLong) {
-      tradeVolume.openLongs = tradeVolume.openLongs.plus(event.params.posData[1])
-    } else {
-      tradeVolume.openShorts = tradeVolume.openShorts.plus(event.params.posData[1])
-    }
-    tradeVolume.collateralUsage = tradeVolume.collateralUsage.plus(event.params.posData[0].minus(event.params.posData[6]))
-    tradeVolume.marginUsage = tradeVolume.marginUsage.plus(event.params.posData[6])
-    tradeVolume.size = tradeVolume.size.plus(event.params.posData[1])
-    tradeVolume.save()
-    let realCollateral = event.params.posData[0].minus(event.params.posData[6])
-    positionStatsEntity.averagePrice = event.params.posData[4]
-    if (positionStatsEntity.positionStatus == "CLOSED" || positionStatsEntity.positionStatus == "LIQUIDATED") {
-      positionStatsEntity.collateral = realCollateral
-      positionStatsEntity.feeUsd = event.params.posData[6]
-      positionStatsEntity.size = event.params.posData[1]
-      positionStatsEntity.closedAt = 0
-      positionStatsEntity.closeHash = ""
-    } else {
-      positionStatsEntity.collateral = positionStatsEntity.collateral.plus(realCollateral)
-      positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.posData[6])
-      positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])
-    }
-    positionStatsEntity.createdAt = event.block.timestamp.toI32()
-    positionStatsEntity.createHash = event.transaction.hash.toHexString()
-    positionStatsEntity.entryFundingRate = event.params.posData[3]
-    positionStatsEntity.markPrice = event.params.posData[5]
-    positionStatsEntity.reserveAmount = event.params.posData[2]
-    positionStatsEntity.save()
-    let userTradeStatsEntity = new UserTradeStat(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
-    userTradeStatsEntity.key = event.params.key.toHexString()
-    userTradeStatsEntity.account = event.params.account.toHexString()
-    userTradeStatsEntity.actionType = "OPEN_POSITION"
-    userTradeStatsEntity.amount = BIG_NUM_ZERO
-    userTradeStatsEntity.averagePrice = event.params.posData[4]
-    userTradeStatsEntity.collateral = event.params.posData[0].minus(event.params.posData[6])
-    userTradeStatsEntity.createdAt = event.block.timestamp.toI32()
-    userTradeStatsEntity.fees = event.params.posData[6]
-    userTradeStatsEntity.indexToken = event.params.indexToken.toHexString()
-    userTradeStatsEntity.isLong = event.params.isLong
-    userTradeStatsEntity.isPlus = true
-    userTradeStatsEntity.isWin = true
-    userTradeStatsEntity.markPrice = event.params.posData[5]
-    userTradeStatsEntity.posId = event.params.posId
-    userTradeStatsEntity.positionType = positionStatsEntity.positionType
-    userTradeStatsEntity.profitLoss = BIG_NUM_ZERO
-    userTradeStatsEntity.tradeVolume = event.params.posData[1]
-    userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
-    userTradeStatsEntity.save()
-    let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
-    let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
-    let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let hourlyTrades = HourlyTrade.load(hourlyTradesId)
-    if (!hourlyTrades) {
-      hourlyTrades = new HourlyTrade(hourlyTradesId)
-      hourlyTrades.account = positionStatsEntity.account
-      hourlyTrades.collateral = BIG_NUM_ZERO
-      hourlyTrades.fees = BIG_NUM_ZERO
-      hourlyTrades.timestamp = getHourStartDate(event.block.timestamp)
-      hourlyTrades.tradeVolume = BIG_NUM_ZERO
-      hourlyTrades.profitLoss = BIG_NUM_ZERO
-      hourlyTrades.tradeCount = 0
-      hourlyTrades.winCount = 0 
-      hourlyTrades.lossCount = 0
-      hourlyTrades.leverage = BIG_NUM_ZERO
-      hourlyTrades.save()
-    }
-    hourlyTrades.collateral = hourlyTrades.collateral.plus(realCollateral)
-    hourlyTrades.fees = hourlyTrades.fees.plus(event.params.posData[6])
-    hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(event.params.posData[1])
-    hourlyTrades.tradeCount += 1
-    if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
-      hourlyTrades.leverage = BIG_NUM_ZERO
-    } else {
-      hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(hourlyTrades.collateral)
-    }
-    hourlyTrades.save()
-    let dailyTrades = DailyTrade.load(dailyTradesId)
-    if (!dailyTrades) {
-      dailyTrades = new DailyTrade(dailyTradesId)
-      dailyTrades.account = positionStatsEntity.account
-      dailyTrades.collateral = BIG_NUM_ZERO
-      dailyTrades.fees = BIG_NUM_ZERO
-      dailyTrades.timestamp = getDayStartDate(event.block.timestamp)
-      dailyTrades.tradeVolume = BIG_NUM_ZERO
-      dailyTrades.profitLoss = BIG_NUM_ZERO
-      dailyTrades.tradeCount = 0
-      dailyTrades.winCount = 0 
-      dailyTrades.lossCount = 0
-      dailyTrades.leverage = BIG_NUM_ZERO
-      dailyTrades.save()
-    }
-    dailyTrades.collateral = dailyTrades.collateral.plus(realCollateral)
-    dailyTrades.fees  = dailyTrades.fees.plus(event.params.posData[6])
-    dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(event.params.posData[1])
-    dailyTrades.tradeCount += 1
-    if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
-      dailyTrades.leverage = BIG_NUM_ZERO
-    } else {
-      dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString('1000')).div(dailyTrades.collateral)
-    }
-    dailyTrades.save()
-    let dailyVolume = Volume.load(dailyVolumeId)
-    if (!dailyVolume) {
-      dailyVolume = new Volume(dailyVolumeId)
-      dailyVolume.indexToken = event.params.indexToken.toHexString()
-      dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
-      dailyVolume.amount = BIG_NUM_ZERO
-    }
-    dailyVolume.amount = dailyVolume.amount.plus(event.params.posData[1])
-    dailyVolume.save()
-    let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
-    if (!hourlyVolume) {
-      hourlyVolume = new HourlyVolume(hourlyVolumeId)
-      hourlyVolume.amount = BIG_NUM_ZERO
-      hourlyVolume.indexToken = event.params.indexToken.toHexString()
-      hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
-      hourlyVolume.tradeCounts = 0
-    }
-    hourlyVolume.amount = hourlyVolume.amount.plus(event.params.posData[1])
-    hourlyVolume.tradeCounts += 1
-    hourlyVolume.save()
-    let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
-    if (!monthlyTrades) {
-      monthlyTrades = new MonthlyTrade(monthlyTradesId)
-      monthlyTrades.account = positionStatsEntity.account
-      monthlyTrades.collateral = BIG_NUM_ZERO
-      monthlyTrades.fees = BIG_NUM_ZERO
-      monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
-      monthlyTrades.tradeVolume = BIG_NUM_ZERO
-      monthlyTrades.profitLoss = BIG_NUM_ZERO
-      monthlyTrades.tradeCount = 0
-      monthlyTrades.winCount = 0 
-      monthlyTrades.lossCount = 0
-      monthlyTrades.leverage = BIG_NUM_ZERO
-      monthlyTrades.save()
-    }
-    monthlyTrades.collateral = monthlyTrades.collateral.plus(realCollateral)
-    monthlyTrades.fees = monthlyTrades.fees.plus(event.params.posData[6])
-    monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(event.params.posData[1])
-    monthlyTrades.tradeCount += 1
-    if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
-      monthlyTrades.leverage = BIG_NUM_ZERO
-    } else {
-      monthlyTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(monthlyTrades.collateral)
-    }
-    monthlyTrades.save()
-    let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
-    if (!weeklyTrades) {
-      weeklyTrades = new WeeklyTrade(weeklyTradesId)
-      weeklyTrades.account = positionStatsEntity.account
-      weeklyTrades.collateral = BIG_NUM_ZERO
-      weeklyTrades.fees = BIG_NUM_ZERO
-      weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
-      weeklyTrades.tradeVolume = BIG_NUM_ZERO
-      weeklyTrades.profitLoss = BIG_NUM_ZERO
-      weeklyTrades.tradeCount = 0
-      weeklyTrades.winCount = 0 
-      weeklyTrades.lossCount = 0
-      weeklyTrades.leverage = BIG_NUM_ZERO
-      weeklyTrades.save()
-    }
-    weeklyTrades.collateral = weeklyTrades.collateral.plus(realCollateral)
-    weeklyTrades.fees = weeklyTrades.fees.plus(event.params.posData[6])
-    weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(event.params.posData[1])
-    weeklyTrades.tradeCount += 1
-    if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
-      weeklyTrades.leverage = BIG_NUM_ZERO
-    } else {
-      weeklyTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(weeklyTrades.collateral)
-    }
-    weeklyTrades.save()
-    let allTrades = AllTrade.load(positionStatsEntity.account)
-    if (!allTrades) {
-      allTrades = new AllTrade(positionStatsEntity.account)
-      allTrades.account = positionStatsEntity.account
-      allTrades.collateral = BIG_NUM_ZERO
-      allTrades.fees = BIG_NUM_ZERO
-      allTrades.tradeVolume = BIG_NUM_ZERO
-      allTrades.profitLoss = BIG_NUM_ZERO
-      allTrades.tradeCount = 0
-      allTrades.winCount = 0 
-      allTrades.lossCount = 0
-      allTrades.leverage = BIG_NUM_ZERO
-      allTrades.save()
-    }
-    allTrades.collateral = allTrades.collateral.plus(realCollateral)
-    allTrades.fees = allTrades.fees.plus(event.params.posData[6])
-    allTrades.tradeVolume = allTrades.tradeVolume.plus(event.params.posData[1])
-    allTrades.tradeCount += 1
-    if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
-      allTrades.leverage = BIG_NUM_ZERO
-    } else {
-      allTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(allTrades.collateral)
-    }
-    allTrades.save()
-    let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
-    let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
-    if (!dailyGlobalInfo) {
-      dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
-      dailyGlobalInfo.timestamp = getHourStartDate(event.block.timestamp)      
-      dailyGlobalInfo.fees = BIG_NUM_ZERO
-      dailyGlobalInfo.openInterests = BIG_NUM_ZERO
-      dailyGlobalInfo.tradeVolume = BIG_NUM_ZERO
-      dailyGlobalInfo.tradeCounts = 0
-      dailyGlobalInfo.save()
-    }
-    dailyGlobalInfo.fees = dailyGlobalInfo.fees.plus(event.params.posData[6])
-    dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.plus(event.params.posData[1])
-    dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(event.params.posData[1])
-    dailyGlobalInfo.tradeCounts += 1
-    dailyGlobalInfo.save()
-    let allOpenInterest = OpenInterest.load("all")
-    if (!allOpenInterest) {
-      allOpenInterest = new OpenInterest("all")
-      allOpenInterest.token = "all"
-      allOpenInterest.amount = BIG_NUM_ZERO
-    }
-    allOpenInterest.amount = allOpenInterest.amount.plus(event.params.posData[1])
-    allOpenInterest.save()
-
-    let tokenOpenInterest = OpenInterest.load(positionStatsEntity.indexToken)
-    if (!tokenOpenInterest) {
-      tokenOpenInterest = new OpenInterest(positionStatsEntity.indexToken)
-      tokenOpenInterest.token = positionStatsEntity.indexToken
-      tokenOpenInterest.amount = BIG_NUM_ZERO
-    }
-    tokenOpenInterest.amount = tokenOpenInterest.amount.plus(event.params.posData[1])
-    tokenOpenInterest.save()
-    let allGlobaInfo = GlobalInfo.load("all")
-    if (!allGlobaInfo) {
-      allGlobaInfo = new GlobalInfo("all")
-      allGlobaInfo.token = "all"
-      allGlobaInfo.realisedPnl = BIG_NUM_ZERO
-      allGlobaInfo.unRealisedPnl = BIG_NUM_ZERO
-      allGlobaInfo.fees = BIG_NUM_ZERO
-      allGlobaInfo.volume = BIG_NUM_ZERO
-      allGlobaInfo.save()
-    }
-    allGlobaInfo.fees = allGlobaInfo.fees.plus(event.params.posData[6])
-    allGlobaInfo.volume = allGlobaInfo.volume.plus(event.params.posData[1])
-    allGlobaInfo.save()
-    let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
-    if (!globaInfo) {
-      globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
-      globaInfo.token = positionStatsEntity.indexToken
-      globaInfo.realisedPnl = BIG_NUM_ZERO
-      globaInfo.unRealisedPnl = BIG_NUM_ZERO
-      globaInfo.fees = BIG_NUM_ZERO
-      globaInfo.volume = BIG_NUM_ZERO
-    }
-    globaInfo.fees = globaInfo.fees.plus(event.params.posData[6])
-    globaInfo.volume = globaInfo.volume.plus(event.params.posData[1])
-    globaInfo.save()
-    let side = positionStatsEntity.isLong ? "long" : "short"
-    let sideGlobalInfo = GlobalInfo.load(positionStatsEntity.indexToken + "-" + side)
-    if (!sideGlobalInfo) {
-      sideGlobalInfo = new GlobalInfo(positionStatsEntity.indexToken + "-" + side)
-      sideGlobalInfo.token = positionStatsEntity.indexToken
-      sideGlobalInfo.realisedPnl = BIG_NUM_ZERO
-      sideGlobalInfo.unRealisedPnl = BIG_NUM_ZERO
-      sideGlobalInfo.fees = BIG_NUM_ZERO
-      sideGlobalInfo.volume = BIG_NUM_ZERO
-      sideGlobalInfo.save()
-    }
-    sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.posData[6])
-    sideGlobalInfo.volume = sideGlobalInfo.volume.plus(event.params.posData[1])
-    sideGlobalInfo.save()
-    let increasePositionEntity = new IncreasePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
-    increasePositionEntity.key = event.params.key.toHexString()
-    increasePositionEntity.account = event.params.account.toHexString()
-    increasePositionEntity.averagePrice = event.params.posData[4]
-    increasePositionEntity.collateral = realCollateral
-    increasePositionEntity.entryFundingRate = positionStatsEntity.entryFundingRate
-    increasePositionEntity.indexToken = event.params.indexToken.toHexString()
-    increasePositionEntity.isLong = event.params.isLong
-    increasePositionEntity.feeUsd = event.params.posData[6]
-    increasePositionEntity.markPrice = event.params.posData[5]
-    increasePositionEntity.posId = event.params.posId
-    increasePositionEntity.reserveAmount = positionStatsEntity.reserveAmount
-    increasePositionEntity.size = positionStatsEntity.size
-    increasePositionEntity.timestamp = event.block.timestamp.toI32()
-    increasePositionEntity.transactionHash = event.transaction.hash.toHexString()
-    increasePositionEntity.save()
-  }
-  
-  export function handleExecuteTriggerOrders(event: ExecuteTriggerOrdersEvent): void {
-    let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
-    if (!positionTriggerEntity) {
-      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
-      if (positionStatsEntity) {
-        positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
-        positionTriggerEntity.account = positionStatsEntity.account
-        positionTriggerEntity.indexToken = positionStatsEntity.indexToken
-        positionTriggerEntity.isLong = positionStatsEntity.isLong
-        positionTriggerEntity.posId = positionStatsEntity.posId
-        positionTriggerEntity.key = positionStatsEntity.key
-        positionTriggerEntity.status = "OPEN"
-        positionTriggerEntity.save()
-      }
-    }
-    if (positionTriggerEntity) {
-      let triggerArray: string[] = []
-      for (let i = 0; i < event.params.slPrices.length; i++) {
-        let trigger = Trigger.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
-        if (!trigger) {
-          trigger = new Trigger(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
-          trigger.amountPercent = event.params.slAmountPercents[i]
-          trigger.createdAt = event.block.timestamp.toI32()
-          trigger.isTP = false
-          trigger.price = event.params.slPrices[i]
-          trigger.status = "OPEN"
-          trigger.triggeredAmount = BIG_NUM_ZERO
-          trigger.triggeredAt = 0
-          trigger.order = positionTriggerEntity.id
-        }
-        if (event.params.slTriggeredAmounts[i].gt(BIG_NUM_ZERO) && trigger.triggeredAt == 0) {
-          trigger.triggeredAt = event.block.timestamp.toI32()
-          trigger.triggeredAmount = event.params.slTriggeredAmounts[i]
-          trigger.status = "TRIGGERED"
-        }
-        trigger.save()
-        triggerArray.push(trigger.id)
-      }
-      for (let i = 0; i < event.params.tpPrices.length; i++) {
-        let trigger = Trigger.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
-        if (!trigger) {
-          trigger = new Trigger(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
-          trigger.amountPercent = event.params.tpAmountPercents[i]
-          trigger.createdAt = event.block.timestamp.toI32()
-          trigger.isTP = true
-          trigger.order = positionTriggerEntity.id
-          trigger.price = event.params.tpPrices[i]
-          trigger.status = "OPEN"
-          trigger.triggeredAmount = BIG_NUM_ZERO
-          trigger.triggeredAt = 0
-        }
-        if (event.params.tpTriggeredAmounts[i].gt(BIG_NUM_ZERO) && trigger.triggeredAt == 0) {
-          trigger.triggeredAt = event.block.timestamp.toI32()
-          trigger.triggeredAmount = event.params.tpTriggeredAmounts[i]
-          trigger.status = "TRIGGERED"
-        }
-        trigger.save()
-        triggerArray.push(trigger.id)
-      }
-      positionTriggerEntity.save()
-    }
-  }
-
-  export function handleUpdateTriggerOrders(event: UpdateTriggerOrdersEvent): void {
-    let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
-    if (!positionTriggerEntity) {
-      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
-      if (positionStatsEntity) {
-        positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
-        positionTriggerEntity.account = positionStatsEntity.account
-        positionTriggerEntity.indexToken = positionStatsEntity.indexToken
-        positionTriggerEntity.isLong = positionStatsEntity.isLong
-        positionTriggerEntity.posId = positionStatsEntity.posId
-        positionTriggerEntity.key = positionStatsEntity.key
-        positionTriggerEntity.status = "OPEN"
-        positionTriggerEntity.save()
-      }
-    }
-    if (positionTriggerEntity) {
-      let triggerArray: string[] = []
-      for (let i = 0; i < event.params.slPrices.length; i++) {
-        let trigger = Trigger.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
-        if (!trigger) {
-          trigger = new Trigger(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
-          trigger.amountPercent = event.params.slAmountPercents[i]
-          trigger.createdAt = event.block.timestamp.toI32()
-          trigger.isTP = false
-          trigger.order = positionTriggerEntity.id
-          trigger.price = event.params.slPrices[i]
-          trigger.status = "OPEN"
-          trigger.triggeredAmount = BIG_NUM_ZERO
-          trigger.triggeredAt = 0
-        }
-        if (event.params.slTriggeredAmounts[i].gt(BIG_NUM_ZERO) && trigger.triggeredAt == 0) {
-          trigger.triggeredAt = event.block.timestamp.toI32()
-          trigger.triggeredAmount = event.params.slTriggeredAmounts[i]
-          trigger.status = "TRIGGERED"
-        }
-        trigger.save()
-        triggerArray.push(trigger.id)
-      }
-      for (let i = 0; i < event.params.tpPrices.length; i++) {
-        let trigger = Trigger.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
-        if (!trigger) {
-          trigger = new Trigger(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
-          trigger.amountPercent = event.params.tpAmountPercents[i]
-          trigger.createdAt = event.block.timestamp.toI32()
-          trigger.isTP = true
-          trigger.order = positionTriggerEntity.id
-          trigger.price = event.params.tpPrices[i]
-          trigger.status = "OPEN"
-          trigger.triggeredAmount = BIG_NUM_ZERO
-          trigger.triggeredAt = 0
-        }
-        if (event.params.tpTriggeredAmounts[i].gt(BIG_NUM_ZERO) && trigger.triggeredAt == 0) {
-          trigger.triggeredAt = event.block.timestamp.toI32()
-          trigger.triggeredAmount = event.params.tpTriggeredAmounts[i]
-          trigger.status = "TRIGGERED"
-        }
-        trigger.save()
-        triggerArray.push(trigger.id)
-      }
-      positionTriggerEntity.save()
-    }
-  }
-
-  export function handleUpdateTriggerStatus(event: UpdateTriggerStatusEvent): void {
-    let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
-    if (!positionTriggerEntity) {
-      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
-      if (positionStatsEntity) {
-        positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
-        positionTriggerEntity.account = positionStatsEntity.account
-        positionTriggerEntity.indexToken = positionTriggerEntity.indexToken
-        positionTriggerEntity.isLong = positionTriggerEntity.isLong
-        positionTriggerEntity.posId = positionStatsEntity.posId
-        positionTriggerEntity.key = positionStatsEntity.key
-        positionTriggerEntity.status = "CANCELED"
-        positionTriggerEntity.save()
-      }
-    }
-  }
-
-  export function handleLiquidatePosition(event: LiquidatePositionEvent): void {
-    let liquidatePositionEntity = new LiquidatePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
-    let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
-    if (positionStatsEntity) {
-      let tradeVolumeEntity = TradeVolume.load(positionStatsEntity.account);
-      if (!tradeVolumeEntity) {
-        tradeVolumeEntity = new TradeVolume(positionStatsEntity.account)
-        tradeVolumeEntity.account = positionStatsEntity.account
-        tradeVolumeEntity.size = BIG_NUM_ZERO
-        tradeVolumeEntity.openLongs = BIG_NUM_ZERO
-        tradeVolumeEntity.openShorts = BIG_NUM_ZERO
-        tradeVolumeEntity.collateralUsage = BIG_NUM_ZERO
-        tradeVolumeEntity.marginUsage = BIG_NUM_ZERO
-        tradeVolumeEntity.vusdBalance = BIG_NUM_ZERO
-      }
-      if (positionStatsEntity.isLong) {
-        tradeVolumeEntity.openLongs = tradeVolumeEntity.openLongs.minus(positionStatsEntity.size)
-      } else {
-        tradeVolumeEntity.openShorts = tradeVolumeEntity.openShorts.minus(positionStatsEntity.size)
-      }
-      tradeVolumeEntity.collateralUsage = tradeVolumeEntity.collateralUsage.minus(positionStatsEntity.collateral)
-      tradeVolumeEntity.marginUsage =  tradeVolumeEntity.marginUsage.plus(event.params.feeUsd)
-      tradeVolumeEntity.size = tradeVolumeEntity.size.plus(positionStatsEntity.size)
-      tradeVolumeEntity.save()
-      liquidatePositionEntity.account = positionStatsEntity.account
-      liquidatePositionEntity.indexToken = positionStatsEntity.indexToken
-      liquidatePositionEntity.isLong = positionStatsEntity.isLong
-      liquidatePositionEntity.posId = positionStatsEntity.posId
-      let userTradeStatsEntity = new UserTradeStat(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
-      userTradeStatsEntity.key = event.params.key.toHexString()
-      userTradeStatsEntity.account = positionStatsEntity.account
-      userTradeStatsEntity.actionType = "LIQUIDATE_POSITION"
-      userTradeStatsEntity.amount = BIG_NUM_ZERO
-      userTradeStatsEntity.averagePrice = positionStatsEntity.averagePrice
-      userTradeStatsEntity.collateral = positionStatsEntity.collateral
-      userTradeStatsEntity.createdAt = event.block.timestamp.toI32()
-      userTradeStatsEntity.fees = event.params.feeUsd
-      userTradeStatsEntity.indexToken = positionStatsEntity.indexToken
-      userTradeStatsEntity.isLong = positionStatsEntity.isLong
-      userTradeStatsEntity.isPlus = true
-      userTradeStatsEntity.isWin = true
-      userTradeStatsEntity.markPrice = event.params.markPrice
-      userTradeStatsEntity.posId = positionStatsEntity.posId
-      userTradeStatsEntity.positionType = positionStatsEntity.positionType
-      userTradeStatsEntity.profitLoss = BigInt.fromString('-1').times(positionStatsEntity.collateral)
-      userTradeStatsEntity.tradeVolume = positionStatsEntity.size
-      userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
-      userTradeStatsEntity.save()
-      let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
-      let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
-      let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let hourlyTrades = HourlyTrade.load(hourlyTradesId)
-      if (!hourlyTrades) {
-        hourlyTrades = new HourlyTrade(hourlyTradesId)
-        hourlyTrades.account = positionStatsEntity.account
-        hourlyTrades.collateral = BIG_NUM_ZERO
-        hourlyTrades.fees = BIG_NUM_ZERO
-        hourlyTrades.timestamp = getHourStartDate(event.block.timestamp);
-        hourlyTrades.tradeVolume = BIG_NUM_ZERO
-        hourlyTrades.profitLoss = BIG_NUM_ZERO
-        hourlyTrades.tradeCount = 0
-        hourlyTrades.winCount = 0 
-        hourlyTrades.lossCount = 0
-        hourlyTrades.leverage = BIG_NUM_ZERO
-        hourlyTrades.save()
-      }
-      hourlyTrades.collateral = hourlyTrades.collateral.plus(positionStatsEntity.collateral)
-      hourlyTrades.fees = hourlyTrades.fees.plus(event.params.feeUsd)
-      hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
-      hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
-      hourlyTrades.lossCount += 1
-      hourlyTrades.tradeCount += 1
-      if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        hourlyTrades.leverage = BIG_NUM_ZERO
-      } else {
-        hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(hourlyTrades.collateral)
-      }
-      hourlyTrades.save()
-      let dailyTrades = DailyTrade.load(dailyTradesId)
-      if (!dailyTrades) {
-        dailyTrades = new DailyTrade(dailyTradesId)
-        dailyTrades.account = positionStatsEntity.account
-        dailyTrades.collateral = BIG_NUM_ZERO
-        dailyTrades.fees = BIG_NUM_ZERO
-        dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
-        dailyTrades.tradeVolume = BIG_NUM_ZERO
-        dailyTrades.profitLoss = BIG_NUM_ZERO
-        dailyTrades.tradeCount = 0
-        dailyTrades.winCount = 0 
-        dailyTrades.lossCount = 0
-        dailyTrades.leverage = BIG_NUM_ZERO
-        dailyTrades.save()
-      }
-      dailyTrades.collateral = dailyTrades.collateral.plus(positionStatsEntity.collateral)
-      dailyTrades.fees = dailyTrades.fees.plus(event.params.feeUsd)
-      dailyTrades.profitLoss = dailyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
-      dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
-      dailyTrades.lossCount += 1
-      dailyTrades.tradeCount += 1
-      if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        dailyTrades.leverage = BIG_NUM_ZERO
-      } else {
-        dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString('1000')).div(dailyTrades.collateral)
-      }
-      dailyTrades.save()
-      let dailyVolume = Volume.load(dailyVolumeId)
-      if (!dailyVolume) {
-        dailyVolume = new Volume(dailyVolumeId)
-        dailyVolume.indexToken = positionStatsEntity.indexToken
-        dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
-        dailyVolume.amount = BIG_NUM_ZERO
-      }
-      dailyVolume.amount = dailyVolume.amount.plus(positionStatsEntity.size)
-      dailyVolume.save()
-      let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
-      if (!hourlyVolume) {
-        hourlyVolume = new HourlyVolume(hourlyVolumeId)
-        hourlyVolume.amount = BIG_NUM_ZERO
-        hourlyVolume.indexToken = positionStatsEntity.indexToken
-        hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
-        hourlyVolume.tradeCounts = 0
-      }
-      hourlyVolume.amount = hourlyVolume.amount.plus(positionStatsEntity.size)
-      hourlyVolume.tradeCounts += 1
-      hourlyVolume.save()
-      let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
-      if (!monthlyTrades) {
-        monthlyTrades = new MonthlyTrade(monthlyTradesId)
-        monthlyTrades.account = positionStatsEntity.account      
-        monthlyTrades.collateral = BIG_NUM_ZERO
-        monthlyTrades.fees = BIG_NUM_ZERO
-        monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
-        monthlyTrades.tradeVolume = BIG_NUM_ZERO
-        monthlyTrades.profitLoss = BIG_NUM_ZERO
-        monthlyTrades.tradeCount = 0
-        monthlyTrades.winCount = 0 
-        monthlyTrades.lossCount = 0
-        monthlyTrades.leverage = BIG_NUM_ZERO
-        monthlyTrades.save()
-      }
-      monthlyTrades.collateral = monthlyTrades.collateral.plus(positionStatsEntity.collateral)
-      monthlyTrades.fees = monthlyTrades.fees.plus(event.params.feeUsd)
-      monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
-      monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
-      monthlyTrades.lossCount += 1
       monthlyTrades.tradeCount += 1
       if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
         monthlyTrades.leverage = BIG_NUM_ZERO
@@ -2456,16 +2032,14 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         weeklyTrades.leverage = BIG_NUM_ZERO
         weeklyTrades.save()
       }
-      weeklyTrades.collateral = weeklyTrades.collateral.plus(positionStatsEntity.collateral)
-      weeklyTrades.fees = weeklyTrades.fees.plus(event.params.feeUsd)
-      weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
-      weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
-      weeklyTrades.lossCount += 1
+      weeklyTrades.collateral = weeklyTrades.collateral.plus(realCollateral)
+      weeklyTrades.fees = weeklyTrades.fees.plus(event.params.posData[6])
+      weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(event.params.posData[1])
       weeklyTrades.tradeCount += 1
       if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
         weeklyTrades.leverage = BIG_NUM_ZERO
       } else {
-        weeklyTrades.leverage = weeklyTrades.tradeVolume.times(BigInt.fromString('1000')).div(weeklyTrades.collateral)
+        weeklyTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(weeklyTrades.collateral)
       }
       weeklyTrades.save()
       let allTrades = AllTrade.load(positionStatsEntity.account)
@@ -2482,33 +2056,30 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         allTrades.leverage = BIG_NUM_ZERO
         allTrades.save()
       }
-      allTrades.collateral = allTrades.collateral.plus(positionStatsEntity.collateral)
-      allTrades.fees = allTrades.fees.plus(event.params.feeUsd)
-      allTrades.profitLoss = allTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
-      allTrades.tradeVolume = allTrades.tradeVolume.plus(positionStatsEntity.size)
-      allTrades.lossCount += 1
+      allTrades.collateral = allTrades.collateral.plus(realCollateral)
+      allTrades.fees = allTrades.fees.plus(event.params.posData[6])
+      allTrades.tradeVolume = allTrades.tradeVolume.plus(event.params.posData[1])
       allTrades.tradeCount += 1
       if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
         allTrades.leverage = BIG_NUM_ZERO
       } else {
-        allTrades.leverage = allTrades.tradeVolume.times(BigInt.fromString('1000')).div(allTrades.collateral)
+        allTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(allTrades.collateral)
       }
       allTrades.save()
       let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
       let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
       if (!dailyGlobalInfo) {
         dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
-        dailyGlobalInfo.fees = BIG_NUM_ZERO
         dailyGlobalInfo.timestamp = getHourStartDate(event.block.timestamp)      
+        dailyGlobalInfo.fees = BIG_NUM_ZERO
         dailyGlobalInfo.openInterests = BIG_NUM_ZERO
         dailyGlobalInfo.tradeVolume = BIG_NUM_ZERO
         dailyGlobalInfo.tradeCounts = 0
         dailyGlobalInfo.save()
       }
-
-      dailyGlobalInfo.fees = dailyGlobalInfo.fees.plus(event.params.feeUsd)
-      dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.minus(positionStatsEntity.size)
-      dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(positionStatsEntity.size)
+      dailyGlobalInfo.fees = dailyGlobalInfo.fees.plus(event.params.posData[6])
+      dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.plus(event.params.posData[1])
+      dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(event.params.posData[1])
       dailyGlobalInfo.tradeCounts += 1
       dailyGlobalInfo.save()
       let allOpenInterest = OpenInterest.load("all")
@@ -2517,7 +2088,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         allOpenInterest.token = "all"
         allOpenInterest.amount = BIG_NUM_ZERO
       }
-      allOpenInterest.amount = allOpenInterest.amount.minus(positionStatsEntity.size)
+      allOpenInterest.amount = allOpenInterest.amount.plus(event.params.posData[1])
       allOpenInterest.save()
 
       let tokenOpenInterest = OpenInterest.load(positionStatsEntity.indexToken)
@@ -2526,19 +2097,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         tokenOpenInterest.token = positionStatsEntity.indexToken
         tokenOpenInterest.amount = BIG_NUM_ZERO
       }
-      tokenOpenInterest.amount = tokenOpenInterest.amount.minus(positionStatsEntity.size)
+      tokenOpenInterest.amount = tokenOpenInterest.amount.plus(event.params.posData[1])
       tokenOpenInterest.save()
-      positionStatsEntity.closedAt = event.block.timestamp.toI32()
-      positionStatsEntity.markPrice = event.params.markPrice
-      positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.feeUsd)
-      positionStatsEntity.realisedPnl = BigInt.fromString('-1').times(positionStatsEntity.collateral)
-      positionStatsEntity.positionStatus = "LIQUIDATED"
-      positionStatsEntity.save()
-      let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
-      if (positionTriggerEntity) {
-        positionTriggerEntity.status = "CLOSED";
-        positionTriggerEntity.save()
-      }
       let allGlobaInfo = GlobalInfo.load("all")
       if (!allGlobaInfo) {
         allGlobaInfo = new GlobalInfo("all")
@@ -2549,9 +2109,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         allGlobaInfo.volume = BIG_NUM_ZERO
         allGlobaInfo.save()
       }
-      allGlobaInfo.realisedPnl = allGlobaInfo.realisedPnl.plus(positionStatsEntity.collateral)
-      allGlobaInfo.fees = allGlobaInfo.fees.plus(event.params.feeUsd)
-      allGlobaInfo.volume = allGlobaInfo.volume.plus(positionStatsEntity.size)
+      allGlobaInfo.fees = allGlobaInfo.fees.plus(event.params.posData[6])
+      allGlobaInfo.volume = allGlobaInfo.volume.plus(event.params.posData[1])
       allGlobaInfo.save()
       let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
       if (!globaInfo) {
@@ -2561,11 +2120,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         globaInfo.unRealisedPnl = BIG_NUM_ZERO
         globaInfo.fees = BIG_NUM_ZERO
         globaInfo.volume = BIG_NUM_ZERO
-        globaInfo.save()
       }
-      globaInfo.realisedPnl = globaInfo.realisedPnl.plus(positionStatsEntity.collateral)
-      globaInfo.fees = globaInfo.fees.plus(event.params.feeUsd)
-      globaInfo.volume = globaInfo.volume.plus(positionStatsEntity.size)
+      globaInfo.fees = globaInfo.fees.plus(event.params.posData[6])
+      globaInfo.volume = globaInfo.volume.plus(event.params.posData[1])
       globaInfo.save()
       let side = positionStatsEntity.isLong ? "long" : "short"
       let sideGlobalInfo = GlobalInfo.load(positionStatsEntity.indexToken + "-" + side)
@@ -2578,30 +2135,495 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         sideGlobalInfo.volume = BIG_NUM_ZERO
         sideGlobalInfo.save()
       }
-      sideGlobalInfo.realisedPnl = sideGlobalInfo.realisedPnl.plus(positionStatsEntity.collateral)
-      sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.feeUsd)
-      sideGlobalInfo.volume = sideGlobalInfo.volume.plus(positionStatsEntity.size)
+      sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.posData[6])
+      sideGlobalInfo.volume = sideGlobalInfo.volume.plus(event.params.posData[1])
       sideGlobalInfo.save()
-      let strandedUsdc = StrandedUSDCAmount.load("total")
-      if (!strandedUsdc) { 
-        strandedUsdc = new StrandedUSDCAmount("total")
-        strandedUsdc.amount = BIG_NUM_ZERO
-      }
-      strandedUsdc.amount = strandedUsdc.amount.plus(positionStatsEntity.collateral.minus(event.params.feeUsd))
-      strandedUsdc.save()
-    } else {
-      liquidatePositionEntity.account = '0x0000000000000000000000000000000000000420'
-      liquidatePositionEntity.indexToken = '0x0000000000000000000000000000000000000420'
-      liquidatePositionEntity.isLong = false
-      liquidatePositionEntity.posId = BIG_NUM_ZERO
+      let increasePositionEntity = new IncreasePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
+      increasePositionEntity.key = event.params.key.toHexString()
+      increasePositionEntity.account = event.params.account.toHexString()
+      increasePositionEntity.averagePrice = event.params.posData[4]
+      increasePositionEntity.collateral = realCollateral
+      increasePositionEntity.entryFundingRate = positionStatsEntity.entryFundingRate
+      increasePositionEntity.indexToken = event.params.indexToken.toHexString()
+      increasePositionEntity.isLong = event.params.isLong
+      increasePositionEntity.feeUsd = event.params.posData[6]
+      increasePositionEntity.markPrice = event.params.posData[5]
+      increasePositionEntity.posId = event.params.posId
+      increasePositionEntity.reserveAmount = positionStatsEntity.reserveAmount
+      increasePositionEntity.size = positionStatsEntity.size
+      increasePositionEntity.timestamp = event.block.timestamp.toI32()
+      increasePositionEntity.transactionHash = event.transaction.hash.toHexString()
+      increasePositionEntity.save()
     }
-    liquidatePositionEntity.feeUsd = event.params.feeUsd
-    liquidatePositionEntity.key = event.params.key.toHexString()
-    liquidatePositionEntity.markPrice = event.params.markPrice
-    liquidatePositionEntity.realisedPnl = event.params.realisedPnl
-    liquidatePositionEntity.timestamp = event.block.timestamp.toI32()
-    liquidatePositionEntity.from = event.transaction.from.toHexString()
-    liquidatePositionEntity.transactionHash = event.transaction.hash.toHexString()
-    liquidatePositionEntity.save()
+  }
+  
+  export function handleExecuteTriggerOrders(event: ExecuteTriggerOrdersEvent): void {
+    if (event.block.number.toI32() < 79518835) {
+      let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+      if (!positionTriggerEntity) {
+        let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+        if (positionStatsEntity) {
+          positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
+          positionTriggerEntity.account = positionStatsEntity.account
+          positionTriggerEntity.indexToken = positionStatsEntity.indexToken
+          positionTriggerEntity.isLong = positionStatsEntity.isLong
+          positionTriggerEntity.posId = positionStatsEntity.posId
+          positionTriggerEntity.key = positionStatsEntity.key
+          positionTriggerEntity.status = "OPEN"
+          positionTriggerEntity.save()
+        }
+      }
+      if (positionTriggerEntity) {
+        let triggerArray: string[] = []
+        for (let i = 0; i < event.params.slPrices.length; i++) {
+          let trigger = Trigger.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
+          if (!trigger) {
+            trigger = new Trigger(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
+            trigger.amountPercent = event.params.slAmountPercents[i]
+            trigger.createdAt = event.block.timestamp.toI32()
+            trigger.isTP = false
+            trigger.price = event.params.slPrices[i]
+            trigger.status = "OPEN"
+            trigger.triggeredAmount = BIG_NUM_ZERO
+            trigger.triggeredAt = 0
+            trigger.order = positionTriggerEntity.id
+          }
+          if (event.params.slTriggeredAmounts[i].gt(BIG_NUM_ZERO) && trigger.triggeredAt == 0) {
+            trigger.triggeredAt = event.block.timestamp.toI32()
+            trigger.triggeredAmount = event.params.slTriggeredAmounts[i]
+            trigger.status = "TRIGGERED"
+          }
+          trigger.save()
+          triggerArray.push(trigger.id)
+        }
+        for (let i = 0; i < event.params.tpPrices.length; i++) {
+          let trigger = Trigger.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+          if (!trigger) {
+            trigger = new Trigger(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+            trigger.amountPercent = event.params.tpAmountPercents[i]
+            trigger.createdAt = event.block.timestamp.toI32()
+            trigger.isTP = true
+            trigger.order = positionTriggerEntity.id
+            trigger.price = event.params.tpPrices[i]
+            trigger.status = "OPEN"
+            trigger.triggeredAmount = BIG_NUM_ZERO
+            trigger.triggeredAt = 0
+          }
+          if (event.params.tpTriggeredAmounts[i].gt(BIG_NUM_ZERO) && trigger.triggeredAt == 0) {
+            trigger.triggeredAt = event.block.timestamp.toI32()
+            trigger.triggeredAmount = event.params.tpTriggeredAmounts[i]
+            trigger.status = "TRIGGERED"
+          }
+          trigger.save()
+          triggerArray.push(trigger.id)
+        }
+        positionTriggerEntity.save()
+      }
+    }
+  }
+
+  export function handleUpdateTriggerOrders(event: UpdateTriggerOrdersEvent): void {
+    if (event.block.number.toI32() < 79518835) {
+      let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+      if (!positionTriggerEntity) {
+        let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+        if (positionStatsEntity) {
+          positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
+          positionTriggerEntity.account = positionStatsEntity.account
+          positionTriggerEntity.indexToken = positionStatsEntity.indexToken
+          positionTriggerEntity.isLong = positionStatsEntity.isLong
+          positionTriggerEntity.posId = positionStatsEntity.posId
+          positionTriggerEntity.key = positionStatsEntity.key
+          positionTriggerEntity.status = "OPEN"
+          positionTriggerEntity.save()
+        }
+      }
+      if (positionTriggerEntity) {
+        let triggerArray: string[] = []
+        for (let i = 0; i < event.params.slPrices.length; i++) {
+          let trigger = Trigger.load(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
+          if (!trigger) {
+            trigger = new Trigger(event.params.key.toHexString() + "-sl-" + event.params.slPrices[i].toString() + "-" + event.params.slAmountPercents[i].toString())
+            trigger.amountPercent = event.params.slAmountPercents[i]
+            trigger.createdAt = event.block.timestamp.toI32()
+            trigger.isTP = false
+            trigger.order = positionTriggerEntity.id
+            trigger.price = event.params.slPrices[i]
+            trigger.status = "OPEN"
+            trigger.triggeredAmount = BIG_NUM_ZERO
+            trigger.triggeredAt = 0
+          }
+          if (event.params.slTriggeredAmounts[i].gt(BIG_NUM_ZERO) && trigger.triggeredAt == 0) {
+            trigger.triggeredAt = event.block.timestamp.toI32()
+            trigger.triggeredAmount = event.params.slTriggeredAmounts[i]
+            trigger.status = "TRIGGERED"
+          }
+          trigger.save()
+          triggerArray.push(trigger.id)
+        }
+        for (let i = 0; i < event.params.tpPrices.length; i++) {
+          let trigger = Trigger.load(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+          if (!trigger) {
+            trigger = new Trigger(event.params.key.toHexString() + "-tp-" + event.params.tpPrices[i].toString() + "-" + event.params.tpAmountPercents[i].toString())
+            trigger.amountPercent = event.params.tpAmountPercents[i]
+            trigger.createdAt = event.block.timestamp.toI32()
+            trigger.isTP = true
+            trigger.order = positionTriggerEntity.id
+            trigger.price = event.params.tpPrices[i]
+            trigger.status = "OPEN"
+            trigger.triggeredAmount = BIG_NUM_ZERO
+            trigger.triggeredAt = 0
+          }
+          if (event.params.tpTriggeredAmounts[i].gt(BIG_NUM_ZERO) && trigger.triggeredAt == 0) {
+            trigger.triggeredAt = event.block.timestamp.toI32()
+            trigger.triggeredAmount = event.params.tpTriggeredAmounts[i]
+            trigger.status = "TRIGGERED"
+          }
+          trigger.save()
+          triggerArray.push(trigger.id)
+        }
+        positionTriggerEntity.save()
+      }
+    }
+  }
+
+  export function handleUpdateTriggerStatus(event: UpdateTriggerStatusEvent): void {
+    if (event.block.number.toI32() < 79518835) {
+      let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+      if (!positionTriggerEntity) {
+        let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+        if (positionStatsEntity) {
+          positionTriggerEntity = new PositionTrigger(event.params.key.toHexString())
+          positionTriggerEntity.account = positionStatsEntity.account
+          positionTriggerEntity.indexToken = positionTriggerEntity.indexToken
+          positionTriggerEntity.isLong = positionTriggerEntity.isLong
+          positionTriggerEntity.posId = positionStatsEntity.posId
+          positionTriggerEntity.key = positionStatsEntity.key
+          positionTriggerEntity.status = "CANCELED"
+          positionTriggerEntity.save()
+        }
+      }
+    }
+  }
+
+  export function handleLiquidatePosition(event: LiquidatePositionEvent): void {
+    if (event.block.number.toI32() < 79518835) {
+      let liquidatePositionEntity = new LiquidatePosition(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
+      let positionStatsEntity = PositionStat.load(event.params.key.toHexString())
+      if (positionStatsEntity) {
+        let tradeVolumeEntity = TradeVolume.load(positionStatsEntity.account);
+        if (!tradeVolumeEntity) {
+          tradeVolumeEntity = new TradeVolume(positionStatsEntity.account)
+          tradeVolumeEntity.account = positionStatsEntity.account
+          tradeVolumeEntity.size = BIG_NUM_ZERO
+          tradeVolumeEntity.openLongs = BIG_NUM_ZERO
+          tradeVolumeEntity.openShorts = BIG_NUM_ZERO
+          tradeVolumeEntity.collateralUsage = BIG_NUM_ZERO
+          tradeVolumeEntity.marginUsage = BIG_NUM_ZERO
+          tradeVolumeEntity.vusdBalance = BIG_NUM_ZERO
+        }
+        if (positionStatsEntity.isLong) {
+          tradeVolumeEntity.openLongs = tradeVolumeEntity.openLongs.minus(positionStatsEntity.size)
+        } else {
+          tradeVolumeEntity.openShorts = tradeVolumeEntity.openShorts.minus(positionStatsEntity.size)
+        }
+        tradeVolumeEntity.collateralUsage = tradeVolumeEntity.collateralUsage.minus(positionStatsEntity.collateral)
+        tradeVolumeEntity.marginUsage =  tradeVolumeEntity.marginUsage.plus(event.params.feeUsd)
+        tradeVolumeEntity.size = tradeVolumeEntity.size.plus(positionStatsEntity.size)
+        tradeVolumeEntity.save()
+        liquidatePositionEntity.account = positionStatsEntity.account
+        liquidatePositionEntity.indexToken = positionStatsEntity.indexToken
+        liquidatePositionEntity.isLong = positionStatsEntity.isLong
+        liquidatePositionEntity.posId = positionStatsEntity.posId
+        let userTradeStatsEntity = new UserTradeStat(event.params.key.toHexString() + "-" + event.block.timestamp.toString())
+        userTradeStatsEntity.key = event.params.key.toHexString()
+        userTradeStatsEntity.account = positionStatsEntity.account
+        userTradeStatsEntity.actionType = "LIQUIDATE_POSITION"
+        userTradeStatsEntity.amount = BIG_NUM_ZERO
+        userTradeStatsEntity.averagePrice = positionStatsEntity.averagePrice
+        userTradeStatsEntity.collateral = positionStatsEntity.collateral
+        userTradeStatsEntity.createdAt = event.block.timestamp.toI32()
+        userTradeStatsEntity.fees = event.params.feeUsd
+        userTradeStatsEntity.indexToken = positionStatsEntity.indexToken
+        userTradeStatsEntity.isLong = positionStatsEntity.isLong
+        userTradeStatsEntity.isPlus = true
+        userTradeStatsEntity.isWin = true
+        userTradeStatsEntity.markPrice = event.params.markPrice
+        userTradeStatsEntity.posId = positionStatsEntity.posId
+        userTradeStatsEntity.positionType = positionStatsEntity.positionType
+        userTradeStatsEntity.profitLoss = BigInt.fromString('-1').times(positionStatsEntity.collateral)
+        userTradeStatsEntity.tradeVolume = positionStatsEntity.size
+        userTradeStatsEntity.transactionHash = event.transaction.hash.toHexString()
+        userTradeStatsEntity.save()
+        let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+        let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
+        let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.indexToken, event.block.timestamp)
+        let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
+        let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
+        let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
+        let hourlyTrades = HourlyTrade.load(hourlyTradesId)
+        if (!hourlyTrades) {
+          hourlyTrades = new HourlyTrade(hourlyTradesId)
+          hourlyTrades.account = positionStatsEntity.account
+          hourlyTrades.collateral = BIG_NUM_ZERO
+          hourlyTrades.fees = BIG_NUM_ZERO
+          hourlyTrades.timestamp = getHourStartDate(event.block.timestamp);
+          hourlyTrades.tradeVolume = BIG_NUM_ZERO
+          hourlyTrades.profitLoss = BIG_NUM_ZERO
+          hourlyTrades.tradeCount = 0
+          hourlyTrades.winCount = 0 
+          hourlyTrades.lossCount = 0
+          hourlyTrades.leverage = BIG_NUM_ZERO
+          hourlyTrades.save()
+        }
+        hourlyTrades.collateral = hourlyTrades.collateral.plus(positionStatsEntity.collateral)
+        hourlyTrades.fees = hourlyTrades.fees.plus(event.params.feeUsd)
+        hourlyTrades.profitLoss = hourlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        hourlyTrades.tradeVolume = hourlyTrades.tradeVolume.plus(positionStatsEntity.size)
+        hourlyTrades.lossCount += 1
+        hourlyTrades.tradeCount += 1
+        if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          hourlyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(hourlyTrades.collateral)
+        }
+        hourlyTrades.save()
+        let dailyTrades = DailyTrade.load(dailyTradesId)
+        if (!dailyTrades) {
+          dailyTrades = new DailyTrade(dailyTradesId)
+          dailyTrades.account = positionStatsEntity.account
+          dailyTrades.collateral = BIG_NUM_ZERO
+          dailyTrades.fees = BIG_NUM_ZERO
+          dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
+          dailyTrades.tradeVolume = BIG_NUM_ZERO
+          dailyTrades.profitLoss = BIG_NUM_ZERO
+          dailyTrades.tradeCount = 0
+          dailyTrades.winCount = 0 
+          dailyTrades.lossCount = 0
+          dailyTrades.leverage = BIG_NUM_ZERO
+          dailyTrades.save()
+        }
+        dailyTrades.collateral = dailyTrades.collateral.plus(positionStatsEntity.collateral)
+        dailyTrades.fees = dailyTrades.fees.plus(event.params.feeUsd)
+        dailyTrades.profitLoss = dailyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        dailyTrades.tradeVolume = dailyTrades.tradeVolume.plus(positionStatsEntity.size)
+        dailyTrades.lossCount += 1
+        dailyTrades.tradeCount += 1
+        if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          dailyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString('1000')).div(dailyTrades.collateral)
+        }
+        dailyTrades.save()
+        let dailyVolume = Volume.load(dailyVolumeId)
+        if (!dailyVolume) {
+          dailyVolume = new Volume(dailyVolumeId)
+          dailyVolume.indexToken = positionStatsEntity.indexToken
+          dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+          dailyVolume.amount = BIG_NUM_ZERO
+        }
+        dailyVolume.amount = dailyVolume.amount.plus(positionStatsEntity.size)
+        dailyVolume.save()
+        let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
+        if (!hourlyVolume) {
+          hourlyVolume = new HourlyVolume(hourlyVolumeId)
+          hourlyVolume.amount = BIG_NUM_ZERO
+          hourlyVolume.indexToken = positionStatsEntity.indexToken
+          hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
+          hourlyVolume.tradeCounts = 0
+        }
+        hourlyVolume.amount = hourlyVolume.amount.plus(positionStatsEntity.size)
+        hourlyVolume.tradeCounts += 1
+        hourlyVolume.save()
+        let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
+        if (!monthlyTrades) {
+          monthlyTrades = new MonthlyTrade(monthlyTradesId)
+          monthlyTrades.account = positionStatsEntity.account      
+          monthlyTrades.collateral = BIG_NUM_ZERO
+          monthlyTrades.fees = BIG_NUM_ZERO
+          monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
+          monthlyTrades.tradeVolume = BIG_NUM_ZERO
+          monthlyTrades.profitLoss = BIG_NUM_ZERO
+          monthlyTrades.tradeCount = 0
+          monthlyTrades.winCount = 0 
+          monthlyTrades.lossCount = 0
+          monthlyTrades.leverage = BIG_NUM_ZERO
+          monthlyTrades.save()
+        }
+        monthlyTrades.collateral = monthlyTrades.collateral.plus(positionStatsEntity.collateral)
+        monthlyTrades.fees = monthlyTrades.fees.plus(event.params.feeUsd)
+        monthlyTrades.profitLoss = monthlyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        monthlyTrades.tradeVolume = monthlyTrades.tradeVolume.plus(positionStatsEntity.size)
+        monthlyTrades.lossCount += 1
+        monthlyTrades.tradeCount += 1
+        if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          monthlyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          monthlyTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString('1000')).div(monthlyTrades.collateral)
+        }
+        monthlyTrades.save()
+        let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
+        if (!weeklyTrades) {
+          weeklyTrades = new WeeklyTrade(weeklyTradesId)
+          weeklyTrades.account = positionStatsEntity.account
+          weeklyTrades.collateral = BIG_NUM_ZERO
+          weeklyTrades.fees = BIG_NUM_ZERO
+          weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
+          weeklyTrades.tradeVolume = BIG_NUM_ZERO
+          weeklyTrades.profitLoss = BIG_NUM_ZERO
+          weeklyTrades.tradeCount = 0
+          weeklyTrades.winCount = 0 
+          weeklyTrades.lossCount = 0
+          weeklyTrades.leverage = BIG_NUM_ZERO
+          weeklyTrades.save()
+        }
+        weeklyTrades.collateral = weeklyTrades.collateral.plus(positionStatsEntity.collateral)
+        weeklyTrades.fees = weeklyTrades.fees.plus(event.params.feeUsd)
+        weeklyTrades.profitLoss = weeklyTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        weeklyTrades.tradeVolume = weeklyTrades.tradeVolume.plus(positionStatsEntity.size)
+        weeklyTrades.lossCount += 1
+        weeklyTrades.tradeCount += 1
+        if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          weeklyTrades.leverage = BIG_NUM_ZERO
+        } else {
+          weeklyTrades.leverage = weeklyTrades.tradeVolume.times(BigInt.fromString('1000')).div(weeklyTrades.collateral)
+        }
+        weeklyTrades.save()
+        let allTrades = AllTrade.load(positionStatsEntity.account)
+        if (!allTrades) {
+          allTrades = new AllTrade(positionStatsEntity.account)
+          allTrades.account = positionStatsEntity.account
+          allTrades.collateral = BIG_NUM_ZERO
+          allTrades.fees = BIG_NUM_ZERO
+          allTrades.tradeVolume = BIG_NUM_ZERO
+          allTrades.profitLoss = BIG_NUM_ZERO
+          allTrades.tradeCount = 0
+          allTrades.winCount = 0 
+          allTrades.lossCount = 0
+          allTrades.leverage = BIG_NUM_ZERO
+          allTrades.save()
+        }
+        allTrades.collateral = allTrades.collateral.plus(positionStatsEntity.collateral)
+        allTrades.fees = allTrades.fees.plus(event.params.feeUsd)
+        allTrades.profitLoss = allTrades.profitLoss.plus(userTradeStatsEntity.profitLoss)
+        allTrades.tradeVolume = allTrades.tradeVolume.plus(positionStatsEntity.size)
+        allTrades.lossCount += 1
+        allTrades.tradeCount += 1
+        if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
+          allTrades.leverage = BIG_NUM_ZERO
+        } else {
+          allTrades.leverage = allTrades.tradeVolume.times(BigInt.fromString('1000')).div(allTrades.collateral)
+        }
+        allTrades.save()
+        let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
+        let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
+        if (!dailyGlobalInfo) {
+          dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
+          dailyGlobalInfo.fees = BIG_NUM_ZERO
+          dailyGlobalInfo.timestamp = getHourStartDate(event.block.timestamp)      
+          dailyGlobalInfo.openInterests = BIG_NUM_ZERO
+          dailyGlobalInfo.tradeVolume = BIG_NUM_ZERO
+          dailyGlobalInfo.tradeCounts = 0
+          dailyGlobalInfo.save()
+        }
+
+        dailyGlobalInfo.fees = dailyGlobalInfo.fees.plus(event.params.feeUsd)
+        dailyGlobalInfo.openInterests = dailyGlobalInfo.openInterests.minus(positionStatsEntity.size)
+        dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(positionStatsEntity.size)
+        dailyGlobalInfo.tradeCounts += 1
+        dailyGlobalInfo.save()
+        let allOpenInterest = OpenInterest.load("all")
+        if (!allOpenInterest) {
+          allOpenInterest = new OpenInterest("all")
+          allOpenInterest.token = "all"
+          allOpenInterest.amount = BIG_NUM_ZERO
+        }
+        allOpenInterest.amount = allOpenInterest.amount.minus(positionStatsEntity.size)
+        allOpenInterest.save()
+
+        let tokenOpenInterest = OpenInterest.load(positionStatsEntity.indexToken)
+        if (!tokenOpenInterest) {
+          tokenOpenInterest = new OpenInterest(positionStatsEntity.indexToken)
+          tokenOpenInterest.token = positionStatsEntity.indexToken
+          tokenOpenInterest.amount = BIG_NUM_ZERO
+        }
+        tokenOpenInterest.amount = tokenOpenInterest.amount.minus(positionStatsEntity.size)
+        tokenOpenInterest.save()
+        positionStatsEntity.closedAt = event.block.timestamp.toI32()
+        positionStatsEntity.markPrice = event.params.markPrice
+        positionStatsEntity.feeUsd = positionStatsEntity.feeUsd.plus(event.params.feeUsd)
+        positionStatsEntity.realisedPnl = BigInt.fromString('-1').times(positionStatsEntity.collateral)
+        positionStatsEntity.positionStatus = "LIQUIDATED"
+        positionStatsEntity.save()
+        let positionTriggerEntity = PositionTrigger.load(event.params.key.toHexString())
+        if (positionTriggerEntity) {
+          positionTriggerEntity.status = "CLOSED";
+          positionTriggerEntity.save()
+        }
+        let allGlobaInfo = GlobalInfo.load("all")
+        if (!allGlobaInfo) {
+          allGlobaInfo = new GlobalInfo("all")
+          allGlobaInfo.token = "all"
+          allGlobaInfo.realisedPnl = BIG_NUM_ZERO
+          allGlobaInfo.unRealisedPnl = BIG_NUM_ZERO
+          allGlobaInfo.fees = BIG_NUM_ZERO
+          allGlobaInfo.volume = BIG_NUM_ZERO
+          allGlobaInfo.save()
+        }
+        allGlobaInfo.realisedPnl = allGlobaInfo.realisedPnl.plus(positionStatsEntity.collateral)
+        allGlobaInfo.fees = allGlobaInfo.fees.plus(event.params.feeUsd)
+        allGlobaInfo.volume = allGlobaInfo.volume.plus(positionStatsEntity.size)
+        allGlobaInfo.save()
+        let globaInfo = GlobalInfo.load(positionStatsEntity.indexToken)
+        if (!globaInfo) {
+          globaInfo = new GlobalInfo(positionStatsEntity.indexToken)
+          globaInfo.token = positionStatsEntity.indexToken
+          globaInfo.realisedPnl = BIG_NUM_ZERO
+          globaInfo.unRealisedPnl = BIG_NUM_ZERO
+          globaInfo.fees = BIG_NUM_ZERO
+          globaInfo.volume = BIG_NUM_ZERO
+          globaInfo.save()
+        }
+        globaInfo.realisedPnl = globaInfo.realisedPnl.plus(positionStatsEntity.collateral)
+        globaInfo.fees = globaInfo.fees.plus(event.params.feeUsd)
+        globaInfo.volume = globaInfo.volume.plus(positionStatsEntity.size)
+        globaInfo.save()
+        let side = positionStatsEntity.isLong ? "long" : "short"
+        let sideGlobalInfo = GlobalInfo.load(positionStatsEntity.indexToken + "-" + side)
+        if (!sideGlobalInfo) {
+          sideGlobalInfo = new GlobalInfo(positionStatsEntity.indexToken + "-" + side)
+          sideGlobalInfo.token = positionStatsEntity.indexToken
+          sideGlobalInfo.realisedPnl = BIG_NUM_ZERO
+          sideGlobalInfo.unRealisedPnl = BIG_NUM_ZERO
+          sideGlobalInfo.fees = BIG_NUM_ZERO
+          sideGlobalInfo.volume = BIG_NUM_ZERO
+          sideGlobalInfo.save()
+        }
+        sideGlobalInfo.realisedPnl = sideGlobalInfo.realisedPnl.plus(positionStatsEntity.collateral)
+        sideGlobalInfo.fees = sideGlobalInfo.fees.plus(event.params.feeUsd)
+        sideGlobalInfo.volume = sideGlobalInfo.volume.plus(positionStatsEntity.size)
+        sideGlobalInfo.save()
+        let strandedUsdc = StrandedUSDCAmount.load("total")
+        if (!strandedUsdc) { 
+          strandedUsdc = new StrandedUSDCAmount("total")
+          strandedUsdc.amount = BIG_NUM_ZERO
+        }
+        strandedUsdc.amount = strandedUsdc.amount.plus(positionStatsEntity.collateral.minus(event.params.feeUsd))
+        strandedUsdc.save()
+      } else {
+        liquidatePositionEntity.account = '0x0000000000000000000000000000000000000420'
+        liquidatePositionEntity.indexToken = '0x0000000000000000000000000000000000000420'
+        liquidatePositionEntity.isLong = false
+        liquidatePositionEntity.posId = BIG_NUM_ZERO
+      }
+      liquidatePositionEntity.feeUsd = event.params.feeUsd
+      liquidatePositionEntity.key = event.params.key.toHexString()
+      liquidatePositionEntity.markPrice = event.params.markPrice
+      liquidatePositionEntity.realisedPnl = event.params.realisedPnl
+      liquidatePositionEntity.timestamp = event.block.timestamp.toI32()
+      liquidatePositionEntity.from = event.transaction.from.toHexString()
+      liquidatePositionEntity.transactionHash = event.transaction.hash.toHexString()
+      liquidatePositionEntity.save()
+    }
   }
 

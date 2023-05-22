@@ -1,9 +1,11 @@
 import {
+    FarmDeposit,
+    FarmWithdraw,
     VestingDeposit,
     VestingWithdraw,
 } from "../generated/TokenFarm/TokenFarm"
 import {
-    Rewarder, RewardInfo, RewardStat, VestingStat
+    PoolInfo, Rewarder, RewardInfo, RewardStat, VestingStat
 } from "../generated/schema"
 import {
     AddPool as AddPool1,
@@ -186,4 +188,52 @@ export function handleOnReward3(event: OnReward3): void {
     }
     allRewardStats.rewarder1 = allRewardStats.rewarder1.plus(event.params.amount)
     allRewardStats.save()
+}
+
+export function handleFarmDeposit(event: FarmDeposit): void {
+    let userPoolInfo = PoolInfo.load(event.params.user.toHexString())
+    if (!userPoolInfo) {
+        userPoolInfo = new PoolInfo(event.params.pid.toString())
+        userPoolInfo.pid1  = BIG_NUM_ZERO
+        userPoolInfo.pid2 = BIG_NUM_ZERO
+    }
+    let allPoolInfo = PoolInfo.load("all")
+    if (!allPoolInfo) {
+        allPoolInfo = new PoolInfo("all")
+        allPoolInfo.pid1  = BIG_NUM_ZERO
+        allPoolInfo.pid2 = BIG_NUM_ZERO
+    }
+    if (event.params.pid.toI32() == 1) {
+        userPoolInfo.pid1 = userPoolInfo.pid1.plus(event.params.amount)
+        allPoolInfo.pid1 = allPoolInfo.pid1.plus(event.params.amount)
+    } else if (event.params.pid.toI32() == 2) {
+        userPoolInfo.pid2 = userPoolInfo.pid2.plus(event.params.amount)
+        allPoolInfo.pid2 = allPoolInfo.pid2.plus(event.params.amount)
+    }
+    userPoolInfo.save()
+    allPoolInfo.save()
+}
+
+export function handleFarmWithdraw(event: FarmWithdraw): void {
+    let userPoolInfo = PoolInfo.load(event.params.user.toHexString())
+    if (!userPoolInfo) {
+        userPoolInfo = new PoolInfo(event.params.pid.toString())
+        userPoolInfo.pid1  = BIG_NUM_ZERO
+        userPoolInfo.pid2 = BIG_NUM_ZERO
+    }
+    let allPoolInfo = PoolInfo.load("all")
+    if (!allPoolInfo) {
+        allPoolInfo = new PoolInfo("all")
+        allPoolInfo.pid1  = BIG_NUM_ZERO
+        allPoolInfo.pid2 = BIG_NUM_ZERO
+    }
+    if (event.params.pid.toI32() == 1) {
+        userPoolInfo.pid1 = userPoolInfo.pid1.minus(event.params.amount)
+        allPoolInfo.pid1 = allPoolInfo.pid1.minus(event.params.amount)
+    } else if (event.params.pid.toI32() == 2) {
+        userPoolInfo.pid2 = userPoolInfo.pid2.minus(event.params.amount)
+        allPoolInfo.pid2 = allPoolInfo.pid2.minus(event.params.amount)
+    }
+    userPoolInfo.save()
+    allPoolInfo.save()
 }

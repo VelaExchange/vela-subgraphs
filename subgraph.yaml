@@ -19,6 +19,10 @@ dataSources:
         - name: TokenFarm
           file: ./abis/TokenFarm.json
       eventHandlers:
+        - event: FarmDeposit(indexed address,indexed uint256,uint256)
+          handler: handleFarmDeposit
+        - event: FarmWithdraw(indexed address,indexed uint256,uint256)
+          handler: handleFarmWithdraw
         - event: VestingDeposit(address,uint256)
           handler: handleVestingDeposit
         - event: VestingWithdraw(address,uint256,uint256)

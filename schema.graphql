@@ -13,6 +13,12 @@ type RewardInfo @entity {
   rewards: [Rewarder!]! @derivedFrom(field: "rewarder")
 }
 
+type PoolInfo @entity {
+  id: ID!
+  pid1: BigInt!
+  pid2: BigInt!
+}
+
 type RewardStat @entity {
   id: ID!
   account: String!

@@ -82,7 +82,7 @@ dataSources:
     source:
       address: "0xE3A0AC3ecB7F17AAe647C5AafBBb5E111fd37292"
       abi: ComplexRewardPerSec
-      startBlock: null
+      startBlock: 91736887
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

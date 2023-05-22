@@ -85,6 +85,9 @@ export function handleAddPool2(event: AddPool2): void {
     addRewardInfo.save()
 }
 
+export function handleAddPool3(event: AddPool3): void {
+}
+
 export function handleAddRewardInfo1(event: AddRewardInfo1): void {
     let addRewardInfo = RewardInfo.load(event.params.pid.toString())
     if (addRewardInfo) {

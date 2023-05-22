@@ -2,13 +2,18 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_vlp",
+          "internalType": "uint256",
+          "name": "_vestingDuration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "contract IBoringERC20",
+          "name": "_esToken",
           "type": "address"
         },
         {
-          "internalType": "address",
-          "name": "_vUSDC",
+          "internalType": "contract IBoringERC20",
+          "name": "_claimableToken",
           "type": "address"
         }
       ],
@@ -20,15 +25,46 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "account",
+          "internalType": "uint256",
+          "name": "pid",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "contract IBoringERC20",
+          "name": "lpToken",
           "type": "address"
         },
         {
           "indexed": true,
+          "internalType": "contract IComplexRewarder[]",
+          "name": "rewarders",
+          "type": "address[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "_enableCooldown",
+          "type": "bool"
+        }
+      ],
+      "name": "Add",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "address",
-          "name": "token",
+          "name": "user",
           "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "pid",
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -37,7 +73,82 @@
           "type": "uint256"
         }
       ],
-      "name": "Deposit",
+      "name": "EmergencyWithdraw",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "caller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "previousValue",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "EmissionRateUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "pid",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "FarmDeposit",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "pid",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "FarmWithdraw",
       "type": "event"
     },
     {
@@ -65,29 +176,23 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "account",
+          "name": "user",
           "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "indexed": false,
+          "indexed": true,
           "internalType": "uint256",
-          "name": "amount",
+          "name": "pid",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "mintAmount",
+          "name": "amountLockedUp",
           "type": "uint256"
         }
       ],
-      "name": "Stake",
+      "name": "RewardLockedUp",
       "type": "event"
     },
     {
@@ -95,70 +200,72 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "pid",
+          "type": "uint256"
         },
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "refer",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "fee",
-          "type": "uint256"
+          "internalType": "contract IComplexRewarder[]",
+          "name": "rewarders",
+          "type": "address[]"
         }
       ],
-      "name": "TakeVUSDIn",
+      "name": "Set",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "refer",
-          "type": "address"
-        },
-        {
           "indexed": false,
           "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "fee",
+          "name": "cooldownDuration",
           "type": "uint256"
         }
       ],
-      "name": "TakeVUSDOut",
+      "name": "UpdateCooldownDuration",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "levels",
+          "type": "uint256[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "percents",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "UpdateRewardTierInfo",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "vestingPeriod",
+          "type": "uint256"
+        }
+      ],
+      "name": "UpdateVestingPeriod",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
           "internalType": "address",
-          "name": "account",
+          "name": "receiver",
           "type": "address"
         },
         {
@@ -168,53 +275,16 @@
           "type": "uint256"
         }
       ],
-      "name": "TransferBounty",
+      "name": "VestingClaim",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "address",
           "name": "account",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "token",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "vlpAmount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amountOut",
-          "type": "uint256"
-        }
-      ],
-      "name": "Unstake",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "token",
           "type": "address"
         },
         {
@@ -224,7 +294,57 @@
           "type": "uint256"
         }
       ],
-      "name": "Withdraw",
+      "name": "VestingDeposit",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "VestingTransfer",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "claimedAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "balance",
+          "type": "uint256"
+        }
+      ],
+      "name": "VestingWithdraw",
       "type": "event"
     },
     {
@@ -698,167 +818,22 @@
     {
       "inputs": [
         {
-          "internalType": "bool",
-          "name": "_hasProfit",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_adjustDelta",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_fee",
-          "type": "uint256"
-        }
-      ],
-      "name": "accountDeltaAndFeeIntoTotalUSDC",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_indexToken",
+          "internalType": "contract IBoringERC20",
+          "name": "_lpToken",
           "type": "address"
         },
         {
-          "internalType": "bool",
-          "name": "_isLong",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_posId",
-          "type": "uint256"
+          "internalType": "contract IComplexRewarder[]",
+          "name": "_rewarders",
+          "type": "address[]"
         },
         {
           "internalType": "bool",
-          "name": "isPlus",
+          "name": "_enableCooldown",
           "type": "bool"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
         }
       ],
-      "name": "addOrRemoveCollateral",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_indexToken",
-          "type": "address"
-        },
-        {
-          "internalType": "bool",
-          "name": "_isLong",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_posId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_collateralDelta",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_sizeDelta",
-          "type": "uint256"
-        }
-      ],
-      "name": "addPosition",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_indexToken",
-          "type": "address"
-        },
-        {
-          "internalType": "bool",
-          "name": "_isLong",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_posId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256[]",
-          "name": "_params",
-          "type": "uint256[]"
-        }
-      ],
-      "name": "addTrailingStop",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_indexToken",
-          "type": "address"
-        },
-        {
-          "internalType": "bool",
-          "name": "_isLong",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_posId",
-          "type": "uint256"
-        }
-      ],
-      "name": "cancelPendingOrder",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_indexToken",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_sizeDelta",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "_isLong",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_posId",
-          "type": "uint256"
-        }
-      ],
-      "name": "decreasePosition",
+      "name": "add",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -869,11 +844,70 @@
           "internalType": "address",
           "name": "_account",
           "type": "address"
-        },
+        }
+      ],
+      "name": "claimable",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "claimableToken",
+      "outputs": [
+        {
+          "internalType": "contract IBoringERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
           "internalType": "address",
-          "name": "_token",
+          "name": "",
           "type": "address"
+        }
+      ],
+      "name": "claimedAmounts",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "cooldownDuration",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_pid",
+          "type": "uint256"
         },
         {
           "internalType": "uint256",
@@ -889,29 +923,56 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_account",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_refer",
-          "type": "address"
-        },
-        {
           "internalType": "uint256",
-          "name": "_fee",
+          "name": "_amount",
           "type": "uint256"
         }
       ],
-      "name": "distributeFee",
+      "name": "depositVesting",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_pid",
+          "type": "uint256"
+        }
+      ],
+      "name": "emergencyWithdraw",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "getVLPPrice",
+      "name": "esToken",
+      "outputs": [
+        {
+          "internalType": "contract IBoringERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_pid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_account",
+          "type": "address"
+        }
+      ],
+      "name": "getTier",
       "outputs": [
         {
           "internalType": "uint256",
@@ -926,11 +987,11 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "_account",
           "type": "address"
         }
       ],
-      "name": "lastStakedAt",
+      "name": "getTotalVested",
       "outputs": [
         {
           "internalType": "uint256",
@@ -945,33 +1006,70 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_indexToken",
+          "name": "_account",
           "type": "address"
-        },
+        }
+      ],
+      "name": "getVestedAmount",
+      "outputs": [
         {
-          "internalType": "bool",
-          "name": "_isLong",
-          "type": "bool"
-        },
-        {
-          "internalType": "enum OrderType",
-          "name": "_orderType",
-          "type": "uint8"
-        },
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
           "internalType": "uint256[]",
-          "name": "_params",
+          "name": "_pids",
           "type": "uint256[]"
-        },
+        }
+      ],
+      "name": "harvestMany",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
         {
           "internalType": "address",
-          "name": "_refer",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "newPositionOrder",
-      "outputs": [],
-      "stateMutability": "payable",
+      "name": "lastVestingUpdateTimes",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "lockedVestingAmounts",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -988,6 +1086,159 @@
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_pid",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "pendingTokens",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "addresses",
+          "type": "address[]"
+        },
+        {
+          "internalType": "string[]",
+          "name": "symbols",
+          "type": "string[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "decimals",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "amounts",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "poolInfo",
+      "outputs": [
+        {
+          "internalType": "contract IBoringERC20",
+          "name": "lpToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalLp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "enableCooldown",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "poolLength",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_pid",
+          "type": "uint256"
+        }
+      ],
+      "name": "poolRewarders",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "rewarders",
+          "type": "address[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_pid",
+          "type": "uint256"
+        }
+      ],
+      "name": "poolRewardsPerSec",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "addresses",
+          "type": "address[]"
+        },
+        {
+          "internalType": "string[]",
+          "name": "symbols",
+          "type": "string[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "decimals",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "rewardsPerSec",
+          "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "pid",
+          "type": "uint256"
+        }
+      ],
+      "name": "poolTotalLp",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "renounceOwnership",
       "outputs": [],
@@ -997,121 +1248,30 @@
     {
       "inputs": [
         {
-          "internalType": "contract IPriceManager",
-          "name": "_priceManager",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "_pid",
+          "type": "uint256"
         },
         {
-          "internalType": "contract ISettingsManager",
-          "name": "_settingsManager",
-          "type": "address"
-        },
-        {
-          "internalType": "contract IPositionVault",
-          "name": "_positionVault",
-          "type": "address"
+          "internalType": "contract IComplexRewarder[]",
+          "name": "_rewarders",
+          "type": "address[]"
         }
       ],
-      "name": "setVaultSettings",
+      "name": "set",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [
-        {
-          "internalType": "address",
-          "name": "_account",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_token",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "stake",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_account",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_refer",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_fee",
-          "type": "uint256"
-        }
-      ],
-      "name": "takeVUSDIn",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_account",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_refer",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_fee",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_usdOut",
-          "type": "uint256"
-        }
-      ],
-      "name": "takeVUSDOut",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "totalUSDC",
-      "outputs": [
         {
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
       ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "totalVLP",
+      "name": "tierLevels",
       "outputs": [
         {
           "internalType": "uint256",
@@ -1125,19 +1285,46 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_account",
-          "type": "address"
-        },
-        {
           "internalType": "uint256",
-          "name": "_amount",
+          "name": "",
           "type": "uint256"
         }
       ],
-      "name": "transferBounty",
-      "outputs": [],
-      "stateMutability": "nonpayable",
+      "name": "tierPercents",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalLockedUpRewards",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalLockedVestingAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -1157,21 +1344,30 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "_tokenOut",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_vlpAmount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "_receiver",
+          "name": "",
           "type": "address"
         }
       ],
-      "name": "unstake",
+      "name": "unlockedVestingAmounts",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_newCooldownDuration",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateCooldownDuration",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1179,14 +1375,82 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_token",
-          "type": "address"
+          "internalType": "uint256[]",
+          "name": "_levels",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "_percents",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "updateRewardTierInfo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_vestingDuration",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateVestingDuration",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         },
         {
           "internalType": "address",
-          "name": "_account",
+          "name": "",
           "type": "address"
+        }
+      ],
+      "name": "userInfo",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "startTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "vestingDuration",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_pid",
+          "type": "uint256"
         },
         {
           "internalType": "uint256",
@@ -1198,5 +1462,12 @@
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "withdrawVesting",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
-]
+  ]

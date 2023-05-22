@@ -3,164 +3,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: VelaToken
+    name: TokenFarm
     network: arbitrum-one
     source:
-      address: "0x088cd8f5eF3652623c22D48b1605DCfE860Cd704"
-      abi: ERC20
-      startBlock: 48386698
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - Account
-        - Token
-        - TokenApproval
-        - TokenBalance
-      abis:
-        - name: ERC20
-          file: ./abis/ERC20.json
-      eventHandlers:
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
-        - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
-      file: ./src/vela-token.ts
-  - kind: ethereum
-    name: VaultUtils
-    network: arbitrum-one
-    source:
-      address: "0xDa1a7ea276fbdB16ebaBB5b38257b1D56B302E4a"
-      abi: VaultUtils
-      startBlock: 56425513
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - HourlyTrades
-        - DailyTrades
-        - WeeklyTrades
-        - MonthlyTrades
-        - AllTrades
-        - ClosePosition
-        - DecreasePosition
-        - GlobalInfo
-        - IncreasePosition
-        - LiquidatePosition
-        - PositionStat
-        - TradeVolume
-        - UserTradeStat
-        - StrandedUSDCAmount
-      abis:
-        - name: VaultUtils
-          file: ./abis/VaultUtils.json
-      eventHandlers:
-        - event: ClosePosition(bytes32,int256,uint256,uint256)
-          handler: handleClosePosition
-        - event: DecreasePosition(bytes32,indexed address,indexed
-            address,bool,uint256,int256,uint256[7])
-          handler: handleDecreasePosition
-        - event: IncreasePosition(bytes32,indexed address,indexed address,bool,uint256,uint256[7])
-          handler: handleIncreasePosition
-        - event: LiquidatePosition(bytes32,int256,uint256,uint256)
-          handler: handleLiquidatePosition
-      file: ./src/vault-utils.ts
-  - kind: ethereum
-    name: PositionVault
-    network: arbitrum-one
-    source:
-      address: "0x79e04946F0eD05a60395F3c9A4ae4A7D84eca80e"
-      abi: PositionVault
-      startBlock: 56425446
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - PositionStat
-        - UserTradeStat
-        - TradeVolume
-        - ConfirmDelayTransaction
-      abis:
-        - name: PositionVault
-          file: ./abis/PositionVault.json
-      eventHandlers:
-        - event: NewOrder(bytes32,indexed address,address,bool,uint256,uint256,uint8,uint256[])
-          handler: handleNewOrder
-        - event: UpdateOrder(bytes32,uint256,uint8)
-          handler: handleUpdateOrder
-        - event: ConfirmDelayTransaction(indexed bytes32,bool,uint256,uint256,uint256)
-          handler: handleConfirmDelayTransaction
-        - event: AddOrRemoveCollateral(indexed bytes32,bool,uint256,uint256,uint256,uint256)
-          handler: handleAddOrRemoveCollateral
-        - event: AddPosition(indexed bytes32,bool,uint256,uint256)
-          handler: handleAddPosition
-      file: ./src/position-vault.ts      
-  - kind: ethereum
-    name: Vault
-    network: arbitrum-one
-    source:
-      address: "0x5957582F020301a2f732ad17a69aB2D8B2741241"
-      abi: Vault
-      startBlock: 56425446
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - Mint
-        - Redeem
-        - Deposit
-        - Withdraw
-        - BaseGlobalInfo
-        - BaseUserInfo
-      abis:
-        - name: Vault
-          file: ./abis/Vault.json
-      eventHandlers:
-        - event: Deposit(indexed address,indexed address,uint256)
-          handler: handleDeposit
-        - event: Withdraw(indexed address,indexed address,uint256)
-          handler: handleWithdraw
-        - event: Stake(indexed address,address,uint256,uint256)
-          handler: handleStake
-        - event: Unstake(indexed address,address,uint256,uint256)
-          handler: handleUnstake
-      file: ./src/vault-utils.ts
-  - kind: ethereum
-    name: TriggerOrderManager
-    network: arbitrum-one
-    source:
-      address: "0xb9803F107C6102CAceD5039062Df8B9251Cb9A94"
-      abi: TriggerOrderManager
-      startBlock: 56425491
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - PositionTrigger
-        - Trigger
-      abis:
-        - name: TriggerOrderManager
-          file: ./abis/TriggerOrderManager.json
-      eventHandlers:
-        - event: ExecuteTriggerOrders(bytes32,uint256[],uint256[],uint256[],uint256[],uint256[],uint256[],uint8)
-          handler: handleExecuteTriggerOrders
-        - event: UpdateTriggerOrders(bytes32,uint256[],uint256[],uint256[],uint256[],uint256[],uint256[],uint8)
-          handler: handleUpdateTriggerOrders
-        - event: UpdateTriggerStatus(bytes32,uint8)
-          handler: handleUpdateTriggerStatus
-      file: ./src/vault-utils.ts
-  - kind: ethereum
-    name: VUSD
-    network: arbitrum-one
-    source:
-      address: "0x79BAbB5CB4477ee39bfd75408557844750E9155E"
-      abi: VUSD
-      startBlock: 56425299
+      address: "0xfC527781Ae973f8131dC26dDDb2Adb080c1C1F59"
+      abi: TokenFarm
+      startBlock: 56425331
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -168,11 +16,83 @@ dataSources:
       entities:
         - TradeVolume
       abis:
-        - name: VUSD
-          file: ./abis/VUSD.json
+        - name: TokenFarm
+          file: ./abis/TokenFarm.json
       eventHandlers:
-        - event: Mint(indexed address,uint256)
-          handler: handleMint
-        - event: Burn(indexed address,uint256)
-          handler: handleBurn
-      file: ./src/vault-utils.ts
+        - event: VestingDeposit(address,uint256)
+          handler: handleVestingDeposit
+        - event: VestingWithdraw(address,uint256,uint256)
+          handler: handleVestingWithdraw
+      file: ./src/token-farm.ts
+  - kind: ethereum
+    name: ComplexRewardPerSec1
+    network: arbitrum-one
+    source:
+      address: "0x43F35DdaC98D4e5E4B1c0bCC395D03F9d6F0fA24"
+      abi: ComplexRewardPerSec
+      startBlock: 56426577
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - RewardInfo
+      abis:
+        - name: ComplexRewardPerSec
+          file: ./abis/ComplexRewardPerSec.json
+      eventHandlers:
+        - event: AddPool(indexed uint256)
+          handler: handleAddPool1
+        - event: AddRewardInfo(indexed uint256,indexed uint256,uint256,uint256)
+          handler: handleAddRewardInfo1
+        - event: OnReward(indexed address,uint256)
+          handler: handleOnReward1
+      file: ./src/token-farm.ts
+  - kind: ethereum
+    name: ComplexRewardPerSec2
+    network: arbitrum-one
+    source:
+      address: "0x4D85Cb18a3D33a226dcDA87c17D69Ea9b4B76b73"
+      abi: ComplexRewardPerSec
+      startBlock: 56426607
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - RewardInfo
+      abis:
+        - name: ComplexRewardPerSec
+          file: ./abis/ComplexRewardPerSec.json
+      eventHandlers:
+        - event: AddPool(indexed uint256)
+          handler: handleAddPool2
+        - event: AddRewardInfo(indexed uint256,indexed uint256,uint256,uint256)
+          handler: handleAddRewardInfo2
+        - event: OnReward(indexed address,uint256)
+          handler: handleOnReward2
+      file: ./src/token-farm.ts
+  - kind: ethereum
+    name: ComplexRewardPerSec3
+    network: arbitrum-one
+    source:
+      address: "0xE3A0AC3ecB7F17AAe647C5AafBBb5E111fd37292"
+      abi: ComplexRewardPerSec
+      startBlock:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - RewardInfo
+      abis:
+        - name: ComplexRewardPerSec
+          file: ./abis/ComplexRewardPerSec.json
+      eventHandlers:
+        - event: AddPool(indexed uint256)
+          handler: handleAddPool3
+        - event: AddRewardInfo(indexed uint256,indexed uint256,uint256,uint256)
+          handler: handleAddRewardInfo3
+        - event: OnReward(indexed address,uint256)
+          handler: handleOnReward3
+      file: ./src/token-farm.ts

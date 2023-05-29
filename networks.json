@@ -1,8 +1,8 @@
 {
   "arbitrum-one": {
-    "VelaToken": {
-      "address": "0x088cd8f5eF3652623c22D48b1605DCfE860Cd704",
-      "startBlock": 48386698
+    "VaultUtils": {
+      "address": "0xDa1a7ea276fbdB16ebaBB5b38257b1D56B302E4a",
+      "startBlock": 56425513
     }
   }
 }

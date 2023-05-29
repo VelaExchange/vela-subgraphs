@@ -3,12 +3,221 @@ schema:
   file: schema.graphql
 dataSources:
   - kind: ethereum
+    name: VelaToken
+    network: arbitrum-one
+    source:
+      address: "0x088cd8f5ef3652623c22d48b1605dcfe860cd704"
+      abi: ERC20
+      startBlock: 48386698
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Account
+        - Token
+        - TokenApproval
+        - TokenBalance
+      abis:
+        - name: ERC20
+          file: VelaToken/abis/ERC20.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: VelaToken/VelaToken.wasm
+  - kind: ethereum
+    name: LiquidateVault
+    network: arbitrum-one
+    source:
+      address: "0x361A5F8fA6860B5f5C021A5Dd370C1180010A561"
+      abi: LiquidateVault
+      startBlock: 95718126
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Account
+        - Token
+        - TokenApproval
+        - TokenBalance
+      abis:
+        - name: LiquidateVault
+          file: LiquidateVault/abis/LiquidateVault.json
+      eventHandlers:
+        - event: RegisterLiquidation(uint256,address)
+          handler: handleRegisterLiquidation
+        - event: LiquidatePosition(indexed uint256,indexed address,indexed
+            uint256,bool,int256[3],uint256[5])
+          handler: handleLiquidatePosition
+      file: LiquidateVault/LiquidateVault.wasm
+  - kind: ethereum
+    name: PositionVault
+    network: arbitrum-one
+    source:
+      address: "0x8B97E18eE706d056A5659947a717A7971003f524"
+      abi: PositionVault
+      startBlock: 95718259
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - PositionStat
+        - UserTradeStat
+        - TradeVolume
+        - ConfirmDelayTransaction
+      abis:
+        - name: PositionVault
+          file: PositionVault/abis/PositionVault.json
+      eventHandlers:
+        - event: AddOrRemoveCollateral(uint256,bool,uint256,uint256,uint256)
+          handler: handleAddOrRemoveCollateral
+        - event: AddPositionExecutionError(indexed uint256,indexed address,string)
+          handler: handleAddPositionExecutionError
+        - event: CreateAddPositionOrder(uint256,uint256,uint256,uint256)
+          handler: handleCreateAddPositionOrder
+        - event: ClosePosition(indexed uint256,indexed address,indexed
+            uint256,bool,int256[3],uint256[5])
+          handler: handleClosePosition
+        - event: CreateDecreasePositionOrder(uint256,uint256,uint256)
+          handler: handleCreateDecreasePositionOrder
+        - event: DecreasePositionExecutionError(indexed uint256,indexed address,string)
+          handler: handleDecreasePositionExecutionError
+        - event: DecreasePosition(indexed uint256,indexed address,indexed
+            uint256,bool,int256[3],uint256[5])
+          handler: handleDecreasePosition
+        - event: IncreasePosition(indexed uint256,indexed address,indexed uint256,bool,uint256[5])
+          handler: handleIncreasePosition
+        - event: ExecuteAddPositionOrder(uint256,uint256,uint256,uint256)
+          handler: handleExecuteAddPositionOrder
+        - event: ExecuteDecreasePositionOrder(uint256,uint256)
+          handler: handleExecuteDecreasePositionOrder
+        - event: MarketOrderExecutionError(indexed uint256,indexed address,string)
+          handler: handleMarketOrderExecutionError
+      file: PositionVault/PositionVault.wasm
+  - kind: ethereum
+    name: Vault
+    network: arbitrum-one
+    source:
+      address: "0xC4ABADE3a15064F9E3596943c699032748b13352"
+      abi: Vault
+      startBlock: 1619025984
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Mint
+        - Redeem
+        - Deposit
+        - Withdraw
+        - BaseGlobalInfo
+        - BaseUserInfo
+        - HyperStakingTier
+      abis:
+        - name: Vault
+          file: Vault/abis/Vault.json
+      eventHandlers:
+        - event: Deposit(indexed address,indexed address,uint256)
+          handler: handleDeposit
+        - event: Withdraw(indexed address,indexed address,uint256)
+          handler: handleWithdraw
+        - event: Stake(indexed address,address,uint256,uint256)
+          handler: handleStake
+        - event: Unstake(indexed address,address,uint256,uint256)
+          handler: handleUnstake
+      file: LiquidateVault/LiquidateVault.wasm
+  - kind: ethereum
+    name: OrderVault
+    network: arbitrum-one
+    source:
+      address: "0x52AC3eda13EB7959f918Df02a72d0f6c9C703523"
+      abi: OrderVault
+      startBlock: 95718168
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - PositionTrigger
+        - Trigger
+      abis:
+        - name: OrderVault
+          file: OrderVault/abis/OrderVault.json
+      eventHandlers:
+        - event: AddTrailingStop(uint256,uint256[])
+          handler: handleAddTrailingStop
+        - event: AddTriggerOrders(uint256,uint256,bool,uint256,uint256,uint8)
+          handler: handleAddTriggerOrders
+        - event: ExecuteTriggerOrders(uint256,uint256,uint256,uint256)
+          handler: handleExecuteTriggerOrders
+        - event: NewOrder(uint256,address,bool,uint256,uint256,uint8,uint256[],address)
+          handler: handleNewOrder
+        - event: FinishOrder(uint256,uint256,uint8)
+          handler: handleFinishOrder
+        - event: UpdateOrder(uint256,uint256,uint8)
+          handler: handleUpdateOrder
+        - event: UpdateTrailingStop(uint256,uint256)
+          handler: handleUpdateTrailingStop
+        - event: UpdateTriggerOrderStatus(uint256,uint256,uint8)
+          handler: handleUpdateTriggerOrderStatus
+      file: LiquidateVault/LiquidateVault.wasm
+  - kind: ethereum
+    name: VUSD
+    network: arbitrum-one
+    source:
+      address: "0xAA0B397B0896A864714dE56AA33E3df471229268"
+      abi: VUSD
+      startBlock: 95717959
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TradeVolume
+      abis:
+        - name: VUSD
+          file: VUSD/abis/VUSD.json
+      eventHandlers:
+        - event: Mint(indexed address,uint256)
+          handler: handleMint
+        - event: Burn(indexed address,uint256)
+          handler: handleBurn
+      file: LiquidateVault/LiquidateVault.wasm
+  - kind: ethereum
+    name: SettingsManager
+    network: arbitrum-one
+    source:
+      address: "0x6F2c6010A438546242cAb29Bb755c1F0AfaCa5AA"
+      abi: SettingsManager
+      startBlock: 95718425
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TradeVolume
+      abis:
+        - name: SettingsManager
+          file: SettingsManager/abis/SettingsManager.json
+      eventHandlers:
+        - event: UpdateFunding(indexed uint256,int256)
+          handler: handleUpdateFunding
+        - event: DecreaseOpenInterest(indexed uint256,bool,uint256)
+          handler: handleDecreaseOpenInterest
+        - event: IncreaseOpenInterest(indexed uint256,bool,uint256)
+          handler: handleIncreaseOpenInterest
+      file: LiquidateVault/LiquidateVault.wasm
+  - kind: ethereum
     name: TokenFarm
     network: arbitrum-one
     source:
-      address: "0xfC527781Ae973f8131dC26dDDb2Adb080c1C1F59"
+      address: "0x60b8C145235A31f1949a831803768bF37d7Ab7AA"
       abi: TokenFarm
-      startBlock: 56425331
+      startBlock: 95718373
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -19,12 +228,26 @@ dataSources:
         - name: TokenFarm
           file: TokenFarm/abis/TokenFarm.json
       eventHandlers:
-        - event: FarmDeposit(indexed address,indexed uint256,uint256)
+        - event: EmergencyWithdraw(indexed address,indexed address,uint256)
+          handler: handleEmergencyWithdraw
+        - event: EmissionRateUpdated(indexed address,uint256,uint256)
+          handler: handleEmissionRateUpdated
+        - event: FarmDeposit(indexed address,indexed address,uint256)
           handler: handleFarmDeposit
-        - event: FarmWithdraw(indexed address,indexed uint256,uint256)
+        - event: FarmWithdraw(indexed address,indexed address,uint256)
           handler: handleFarmWithdraw
+        - event: MintVestingToken(indexed address,uint256)
+          handler: handleMintVestingToken
+        - event: RewardLockedUp(indexed address,indexed address,uint256)
+          handler: handleRewardLockedUp
+        - event: UpdateRewardTierInfo(uint256[],uint256[])
+          handler: handleUpdateRewardTierInfo
+        - event: VestingClaim(address,uint256)
+          handler: handleVestingClaim
         - event: VestingDeposit(address,uint256)
           handler: handleVestingDeposit
+        - event: VestingTransfer(indexed address,indexed address,uint256)
+          handler: handleVestingTransfer
         - event: VestingWithdraw(address,uint256,uint256)
           handler: handleVestingWithdraw
       file: TokenFarm/TokenFarm.wasm
@@ -32,9 +255,9 @@ dataSources:
     name: ComplexRewardPerSec1
     network: arbitrum-one
     source:
-      address: "0x43F35DdaC98D4e5E4B1c0bCC395D03F9d6F0fA24"
+      address: "0x40c3bD6D4A07117fcE69B60Eb1d446984e0a1383"
       abi: ComplexRewardPerSec
-      startBlock: 56426577
+      startBlock: 95731669
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -51,14 +274,18 @@ dataSources:
           handler: handleAddRewardInfo1
         - event: OnReward(indexed address,uint256)
           handler: handleOnReward1
+        - event: RewardRateUpdated(uint256,uint256)
+          handler: handleRewardRateUpdated1
+        - event: UpdatePool(indexed uint256,uint256,uint256,uint256)
+          handler: handleUpdatePool1
       file: TokenFarm/TokenFarm.wasm
   - kind: ethereum
     name: ComplexRewardPerSec2
     network: arbitrum-one
     source:
-      address: "0x4D85Cb18a3D33a226dcDA87c17D69Ea9b4B76b73"
+      address: "0x12d4528E69e196a0c291DF3B28449E9Fc2769D11"
       abi: ComplexRewardPerSec
-      startBlock: 56426607
+      startBlock: 95731695
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -75,14 +302,18 @@ dataSources:
           handler: handleAddRewardInfo2
         - event: OnReward(indexed address,uint256)
           handler: handleOnReward2
+        - event: RewardRateUpdated(uint256,uint256)
+          handler: handleRewardRateUpdated2
+        - event: UpdatePool(indexed uint256,uint256,uint256,uint256)
+          handler: handleUpdatePool2
       file: TokenFarm/TokenFarm.wasm
   - kind: ethereum
     name: ComplexRewardPerSec3
     network: arbitrum-one
     source:
-      address: "0xE3A0AC3ecB7F17AAe647C5AafBBb5E111fd37292"
+      address: "0xf9C059A25Bf9431d70A4504bD1CE3BFD9c21B477"
       abi: ComplexRewardPerSec
-      startBlock: 91736887
+      startBlock: 95731723
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -99,4 +330,30 @@ dataSources:
           handler: handleAddRewardInfo3
         - event: OnReward(indexed address,uint256)
           handler: handleOnReward3
+        - event: RewardRateUpdated(uint256,uint256)
+          handler: handleRewardRateUpdated3
+        - event: UpdatePool(indexed uint256,uint256,uint256,uint256)
+          handler: handleUpdatePool3
       file: TokenFarm/TokenFarm.wasm
+  - kind: ethereum
+    name: SwapAndAirdrop
+    network: arbitrum-one
+    source:
+      address: "0x21577220586cE9F6410C97d1063b05a5AD47A9B0"
+      abi: SwapAndAirdrop
+      startBlock: 95732100
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - RewardInfo
+      abis:
+        - name: SwapAndAirdrop
+          file: SwapAndAirdrop/abis/SwapAndAirdrop.json
+      eventHandlers:
+        - event: Claim(indexed address,bool,uint256)
+          handler: handleClaim
+        - event: Swap(indexed address,uint256)
+          handler: handleSwap
+      file: SwapAndAirdrop/SwapAndAirdrop.wasm

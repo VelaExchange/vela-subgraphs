@@ -1,57 +1,5 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_vestingDuration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "contract IBoringERC20",
-        "name": "_esToken",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IBoringERC20",
-        "name": "_claimableToken",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "pid",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "contract IBoringERC20",
-        "name": "lpToken",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "contract IComplexRewarder[]",
-        "name": "rewarders",
-        "type": "address[]"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "_enableCooldown",
-        "type": "bool"
-      }
-    ],
-    "name": "Add",
-    "type": "event"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -62,9 +10,9 @@
       },
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "pid",
-        "type": "uint256"
+        "internalType": "contract IBoringERC20",
+        "name": "token",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -112,9 +60,9 @@
       },
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "pid",
-        "type": "uint256"
+        "internalType": "contract IBoringERC20",
+        "name": "token",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -137,9 +85,9 @@
       },
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "pid",
-        "type": "uint256"
+        "internalType": "contract IBoringERC20",
+        "name": "token",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -155,19 +103,32 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "previousOwner",
-        "type": "address"
-      },
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {
         "indexed": true,
         "internalType": "address",
-        "name": "newOwner",
+        "name": "account",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "OwnershipTransferred",
+    "name": "MintVestingToken",
     "type": "event"
   },
   {
@@ -181,9 +142,9 @@
       },
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "pid",
-        "type": "uint256"
+        "internalType": "contract IBoringERC20",
+        "name": "token",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -200,9 +161,9 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "uint256",
-        "name": "pid",
-        "type": "uint256"
+        "internalType": "contract IBoringERC20",
+        "name": "token",
+        "type": "address"
       },
       {
         "indexed": true,
@@ -349,12 +310,12 @@
   },
   {
     "inputs": [],
-    "name": "BASIS_POINTS_DIVISOR",
+    "name": "VELA",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "contract IBoringERC20",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -362,452 +323,10 @@
   },
   {
     "inputs": [],
-    "name": "DEFAULT_FUNDING_RATE_FACTOR",
+    "name": "VLP",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "DEFAULT_MAX_OPEN_INTEREST",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "DEFAULT_VLP_PRICE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "FUNDING_RATE_PRECISION",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "LIQUIDATE_FEE_EXCEED",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "LIQUIDATE_NONE_EXCEED",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "LIQUIDATE_THRESHOLD_EXCEED",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_COOLDOWN_DURATION",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_DELTA_TIME",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_DEPOSIT_FEE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_FEE_BASIS_POINTS",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_FEE_REWARD_BASIS_POINTS",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_FUNDING_RATE_FACTOR",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_FUNDING_RATE_INTERVAL",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_LIQUIDATION_FEE_USD",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_STAKING_FEE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_TOKENFARM_COOLDOWN_DURATION",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_TRIGGER_GAS_FEE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MAX_VESTING_DURATION",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MIN_FEE_REWARD_BASIS_POINTS",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MIN_FUNDING_RATE_INTERVAL",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MIN_LEVERAGE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ORDER_FILLED",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ORDER_NOT_FILLED",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "POSITION_LIMIT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "POSITION_MARKET",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "POSITION_STOP_LIMIT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "POSITION_STOP_MARKET",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "POSITION_TRAILING_STOP",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "PRICE_PRECISION",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "STAKING_PID_FOR_CHARGE_FEE",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "TRAILING_STOP_TYPE_AMOUNT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "TRAILING_STOP_TYPE_PERCENT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "VLP_DECIMALS",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ZERO_ADDRESS",
-    "outputs": [
-      {
-        "internalType": "address",
+        "internalType": "contract IBoringERC20",
         "name": "",
         "type": "address"
       }
@@ -818,22 +337,38 @@
   {
     "inputs": [
       {
-        "internalType": "contract IBoringERC20",
-        "name": "_lpToken",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IComplexRewarder[]",
-        "name": "_rewarders",
+        "internalType": "address[]",
+        "name": "_delegates",
         "type": "address[]"
-      },
+      }
+    ],
+    "name": "addDelegatesToCooldownWhiteList",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_delegate",
+        "type": "address"
+      }
+    ],
+    "name": "checkCooldownWhiteList",
+    "outputs": [
       {
         "internalType": "bool",
-        "name": "_enableCooldown",
+        "name": "",
         "type": "bool"
       }
     ],
-    "name": "add",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claim",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -852,19 +387,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "claimableToken",
-    "outputs": [
-      {
-        "internalType": "contract IBoringERC20",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -906,16 +428,37 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_pid",
+        "name": "_amount",
         "type": "uint256"
-      },
+      }
+    ],
+    "name": "depositEsvela",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "uint256",
         "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "deposit",
+    "name": "depositVela",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "depositVelaForVesting",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -937,18 +480,32 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_pid",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "emergencyWithdraw",
+    "name": "depositVlp",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "esToken",
+    "name": "emergencyWithdrawVela",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "emergencyWithdrawVlp",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "esVELA",
     "outputs": [
       {
         "internalType": "contract IBoringERC20",
@@ -962,17 +519,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_pid",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "_account",
         "type": "address"
       }
     ],
-    "name": "getTier",
+    "name": "getTierVela",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1024,12 +576,55 @@
   {
     "inputs": [
       {
-        "internalType": "uint256[]",
-        "name": "_pids",
-        "type": "uint256[]"
+        "internalType": "bool",
+        "name": "_vela",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_esvela",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_vlp",
+        "type": "bool"
       }
     ],
     "name": "harvestMany",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_vestingDuration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "contract IBoringERC20",
+        "name": "_esVELA",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IBoringERC20",
+        "name": "_VELA",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IBoringERC20",
+        "name": "_vlp",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_operators",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1074,10 +669,10 @@
   },
   {
     "inputs": [],
-    "name": "owner",
+    "name": "operators",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IOperators",
         "name": "",
         "type": "address"
       }
@@ -1088,9 +683,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_pid",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "_isVelaPool",
+        "type": "bool"
       },
       {
         "internalType": "address",
@@ -1127,51 +722,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "poolInfo",
-    "outputs": [
-      {
-        "internalType": "contract IBoringERC20",
-        "name": "lpToken",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalLp",
-        "type": "uint256"
-      },
-      {
         "internalType": "bool",
-        "name": "enableCooldown",
+        "name": "_isVelaPool",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "poolLength",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_pid",
-        "type": "uint256"
       }
     ],
     "name": "poolRewarders",
@@ -1188,9 +741,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_pid",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "_isVelaPool",
+        "type": "bool"
       }
     ],
     "name": "poolRewardsPerSec",
@@ -1223,7 +776,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "pid",
+        "name": "_pid",
         "type": "uint256"
       }
     ],
@@ -1239,8 +792,14 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "renounceOwnership",
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_delegates",
+        "type": "address[]"
+      }
+    ],
+    "name": "removeDelegatesFromCooldownWhiteList",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1248,17 +807,35 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_pid",
-        "type": "uint256"
+        "internalType": "contract IComplexRewarder[]",
+        "name": "_rewarders",
+        "type": "address[]"
       },
+      {
+        "internalType": "bool",
+        "name": "_enableCooldown",
+        "type": "bool"
+      }
+    ],
+    "name": "setVelaPool",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "contract IComplexRewarder[]",
         "name": "_rewarders",
         "type": "address[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_enableCooldown",
+        "type": "bool"
       }
     ],
-    "name": "set",
+    "name": "setVlpPool",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1331,19 +908,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
-    ],
-    "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -1404,23 +968,41 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "velaPoolInfo",
+    "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "totalLp",
         "type": "uint256"
       },
+      {
+        "internalType": "bool",
+        "name": "enableCooldown",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "address",
         "name": "",
         "type": "address"
       }
     ],
-    "name": "userInfo",
+    "name": "velaUserInfo",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "velaAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "esvelaAmount",
         "type": "uint256"
       },
       {
@@ -1446,19 +1028,69 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "vlpPoolInfo",
+    "outputs": [
       {
         "internalType": "uint256",
-        "name": "_pid",
+        "name": "totalLp",
         "type": "uint256"
       },
+      {
+        "internalType": "bool",
+        "name": "enableCooldown",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "vlpUserInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startTimestamp",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "uint256",
         "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "withdraw",
+    "name": "withdrawEsvela",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawVela",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1466,6 +1098,19 @@
   {
     "inputs": [],
     "name": "withdrawVesting",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawVlp",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

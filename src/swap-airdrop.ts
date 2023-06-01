@@ -16,6 +16,7 @@ import {
         } else {
             userAirdropStat.velaAmount = event.params.amount.div(BigInt.fromString('2'))
         }
+        userAirdropStat.isBluePill = event.params.isBluePill
         userAirdropStat.timestamp = event.block.timestamp.toI32()
         userAirdropStat.save()
     }

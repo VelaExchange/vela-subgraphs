@@ -11,6 +11,12 @@
       {
         "indexed": false,
         "internalType": "bool",
+        "name": "isBluePill",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
         "name": "isVela",
         "type": "bool"
       },
@@ -55,6 +61,19 @@
     ],
     "name": "Swap",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "bluePillPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [],
@@ -132,6 +151,39 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getPllInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -161,12 +213,12 @@
   },
   {
     "inputs": [],
-    "name": "operators",
+    "name": "isRedPillEnabled",
     "outputs": [
       {
-        "internalType": "contract IOperators",
+        "internalType": "bool",
         "name": "",
-        "type": "address"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -174,12 +226,12 @@
   },
   {
     "inputs": [],
-    "name": "period",
+    "name": "operators",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "contract IOperators",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -206,19 +258,6 @@
   },
   {
     "inputs": [],
-    "name": "redPillRatioUpdated",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "redPillStartTime",
     "outputs": [
       {
@@ -234,11 +273,42 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "rescueToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_feeManager",
         "type": "address"
       }
     ],
     "name": "setFeeManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_isRedPillEnabled",
+        "type": "bool"
+      }
+    ],
+    "name": "setIsRedPillEnabled",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -285,17 +355,17 @@
       },
       {
         "internalType": "uint256",
+        "name": "_bluePillPeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_redPillStartTime",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
         "name": "_startRatio",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_period",
         "type": "uint256"
       }
     ],
@@ -320,7 +390,7 @@
           }
         ],
         "internalType": "struct SwapAndAirdrop.RatioInfo[]",
-        "name": "_airdrops",
+        "name": "_ratios",
         "type": "tuple[]"
       }
     ],

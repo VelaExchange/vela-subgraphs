@@ -144,6 +144,7 @@ type UserAirdropStat @entity {
   id: ID!
   account: String!
   velaAmount: BigInt!
+  isBluePill: Boolean!
   timestamp: Int!
 }
 

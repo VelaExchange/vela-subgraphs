@@ -336,9 +336,9 @@ dataSources:
     name: SwapAndAirdrop
     network: arbitrum-one
     source:
-      address: "0x21577220586cE9F6410C97d1063b05a5AD47A9B0"
+      address: "0xeFB4FF63DA3dAd854Aa339c1Ea2D96BbA831364d"
       abi: SwapAndAirdrop
-      startBlock: 95732100
+      startBlock: 96727928
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -349,7 +349,7 @@ dataSources:
         - name: SwapAndAirdrop
           file: ./abis/SwapAndAirdrop.json
       eventHandlers:
-        - event: Claim(indexed address,bool,uint256)
+        - event: Claim(indexed address,bool,bool,uint256)
           handler: handleClaim
         - event: Swap(indexed address,uint256)
           handler: handleSwap

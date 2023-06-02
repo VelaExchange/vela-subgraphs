@@ -11,12 +11,12 @@ export const DAY_INFIX = '-day-'
 export const WEEK_INFIX = '-week-'
 export const MONTH_INFIX = '-month-'
 export const BIG_NUM_ZERO = BigInt.fromString('0')
-export const REWARDER1_ADDRESS = "0x3c66017086e8582127b85f9d4f3e2d0cbdfd1e1e"
-export const REWARDER2_ADDRESS = "0x53229a73dad665efa95de8192d91946e122567f0"
-export const REWARDER3_ADDRESS = "0xdd09bf3d72d0b886e25a9f5557a612a2e09a3786"
-export const VELA_ADDRESS = "0x7c5c1dc94c86b94c71deff059c39bed7f9c516e3"
-export const EVELA_ADDRESS = "0x16535d4768acd2e26ddd7383f0d811bdcf61a313"
-export const VLP_ADDRESS = "0xc44225204e77b64bb1cf34c7a840da8af695682f"
+export const REWARDER1_ADDRESS = "0x40c3bD6D4A07117fcE69B60Eb1d446984e0a1383"
+export const REWARDER2_ADDRESS = "0x12d4528E69e196a0c291DF3B28449E9Fc2769D11"
+export const REWARDER3_ADDRESS = "0xf9C059A25Bf9431d70A4504bD1CE3BFD9c21B477"
+export const VELA_ADDRESS = "0x088cd8f5ef3652623c22d48b1605dcfe860cd704"
+export const EVELA_ADDRESS = "0xeFD5A713C5bd85e9Ced46070b2532E4a47a18102"
+export const VLP_ADDRESS = "0xC5b2D9FDa8A82E8DcECD5e9e6e99b78a9188eB05"
 export const WHITELISTED_TOKEN_ADDRESSES: string[] = '{{ legacy.whitelistedTokenAddresses }}'.split(',')
 
 export function getHourStartDate(timestamp: BigInt): i32 {

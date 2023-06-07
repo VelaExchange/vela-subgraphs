@@ -84,13 +84,13 @@ import {
 const getRewardTier= (vlpAmount: BigInt, totalVLP: BigInt): i32 => {
   if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('2000000').times(VLP_DECIMALS))) {
     return 1
-  } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('4000000').times(VLP_DECIMALS))) {
-    return 2
   } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('6000000').times(VLP_DECIMALS))) {
+    return 2
+  } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('12000000').times(VLP_DECIMALS))) {
     return 3
-  } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('8000000').times(VLP_DECIMALS))) {
+  } else if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('20000000').times(VLP_DECIMALS))) {
     return 4
-  } else if ((totalVLP.plus(vlpAmount)).le(BigInt.fromString('10000000').times(VLP_DECIMALS))) {
+  } else if ((totalVLP.plus(vlpAmount)).le(BigInt.fromString('30000000').times(VLP_DECIMALS))) {
     return 5
   } else {
     return 0
@@ -102,13 +102,13 @@ const getBaseVLP = (rewardTier: i32): BigInt => {
     case 1:
       return BigInt.fromString('2000000').times(VLP_DECIMALS)
     case 2:
-      return BigInt.fromString('4000000').times(VLP_DECIMALS)
-    case 3:
       return BigInt.fromString('6000000').times(VLP_DECIMALS)
+    case 3:
+      return BigInt.fromString('12000000').times(VLP_DECIMALS)
     case 4:
-      return BigInt.fromString('8000000').times(VLP_DECIMALS)
+      return BigInt.fromString('20000000').times(VLP_DECIMALS)
     case 5:
-      return BigInt.fromString('10000000').times(VLP_DECIMALS)
+      return BigInt.fromString('30000000').times(VLP_DECIMALS)
     default:
       return BigInt.fromString('0')
   }
@@ -117,15 +117,15 @@ const getBaseVLP = (rewardTier: i32): BigInt => {
 const getRewardAmount2 = (rewardTier: i32): BigInt => {
   switch(rewardTier) {
     case 1:
-      return BigInt.fromString('500')
+      return BigInt.fromString('60')
     case 2:
-      return BigInt.fromString('375')
+      return BigInt.fromString('50')
     case 3:
-      return BigInt.fromString('333')
+      return BigInt.fromString('40')
     case 4:
-      return BigInt.fromString('250')
+      return BigInt.fromString('30')
     case 5:
-      return BigInt.fromString('200')
+      return BigInt.fromString('20')
     default:
       return BigInt.fromString('0')
   }

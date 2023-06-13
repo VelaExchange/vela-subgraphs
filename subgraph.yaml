@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "0x088cd8f5ef3652623c22d48b1605dcfe860cd704"
       abi: ERC20
-      startBlock: 48386698
+      startBlock: 95718126
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -227,16 +227,12 @@ dataSources:
       eventHandlers:
         - event: EmergencyWithdraw(indexed address,indexed address,uint256)
           handler: handleEmergencyWithdraw
-        - event: EmissionRateUpdated(indexed address,uint256,uint256)
-          handler: handleEmissionRateUpdated
         - event: FarmDeposit(indexed address,indexed address,uint256)
           handler: handleFarmDeposit
         - event: FarmWithdraw(indexed address,indexed address,uint256)
           handler: handleFarmWithdraw
         - event: MintVestingToken(indexed address,uint256)
           handler: handleMintVestingToken
-        - event: RewardLockedUp(indexed address,indexed address,uint256)
-          handler: handleRewardLockedUp
         - event: UpdateRewardTierInfo(uint256[],uint256[])
           handler: handleUpdateRewardTierInfo
         - event: VestingClaim(address,uint256)

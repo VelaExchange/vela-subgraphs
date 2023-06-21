@@ -227,16 +227,12 @@ dataSources:
       eventHandlers:
         - event: EmergencyWithdraw(indexed address,indexed address,uint256)
           handler: handleEmergencyWithdraw
-        - event: EmissionRateUpdated(indexed address,uint256,uint256)
-          handler: handleEmissionRateUpdated
         - event: FarmDeposit(indexed address,indexed address,uint256)
           handler: handleFarmDeposit
         - event: FarmWithdraw(indexed address,indexed address,uint256)
           handler: handleFarmWithdraw
         - event: MintVestingToken(indexed address,uint256)
           handler: handleMintVestingToken
-        - event: RewardLockedUp(indexed address,indexed address,uint256)
-          handler: handleRewardLockedUp
         - event: UpdateRewardTierInfo(uint256[],uint256[])
           handler: handleUpdateRewardTierInfo
         - event: VestingClaim(address,uint256)

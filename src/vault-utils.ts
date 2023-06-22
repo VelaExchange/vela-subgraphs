@@ -67,7 +67,8 @@ import { VLP_DECIMALS, MAX_VLP_FOR_Hyper,
     getAccountDailyTradesId,
     getAccountHourlyTradesId,
     getAccountMonthlyTradesId,
-    getAccountWeeklyTradesId
+    getAccountWeeklyTradesId,
+    HYPER_ONE_WALLETS
   } from "./constants"
 
 import {
@@ -206,6 +207,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     vlpMint.usdAmount = event.params.amount 
     vlpMint.vlpAmount = event.params.mintAmount
     vlpMint.save()
+    if (HYPER_ONE_WALLETS.includes(event.params.account.toHexString())) {
+      return;
+    }
     let baseGlobalInfo = BaseGlobalInfo.load("global")
     if (!baseGlobalInfo) {
       baseGlobalInfo = new BaseGlobalInfo("global")
@@ -355,6 +359,9 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     vlpRedeem.usdAmount = event.params.amountOut 
     vlpRedeem.vlpAmount = event.params.vlpAmount
     vlpRedeem.save()
+    if (HYPER_ONE_WALLETS.includes(event.params.account.toHexString())) {
+      return;
+    }
     let baseGlobalInfo = BaseGlobalInfo.load("global")
     if (!baseGlobalInfo) {
       baseGlobalInfo = new BaseGlobalInfo("global")

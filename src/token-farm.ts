@@ -6,7 +6,6 @@ import {
     VestingDeposit,
     VestingTransfer,
     VestingWithdraw,
-    UpdateRewardTierInfo,
     MintVestingToken
 } from "../generated/TokenFarm/TokenFarm"
 
@@ -307,8 +306,4 @@ export function handleUpdatePool3(event: UpdatePool3): void {
 
 export function handleMintVestingToken(event: MintVestingToken): void {
 
-}
-
-export function handleUpdateRewardTierInfo(event: UpdateRewardTierInfo): void {
-    
 }

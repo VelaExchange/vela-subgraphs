@@ -236,8 +236,6 @@ dataSources:
           handler: handleFarmWithdraw
         - event: MintVestingToken(indexed address,uint256)
           handler: handleMintVestingToken
-        - event: UpdateRewardTierInfo(uint256[],uint256[])
-          handler: handleUpdateRewardTierInfo
         - event: VestingClaim(address,uint256)
           handler: handleVestingClaim
         - event: VestingDeposit(address,uint256)

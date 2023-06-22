@@ -305,7 +305,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
           break;
         }
       }
-      if (rewardTier < 6 || tempMintAmount.gt(BigInt.fromString('0'))) {
+      if (rewardTier < 6 && tempMintAmount.gt(BigInt.fromString('0'))) {
         hyperStakingTier.vlpCommitted = hyperStakingTier.vlpCommitted.plus(tempMintAmount)
         hyperStakingTier.usdcCommitted = hyperStakingTier.usdcCommitted.plus(tempUSDCAmount)
         hyperStakingTier.save()

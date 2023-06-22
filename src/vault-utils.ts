@@ -250,8 +250,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       }
       let tempMintAmount = event.params.mintAmount
       let tempUSDCAmount = event.params.amount
-      while((hyperStakingTier.vlpCommitted.plus(tempMintAmount)).gt(hyperStakingTier.endVLP)) {
-        let vlpCommitted = hyperStakingTier.endVLP.minus(hyperStakingTier.vlpCommitted)
+      while((hyperStakingTier.vlpCommitted.plus(tempMintAmount)).gt(hyperStakingTier.endVLP.minus(hyperStakingTier.startVLP))) {
+        let vlpCommitted = hyperStakingTier.endVLP.minus(hyperStakingTier.startVLP).minus(hyperStakingTier.vlpCommitted)
         let usdcCommitted = tempUSDCAmount.times(vlpCommitted).div(tempMintAmount)
         hyperStakingTier.vlpCommitted = hyperStakingTier.vlpCommitted.plus(vlpCommitted)
         hyperStakingTier.usdcCommitted = hyperStakingTier.usdcCommitted.plus(usdcCommitted)
@@ -297,7 +297,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         hyperStakingTier.vlpCommitted = BIG_NUM_ZERO
         hyperStakingTier.usdcCommitted = BIG_NUM_ZERO
         hyperStakingTier.save()
-        if ((hyperStakingTier.vlpCommitted.plus(tempMintAmount)).le(hyperStakingTier.endVLP)) {
+        if ((hyperStakingTier.vlpCommitted.plus(tempMintAmount)).le(hyperStakingTier.endVLP.minus(hyperStakingTier.startVLP))) {
           break;
         }
       }

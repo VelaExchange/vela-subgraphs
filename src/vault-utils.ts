@@ -228,109 +228,113 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     }
     if (!baseGlobalInfo.hyper_ended && baseGlobalInfo.totalVLP.le(MAX_VLP_FOR_Hyper)) {
       let rewardAmount = BIG_NUM_ZERO
-      let previousRewardTier = getRewardTier(BIG_NUM_ZERO, baseGlobalInfo.totalVLP)
-      let rewardTier = getRewardTier(event.params.mintAmount, baseGlobalInfo.totalVLP)
-      if (previousRewardTier == 0) {
-        previousRewardTier = 1
+      let rewardTier = getRewardTier(BIG_NUM_ZERO, baseGlobalInfo.totalVLP)
+      if (rewardTier == 0) {
+        rewardTier = 1
       }
-      let hyperStakingTier = HyperStakingTier.load(previousRewardTier.toString())
+      let hyperStakingTier = HyperStakingTier.load(rewardTier.toString())
       if (!hyperStakingTier) {
-        hyperStakingTier = new HyperStakingTier(previousRewardTier.toString())
-        hyperStakingTier.tier = previousRewardTier
-        if (previousRewardTier > 0) {
-          hyperStakingTier.startVLP = getBaseVLP(previousRewardTier - 1)
-          hyperStakingTier.endVLP = getBaseVLP(previousRewardTier)
+        hyperStakingTier = new HyperStakingTier(rewardTier.toString())
+        hyperStakingTier.tier = rewardTier
+        if (rewardTier > 0) {
+          hyperStakingTier.startVLP = getBaseVLP(rewardTier - 1)
+          hyperStakingTier.endVLP = getBaseVLP(rewardTier)
         } else {
           hyperStakingTier.startVLP = BIG_NUM_ZERO
           hyperStakingTier.endVLP = BIG_NUM_ZERO
         }
-        hyperStakingTier.velaReward = getRewardAmount2(previousRewardTier)
+        hyperStakingTier.velaReward = getRewardAmount2(rewardTier)
         hyperStakingTier.usdcCommitted = BIG_NUM_ZERO
         hyperStakingTier.vlpCommitted = BIG_NUM_ZERO
         hyperStakingTier.save()
       }
-      if ((hyperStakingTier.vlpCommitted.plus(event.params.mintAmount)).gt(hyperStakingTier.endVLP)) {
+      let tempMintAmount = event.params.mintAmount
+      let tempUSDCAmount = event.params.amount
+      while((hyperStakingTier.vlpCommitted.plus(tempMintAmount)).gt(hyperStakingTier.endVLP)) {
         let vlpCommitted = hyperStakingTier.endVLP.minus(hyperStakingTier.vlpCommitted)
-        let usdcCommitted = event.params.amount.times(vlpCommitted).div(event.params.mintAmount)
+        let usdcCommitted = tempUSDCAmount.times(vlpCommitted).div(tempMintAmount)
         hyperStakingTier.vlpCommitted = hyperStakingTier.vlpCommitted.plus(vlpCommitted)
         hyperStakingTier.usdcCommitted = hyperStakingTier.usdcCommitted.plus(usdcCommitted)
         hyperStakingTier.save()
-        let curUserStakingStats = new UserStakingStat(event.params.account.toHexString() + "-" + previousRewardTier.toString() + "-" + event.block.timestamp.toString())
-        curUserStakingStats.account = event.params.account.toHexString()
-        curUserStakingStats.tier = previousRewardTier;
-        curUserStakingStats.usdcAmount = usdcCommitted;
-        curUserStakingStats.vlpAmount = vlpCommitted;
-        curUserStakingStats.timestamp = event.block.timestamp.toI32()
-        curUserStakingStats.isHyper = true;
-        curUserStakingStats.save()
-        let curUserStakingTier = UserStakingTier.load(event.params.account.toHexString() + "-" + previousRewardTier.toString())
-        if (!curUserStakingTier) {
-          curUserStakingTier = new UserStakingTier(event.params.account.toHexString() + "-" + previousRewardTier.toString())
-          curUserStakingTier.account = event.params.account.toHexString()
-          curUserStakingTier.tier = previousRewardTier
-          curUserStakingTier.usdcCommitted = BIG_NUM_ZERO
-          curUserStakingTier.vlpCommitted = BIG_NUM_ZERO
+        let userStakingStats = new UserStakingStat(event.params.account.toHexString() + "-" + rewardTier.toString() + "-" + event.block.timestamp.toString())
+        userStakingStats.account = event.params.account.toHexString()
+        userStakingStats.tier = rewardTier;
+        userStakingStats.usdcAmount = usdcCommitted;
+        userStakingStats.vlpAmount = vlpCommitted;
+        userStakingStats.timestamp = event.block.timestamp.toI32()
+        userStakingStats.isHyper = true;
+        userStakingStats.save()
+        let userStakingTier = UserStakingTier.load(event.params.account.toHexString() + "-" + rewardTier.toString())
+        if (!userStakingTier) {
+          userStakingTier = new UserStakingTier(event.params.account.toHexString() + "-" + rewardTier.toString())
+          userStakingTier.account = event.params.account.toHexString()
+          userStakingTier.tier = rewardTier
+          userStakingTier.usdcCommitted = BIG_NUM_ZERO
+          userStakingTier.vlpCommitted = BIG_NUM_ZERO
         }
-        curUserStakingTier.usdcCommitted = curUserStakingTier.usdcCommitted.plus(usdcCommitted)
-        curUserStakingTier.vlpCommitted = curUserStakingTier.vlpCommitted.plus(vlpCommitted)
-        curUserStakingTier.save()
-        let nextHyperStakingTier = new HyperStakingTier(rewardTier.toString())
-        nextHyperStakingTier.tier = rewardTier
-        nextHyperStakingTier.startVLP = getBaseVLP(rewardTier - 1)
-        nextHyperStakingTier.endVLP = getBaseVLP(rewardTier)
-        nextHyperStakingTier.velaReward = getRewardAmount2(rewardTier)
-        nextHyperStakingTier.vlpCommitted = event.params.mintAmount.minus(vlpCommitted)
-        nextHyperStakingTier.usdcCommitted = event.params.amount.minus(usdcCommitted)
-        nextHyperStakingTier.save()
-
-        let nextUserStakingStats = new UserStakingStat(event.params.account.toHexString() + "-" + rewardTier.toString() + "-" + event.block.timestamp.toString())
-        nextUserStakingStats.account = event.params.account.toHexString()
-        nextUserStakingStats.tier = rewardTier;
-        nextUserStakingStats.usdcAmount = event.params.amount.minus(usdcCommitted);
-        nextUserStakingStats.vlpAmount = event.params.mintAmount.minus(vlpCommitted);
-        nextUserStakingStats.timestamp = event.block.timestamp.toI32()
-        nextUserStakingStats.isHyper = true;
-        nextUserStakingStats.save()
-        let nextUserStakingTier = new UserStakingTier(event.params.account.toHexString() + "-" + rewardTier.toString())
-        nextUserStakingTier.account = event.params.account.toHexString()
-        nextUserStakingTier.tier = rewardTier
-        nextUserStakingTier.usdcCommitted = event.params.amount.minus(usdcCommitted)
-        nextUserStakingTier.vlpCommitted = event.params.mintAmount.minus(vlpCommitted)
-        nextUserStakingTier.save()
-      } else {
-        hyperStakingTier.vlpCommitted = hyperStakingTier.vlpCommitted.plus(event.params.mintAmount)
-        hyperStakingTier.usdcCommitted = hyperStakingTier.usdcCommitted.plus(event.params.amount)
+        userStakingTier.usdcCommitted = userStakingTier.usdcCommitted.plus(usdcCommitted)
+        userStakingTier.vlpCommitted = userStakingTier.vlpCommitted.plus(vlpCommitted)
+        userStakingTier.save()
+        baseUserInfo.baseVLP = baseUserInfo.baseVLP.plus(vlpCommitted)
+        rewardAmount = getRewardAmount2(rewardTier)
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+        baseUserInfo.baseVela = baseUserInfo.baseVela.plus(vlpCommitted.times(rewardAmount).div(BigInt.fromString('1000')))
+        baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
+        baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(vlpCommitted)
+        baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(vlpCommitted)
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+        tempMintAmount = tempMintAmount.minus(vlpCommitted)
+        tempUSDCAmount = tempUSDCAmount.minus(usdcCommitted)
+        rewardTier = rewardTier + 1
+        if (rewardTier > 5 || tempMintAmount.equals(BigInt.fromString('0'))) {
+          break;
+        }
+        hyperStakingTier = new HyperStakingTier(rewardTier.toString())
+        hyperStakingTier.tier = rewardTier
+        hyperStakingTier.startVLP = getBaseVLP(rewardTier - 1)
+        hyperStakingTier.endVLP = getBaseVLP(rewardTier)
+        hyperStakingTier.velaReward = getRewardAmount2(rewardTier)
+        hyperStakingTier.vlpCommitted = BIG_NUM_ZERO
+        hyperStakingTier.usdcCommitted = BIG_NUM_ZERO
         hyperStakingTier.save()
-        let curUserStakingStats = new UserStakingStat(event.params.account.toHexString() + "-" + rewardTier.toString() + "-" + event.block.timestamp.toString())
-        curUserStakingStats.account = event.params.account.toHexString()
-        curUserStakingStats.tier = rewardTier;
-        curUserStakingStats.usdcAmount = event.params.amount;
-        curUserStakingStats.vlpAmount = event.params.mintAmount;
-        curUserStakingStats.timestamp = event.block.timestamp.toI32()
-        curUserStakingStats.isHyper = true;
-        curUserStakingStats.save()
-        let curUserStakingTier = UserStakingTier.load(event.params.account.toHexString() + "-" + previousRewardTier.toString())
-        if (!curUserStakingTier) {
-          curUserStakingTier = new UserStakingTier(event.params.account.toHexString() + "-" + previousRewardTier.toString())
-          curUserStakingTier.account = event.params.account.toHexString()
-          curUserStakingTier.tier = previousRewardTier
-          curUserStakingTier.usdcCommitted = BIG_NUM_ZERO
-          curUserStakingTier.vlpCommitted = BIG_NUM_ZERO
+        if ((hyperStakingTier.vlpCommitted.plus(tempMintAmount)).le(hyperStakingTier.endVLP)) {
+          break;
         }
-        curUserStakingTier.usdcCommitted = curUserStakingTier.usdcCommitted.plus(event.params.amount)
-        curUserStakingTier.vlpCommitted = curUserStakingTier.vlpCommitted.plus(event.params.mintAmount)
-        curUserStakingTier.save()
+      }
+      if (rewardTier < 6 || tempMintAmount.gt(BigInt.fromString('0'))) {
+        hyperStakingTier.vlpCommitted = hyperStakingTier.vlpCommitted.plus(tempMintAmount)
+        hyperStakingTier.usdcCommitted = hyperStakingTier.usdcCommitted.plus(tempUSDCAmount)
+        hyperStakingTier.save()
+        let userStakingStats = new UserStakingStat(event.params.account.toHexString() + "-" + rewardTier.toString() + "-" + event.block.timestamp.toString())
+        userStakingStats.account = event.params.account.toHexString()
+        userStakingStats.tier = rewardTier;
+        userStakingStats.usdcAmount = tempUSDCAmount;
+        userStakingStats.vlpAmount = tempMintAmount;
+        userStakingStats.timestamp = event.block.timestamp.toI32()
+        userStakingStats.isHyper = true;
+        userStakingStats.save()
+        let userStakingTier = UserStakingTier.load(event.params.account.toHexString() + "-" + rewardTier.toString())
+        if (!userStakingTier) {
+          userStakingTier = new UserStakingTier(event.params.account.toHexString() + "-" + rewardTier.toString())
+          userStakingTier.account = event.params.account.toHexString()
+          userStakingTier.tier = rewardTier
+          userStakingTier.usdcCommitted = BIG_NUM_ZERO
+          userStakingTier.vlpCommitted = BIG_NUM_ZERO
+        }
+        userStakingTier.usdcCommitted = userStakingTier.usdcCommitted.plus(tempUSDCAmount)
+        userStakingTier.vlpCommitted = userStakingTier.vlpCommitted.plus(tempMintAmount)
+        userStakingTier.save()
+        baseUserInfo.baseVLP = baseUserInfo.baseVLP.plus(tempMintAmount)
+        rewardAmount = getRewardAmount2(rewardTier)
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
+        baseUserInfo.baseVela = baseUserInfo.baseVela.plus(tempMintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
+        baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
+        baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(tempMintAmount)
+        baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(tempMintAmount)
+        baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
       }
       baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
       baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
-      baseUserInfo.baseVLP = baseUserInfo.baseVLP.plus(event.params.mintAmount)
-      rewardAmount = getRewardAmount2(rewardTier)
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.minus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
-      baseUserInfo.baseVela = baseUserInfo.baseVela.plus(event.params.mintAmount.times(rewardAmount).div(BigInt.fromString('1000')))
-      baseUserInfo.baseRatio = baseUserInfo.baseVela.times(BigInt.fromString('1000')).div(baseUserInfo.baseVLP)
-      baseUserInfo.mintedVLP = baseUserInfo.mintedVLP.plus(event.params.mintAmount)
-      baseUserInfo.minimumVLP = baseUserInfo.minimumVLP.plus(event.params.mintAmount)
-      baseGlobalInfo.accumulatedSUM = baseGlobalInfo.accumulatedSUM.plus(baseUserInfo.minimumVLP.times(baseUserInfo.baseRatio))
       if (baseGlobalInfo.totalVLP.ge(MAX_VLP_FOR_Hyper)) {
         baseGlobalInfo.hyper_ended = true
       }

@@ -126,6 +126,8 @@ dataSources:
           handler: handleStake
         - event: Unstake(indexed address,address,uint256,uint256)
           handler: handleUnstake
+        - event: ReferFeeTransfer(indexed address,uint256)
+          handler: handleReferFeeTransfer
       file: ./src/vault-utils.ts
   - kind: ethereum
     name: OrderVault

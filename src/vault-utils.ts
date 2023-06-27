@@ -45,6 +45,7 @@ import {
     StrandedUSDCAmount,
     Withdraw,
     WeeklyTrade,
+    ReferFeeTransfer,
     HourlyVolume,
     HyperStakingTier,
     TotalInfo,
@@ -53,6 +54,7 @@ import {
   } from "../generated/schema"
 import {
     Deposit as DepositEvent,
+    ReferFeeTransfer as ReferFeeTransferEvent,
     Stake as StakeEvent,
     Unstake as UnstakeEvent,
     Withdraw as WithdrawEvent
@@ -580,6 +582,15 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     liquidatePositionEntity.from = event.transaction.from.toHexString()
     liquidatePositionEntity.transactionHash = event.transaction.hash.toHexString()
     liquidatePositionEntity.save()
+  }
+  
+  export function handleReferFeeTransfer(event: ReferFeeTransferEvent): void {
+    let referFees = new ReferFeeTransfer(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
+    referFees.amount = event.params.amount
+    referFees.account = event.params.account.toHexString()
+    referFees.createdAt = event.block.timestamp.toI32()
+    referFees.trasactionHash = event.transaction.hash.toHexString()
+    referFees.save()
   }
 
   export function handleRegisterLiquidation(event: RegisterLiquidation): void {

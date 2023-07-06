@@ -93,6 +93,7 @@ type GlobalInfo @entity {
   wins: BigInt!
   losses: BigInt!
   volume: BigInt!
+  counts: BigInt!
   fees: BigInt!
 }
 type DailyGlobalInfo @entity {

@@ -331,6 +331,7 @@ export function processGlobalInfo(
     if (!allGlobaInfo) {
       allGlobaInfo = new GlobalInfo("all")
       allGlobaInfo.tokenId = "all"
+      allGlobaInfo.counts = BIG_NUM_ZERO;
       allGlobaInfo.wins = BIG_NUM_ZERO
       allGlobaInfo.losses = BIG_NUM_ZERO
       allGlobaInfo.fees = BIG_NUM_ZERO
@@ -344,12 +345,14 @@ export function processGlobalInfo(
         allGlobaInfo.losses = allGlobaInfo.losses.plus(realisedPnl)
     }
     allGlobaInfo.fees = allGlobaInfo.fees.plus(fees)
+    allGlobaInfo.counts = allGlobaInfo.counts.plus(BigInt.fromString('1'))
     allGlobaInfo.volume = allGlobaInfo.volume.plus(size)
     allGlobaInfo.save()
     let globaInfo = GlobalInfo.load(tokenId.toString())
     if (!globaInfo) {
       globaInfo = new GlobalInfo(tokenId.toString())
       globaInfo.tokenId = tokenId.toString()
+      globaInfo.counts = BIG_NUM_ZERO;
       globaInfo.wins = BIG_NUM_ZERO
       globaInfo.losses = BIG_NUM_ZERO
       globaInfo.fees = BIG_NUM_ZERO
@@ -363,6 +366,7 @@ export function processGlobalInfo(
         globaInfo.losses = globaInfo.losses.plus(realisedPnl)
     }
     globaInfo.fees = globaInfo.fees.plus(fees)
+    globaInfo.counts = globaInfo.counts.plus(BigInt.fromString('1'))
     globaInfo.volume = globaInfo.volume.plus(size)
     globaInfo.save()
     let side = isLong ? "long" : "short"
@@ -370,6 +374,7 @@ export function processGlobalInfo(
     if (!sideGlobalInfo) {
       sideGlobalInfo = new GlobalInfo(tokenId.toString() + "-" + side)
       sideGlobalInfo.tokenId = tokenId.toString()
+      sideGlobalInfo.counts = BIG_NUM_ZERO;
       sideGlobalInfo.wins = BIG_NUM_ZERO
       sideGlobalInfo.losses = BIG_NUM_ZERO
       sideGlobalInfo.fees = BIG_NUM_ZERO
@@ -383,6 +388,7 @@ export function processGlobalInfo(
         sideGlobalInfo.losses = sideGlobalInfo.losses.plus(realisedPnl)
     }
     sideGlobalInfo.fees = sideGlobalInfo.fees.plus(fees)
+    sideGlobalInfo.counts = sideGlobalInfo.counts.plus(BigInt.fromString('1'))
     sideGlobalInfo.volume = sideGlobalInfo.volume.plus(size)
     sideGlobalInfo.save()
 }

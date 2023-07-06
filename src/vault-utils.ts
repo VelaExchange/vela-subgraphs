@@ -77,6 +77,7 @@ import {
   AddTrailingStop,
   AddTriggerOrders,
   ExecuteTriggerOrders,
+  EditTriggerOrder,
   NewOrder,
   FinishOrder as FinishOrderEvent,
   UpdateOrder as UpdateOrderEvent,
@@ -656,6 +657,16 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     }      
   }
 
+  export function handleEditTriggerOrder(event: EditTriggerOrder): void {
+    let trigger = Trigger.load(event.params.posId.toString() + "-" + event.params.orderId.toString())
+    if (trigger) {
+      trigger.isTP = event.params.isTP
+      trigger.price = event.params.price
+      trigger.amountPercent = event.params.amountPercent
+      trigger.save()
+    }
+  }
+
   export function handleNewOrder(event: NewOrder): void {
     let positionStatsEntity = PositionStat.load(event.params.posId.toString())
     if (!positionStatsEntity) {
@@ -742,6 +753,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       } else {
           positionStatsEntity.orderStatus = "CANCELED";
           positionStatsEntity.positionStatus = "CANCELED"
+          positionStatsEntity.closeHash = event.transaction.hash.toHexString()
       }
       positionStatsEntity.save()
     }      
@@ -770,6 +782,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         } else {
             positionStatsEntity.orderStatus = "CANCELED";
             positionStatsEntity.positionStatus = "CANCELED"
+            positionStatsEntity.closeHash = event.transaction.hash.toHexString()
         }
         positionStatsEntity.save()
     }      

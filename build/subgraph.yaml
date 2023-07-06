@@ -129,6 +129,8 @@ dataSources:
           handler: handleStake
         - event: Unstake(indexed address,address,uint256,uint256)
           handler: handleUnstake
+        - event: ReferFeeTransfer(indexed address,uint256)
+          handler: handleReferFeeTransfer
       file: LiquidateVault/LiquidateVault.wasm
   - kind: ethereum
     name: OrderVault
@@ -154,6 +156,8 @@ dataSources:
           handler: handleAddTriggerOrders
         - event: ExecuteTriggerOrders(uint256,uint256,uint256,uint256)
           handler: handleExecuteTriggerOrders
+        - event: EditTriggerOrder(indexed uint256,uint256,bool,uint256,uint256)
+          handler: handleEditTriggerOrder
         - event: NewOrder(uint256,address,bool,uint256,uint256,uint8,uint256[],address)
           handler: handleNewOrder
         - event: FinishOrder(uint256,uint256,uint8)
@@ -236,8 +240,6 @@ dataSources:
           handler: handleFarmWithdraw
         - event: MintVestingToken(indexed address,uint256)
           handler: handleMintVestingToken
-        - event: UpdateRewardTierInfo(uint256[],uint256[])
-          handler: handleUpdateRewardTierInfo
         - event: VestingClaim(address,uint256)
           handler: handleVestingClaim
         - event: VestingDeposit(address,uint256)

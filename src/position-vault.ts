@@ -805,7 +805,13 @@ import {
  }
 
  export function handleMarketOrderExecutionError(event: MarketOrderExecutionError): void {
-   
+    let positionStatsEntity = PositionStat.load(event.params.posId.toString())
+    if (positionStatsEntity) {
+      positionStatsEntity.orderStatus = "CANCELED";
+      positionStatsEntity.positionStatus = "CANCELED"
+      positionStatsEntity.closeHash = event.transaction.hash.toHexString()
+      positionStatsEntity.save()
+    }    
  }
 
  export function handleExecuteAddPositionOrder(event: ExecuteAddPositionOrder): void {

@@ -264,10 +264,28 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getValidAssetIds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
         "name": "_operators",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_pyth",
         "type": "address"
       }
     ],
@@ -345,11 +363,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_timestamp",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_allowedStaleness",
         "type": "uint256"
       },
@@ -380,22 +393,14 @@
         "internalType": "uint256",
         "name": "_price",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_ts",
+        "type": "uint256"
       }
     ],
     "name": "setPrice",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IPyth",
-        "name": "_pyth",
-        "type": "address"
-      }
-    ],
-    "name": "setPyth",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -425,11 +430,6 @@
       {
         "internalType": "uint256",
         "name": "_price",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_timestamp",
         "type": "uint256"
       },
       {

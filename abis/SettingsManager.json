@@ -207,6 +207,19 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "defaultMaxProfitPercent",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetDefaultMaxProfitPercent",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "token",
@@ -417,6 +430,25 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "address",
+        "name": "addr",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isWhitelisted",
+        "type": "bool"
+      }
+    ],
+    "name": "SetIsWhitelistedFromTransferCooldown",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "uint256",
         "name": "tokenId",
@@ -430,19 +462,6 @@
       }
     ],
     "name": "SetLiquidateThreshold",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "liquidationFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetLiquidationFee",
     "type": "event"
   },
   {
@@ -534,11 +553,30 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "maxProfitPercent",
         "type": "uint256"
       }
     ],
     "name": "SetMaxProfitPercent",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxOIAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMaxTotalOpenInterest",
     "type": "event"
   },
   {
@@ -959,6 +997,19 @@
   {
     "inputs": [],
     "name": "defaultMaxOpenInterestPerUser",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "defaultMaxProfitPercent",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1521,6 +1572,20 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "initializeV2",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "initializeV3",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1642,6 +1707,25 @@
         "type": "address"
       }
     ],
+    "name": "isWhitelistedFromTransferCooldown",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "isWithdraw",
     "outputs": [
       {
@@ -1699,19 +1783,6 @@
         "internalType": "contract ILiquidateVault",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "liquidationFee",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1800,8 +1871,27 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "maxProfitPercent",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxTotalOpenInterest",
     "outputs": [
       {
         "internalType": "uint256",
@@ -2087,6 +2177,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_defaultMaxProfitPercent",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDefaultMaxProfitPercent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "token",
         "type": "address"
@@ -2306,6 +2409,24 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_addr",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isWhitelisted",
+        "type": "bool"
+      }
+    ],
+    "name": "setIsWhitelistedFromTransferCooldown",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_tokenId",
         "type": "uint256"
@@ -2317,19 +2438,6 @@
       }
     ],
     "name": "setLiquidateThreshold",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_liquidationFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setLiquidationFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -2436,11 +2544,29 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_maxProfitPercent",
         "type": "uint256"
       }
     ],
     "name": "setMaxProfitPercent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxTotalOpenInterest",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

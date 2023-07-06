@@ -140,6 +140,14 @@ type RewardStat @entity {
   amount: BigInt!
 }
 
+type ReferFeeTransfer @entity {
+  id: ID!
+  account: String!
+  amount: BigInt!
+  createdAt: Int!
+  trasactionHash: String!
+}
+
 type UserAirdropStat @entity {
   id: ID!
   account: String!

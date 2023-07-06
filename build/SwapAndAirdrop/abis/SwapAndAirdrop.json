@@ -91,9 +91,9 @@
   {
     "inputs": [
       {
-        "internalType": "bool",
-        "name": "isBluePill",
-        "type": "bool"
+        "internalType": "enum SwapAndAirdrop.PILL_TYPE",
+        "name": "pillType",
+        "type": "uint8"
       },
       {
         "internalType": "bool",
@@ -151,6 +151,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "esVelaRatio",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "getPllInfo",
     "outputs": [
@@ -178,6 +197,40 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserPill",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum SwapAndAirdrop.PILL_TYPE",
+        "name": "",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -245,12 +298,12 @@
         "type": "address"
       }
     ],
-    "name": "ratio",
+    "name": "pill",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "enum SwapAndAirdrop.PILL_TYPE",
         "name": "",
-        "type": "uint256"
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -283,6 +336,19 @@
       }
     ],
     "name": "rescueToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "enum SwapAndAirdrop.PILL_TYPE",
+        "name": "pillType",
+        "type": "uint8"
+      }
+    ],
+    "name": "selectPill",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -394,9 +460,78 @@
         "type": "tuple[]"
       }
     ],
-    "name": "updateUserPillRatios",
+    "name": "updateUserEsVelaRatios",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "internalType": "enum SwapAndAirdrop.PILL_TYPE",
+            "name": "pillType",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct SwapAndAirdrop.PillInfo[]",
+        "name": "_pill",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "updateUserPill",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ratio",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SwapAndAirdrop.RatioInfo[]",
+        "name": "_ratios",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "updateUserVelaRatios",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "velaRatio",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

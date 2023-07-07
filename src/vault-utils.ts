@@ -66,6 +66,7 @@ import { VLP_DECIMALS, MAX_VLP_FOR_Hyper,
     getHourStartDate,
     getWeekStartDate,
     getMonthStartDate,
+    HYPER_END_TIME,
     getAccountDailyTradesId,
     getAccountHourlyTradesId,
     getAccountMonthlyTradesId,
@@ -343,6 +344,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
       baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
       if (baseGlobalInfo.totalVLP.ge(MAX_VLP_FOR_Hyper)) {
+        baseGlobalInfo.hyper_ended = true
+      } else if (event.block.timestamp.toI32() >= HYPER_END_TIME) {
         baseGlobalInfo.hyper_ended = true
       }
     } else {

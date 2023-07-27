@@ -418,6 +418,10 @@ type PositionStat @entity {
   positionType: String!
   realisedPnl: BigInt!
   size: BigInt!
+  totalCollateral: BigInt!
+  totalClosedSize: BigInt!
+  totalSize: BigInt!
+  totalROI: BigInt!
   stpPrice: BigInt!
   tokenId: BigInt!
 }

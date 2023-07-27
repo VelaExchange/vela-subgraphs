@@ -549,6 +549,11 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
+      let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.collateral)
+      let totalVolume = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
+      let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(positionStatsEntity.size))
+      positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
+      positionStatsEntity.totalClosedSize = totalVolume
       positionStatsEntity.positionStatus = "LIQUIDATED"
       positionStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
@@ -677,6 +682,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionStatsEntity.account = event.params.account.toHexString()
         positionStatsEntity.averagePrice = BIG_NUM_ZERO
         positionStatsEntity.collateral = BIG_NUM_ZERO
+        positionStatsEntity.totalCollateral = BIG_NUM_ZERO
+        positionStatsEntity.totalSize = BIG_NUM_ZERO
+        positionStatsEntity.totalClosedSize = BIG_NUM_ZERO
+        positionStatsEntity.totalROI = BIG_NUM_ZERO
         positionStatsEntity.closedAt = 0
         positionStatsEntity.closeHash = ""
         positionStatsEntity.createdAt = event.block.timestamp.toI32()

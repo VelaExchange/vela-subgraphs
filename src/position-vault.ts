@@ -194,6 +194,11 @@ import {
         allTrades.leverage = allTrades.tradeVolume.times(BigInt.fromString("1000")).div(allTrades.collateral)
     }
     allTrades.save()
+    if (event.params.isPlus) {
+      positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.amount)
+    } else {
+      positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.minus(event.params.amount)
+    }
     positionStatsEntity.collateral = event.params.collateral
     positionStatsEntity.size = event.params.size
     positionStatsEntity.save()
@@ -361,6 +366,11 @@ import {
       positionStatsEntity.borrowFee = positionStatsEntity.borrowFee.plus(event.params.pnlData[2])
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
+      let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.collateral)
+      let totalVolume = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
+      let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(positionStatsEntity.size))
+      positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
+      positionStatsEntity.totalClosedSize = totalVolume
       positionStatsEntity.positionStatus = "CLOSED"
       positionStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
@@ -416,6 +426,11 @@ import {
       positionStatsEntity.size = positionStatsEntity.size.minus(event.params.posData[1])
       positionStatsEntity.collateral = positionStatsEntity.collateral.minus(event.params.posData[0])
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
+      let newROI = BigInt.fromString('100000').times(realisedPnl).div(event.params.posData[0])
+      let totalVolume = positionStatsEntity.totalClosedSize.plus(event.params.posData[1])
+      let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(event.params.posData[1]))
+      positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
+      positionStatsEntity.totalClosedSize = totalVolume
       processGlobalInfo(
         positionStatsEntity.tokenId, 
         positionStatsEntity.isLong, 
@@ -581,6 +596,10 @@ import {
       positionStatsEntity.account = event.params.account.toHexString()
       positionStatsEntity.averagePrice = BIG_NUM_ZERO
       positionStatsEntity.collateral = BIG_NUM_ZERO
+      positionStatsEntity.totalCollateral = BIG_NUM_ZERO
+      positionStatsEntity.totalSize = BIG_NUM_ZERO
+      positionStatsEntity.totalClosedSize = BIG_NUM_ZERO
+      positionStatsEntity.totalROI = BIG_NUM_ZERO
       positionStatsEntity.closedAt = 0
       positionStatsEntity.closeHash = ""
       positionStatsEntity.createdAt = 0
@@ -628,9 +647,11 @@ import {
       )
       positionStatsEntity.averagePrice = event.params.posData[2]
       positionStatsEntity.collateral = positionStatsEntity.collateral.plus(event.params.posData[0])
+      positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.posData[0])
       positionStatsEntity.positionFee = positionStatsEntity.positionFee.plus(event.params.posData[4])
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.minus(event.params.posData[4])
       positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])
+      positionStatsEntity.totalSize = positionStatsEntity.totalSize.plus(event.params.posData[1])
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.pendingDelayCollateral = BIG_NUM_ZERO
       positionStatsEntity.pendingDelaySize = BIG_NUM_ZERO
@@ -638,9 +659,11 @@ import {
     } else {
       positionStatsEntity.averagePrice = event.params.posData[2]
       positionStatsEntity.collateral = positionStatsEntity.collateral.plus(event.params.posData[0])
+      positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.posData[0])
       positionStatsEntity.positionFee = positionStatsEntity.positionFee.plus(event.params.posData[4])
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.minus(event.params.posData[4])
       positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])
+      positionStatsEntity.totalSize = positionStatsEntity.totalSize.plus(event.params.posData[1])
       positionStatsEntity.createdAt = event.block.timestamp.toI32()
       positionStatsEntity.createHash = event.transaction.hash.toHexString()
       positionStatsEntity.markPrice = event.params.posData[3]

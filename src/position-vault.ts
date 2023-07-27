@@ -197,6 +197,9 @@ import {
     if (event.params.isPlus) {
       positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.amount)
       positionStatsEntity.totalIncreasedCollateral = positionStatsEntity.totalIncreasedCollateral.plus(event.params.amount)
+      if (event.params.collateral.gt(positionStatsEntity.maxCollateral)){
+        positionStatsEntity.maxCollateral = event.params.collateral
+      }
     } else {
       positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.minus(event.params.amount)
     }
@@ -367,11 +370,14 @@ import {
       positionStatsEntity.borrowFee = positionStatsEntity.borrowFee.plus(event.params.pnlData[2])
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
-      let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.collateral)
-      let totalVolume = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
-      let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(positionStatsEntity.size))
-      positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
-      positionStatsEntity.totalClosedSize = totalVolume
+      if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
+        let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
+        let totalVolume = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
+        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI).times(positionStatsEntity.lastMaxCollateral).div(positionStatsEntity.maxCollateral)).plus(newROI.times(positionStatsEntity.size))
+        positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
+        positionStatsEntity.totalClosedSize = totalVolume
+        positionStatsEntity.lastMaxCollateral = positionStatsEntity.maxCollateral
+      }
       positionStatsEntity.positionStatus = "CLOSED"
       positionStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
@@ -427,11 +433,14 @@ import {
       positionStatsEntity.size = positionStatsEntity.size.minus(event.params.posData[1])
       positionStatsEntity.collateral = positionStatsEntity.collateral.minus(event.params.posData[0])
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
-      let newROI = BigInt.fromString('100000').times(realisedPnl).div(event.params.posData[0])
-      let totalVolume = positionStatsEntity.totalClosedSize.plus(event.params.posData[1])
-      let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(event.params.posData[1]))
-      positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
-      positionStatsEntity.totalClosedSize = totalVolume
+      if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
+        let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
+        let totalVolume = positionStatsEntity.totalClosedSize.plus(event.params.posData[1])
+        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI).times(positionStatsEntity.lastMaxCollateral).div(positionStatsEntity.maxCollateral)).plus(newROI.times(event.params.posData[1]))
+        positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
+        positionStatsEntity.totalClosedSize = totalVolume
+        positionStatsEntity.lastMaxCollateral = positionStatsEntity.maxCollateral
+      }
       processGlobalInfo(
         positionStatsEntity.tokenId, 
         positionStatsEntity.isLong, 
@@ -601,6 +610,8 @@ import {
       positionStatsEntity.totalSize = BIG_NUM_ZERO
       positionStatsEntity.totalClosedSize = BIG_NUM_ZERO
       positionStatsEntity.totalIncreasedCollateral = BIG_NUM_ZERO
+      positionStatsEntity.maxCollateral = BIG_NUM_ZERO
+      positionStatsEntity.lastMaxCollateral = BIG_NUM_ZERO
       positionStatsEntity.totalROI = BIG_NUM_ZERO
       positionStatsEntity.closedAt = 0
       positionStatsEntity.closeHash = ""
@@ -649,6 +660,9 @@ import {
       )
       positionStatsEntity.averagePrice = event.params.posData[2]
       positionStatsEntity.collateral = positionStatsEntity.collateral.plus(event.params.posData[0])
+      if (positionStatsEntity.collateral.gt(positionStatsEntity.maxCollateral)){
+        positionStatsEntity.maxCollateral = positionStatsEntity.collateral
+      }
       positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.posData[0])
       positionStatsEntity.totalIncreasedCollateral = positionStatsEntity.totalIncreasedCollateral.plus(event.params.posData[0])
       positionStatsEntity.positionFee = positionStatsEntity.positionFee.plus(event.params.posData[4])

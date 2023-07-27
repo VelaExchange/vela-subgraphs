@@ -549,11 +549,14 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
-      let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.collateral)
-      let totalVolume = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
-      let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(positionStatsEntity.size))
-      positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
-      positionStatsEntity.totalClosedSize = totalVolume
+      if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
+        let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
+        let totalVolume = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
+        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI).times(positionStatsEntity.lastMaxCollateral).div(positionStatsEntity.maxCollateral)).plus(newROI.times(positionStatsEntity.size))
+        positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
+        positionStatsEntity.totalClosedSize = totalVolume
+        positionStatsEntity.lastMaxCollateral = positionStatsEntity.maxCollateral
+      }
       positionStatsEntity.positionStatus = "LIQUIDATED"
       positionStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
@@ -686,6 +689,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionStatsEntity.totalSize = BIG_NUM_ZERO
         positionStatsEntity.totalClosedSize = BIG_NUM_ZERO
         positionStatsEntity.totalIncreasedCollateral = BIG_NUM_ZERO
+        positionStatsEntity.maxCollateral = BIG_NUM_ZERO
+        positionStatsEntity.lastMaxCollateral = BIG_NUM_ZERO
         positionStatsEntity.totalROI = BIG_NUM_ZERO
         positionStatsEntity.closedAt = 0
         positionStatsEntity.closeHash = ""

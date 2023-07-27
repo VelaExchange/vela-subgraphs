@@ -196,6 +196,7 @@ import {
     allTrades.save()
     if (event.params.isPlus) {
       positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.amount)
+      positionStatsEntity.totalIncreasedCollateral = positionStatsEntity.totalIncreasedCollateral.plus(event.params.amount)
     } else {
       positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.minus(event.params.amount)
     }
@@ -599,6 +600,7 @@ import {
       positionStatsEntity.totalCollateral = BIG_NUM_ZERO
       positionStatsEntity.totalSize = BIG_NUM_ZERO
       positionStatsEntity.totalClosedSize = BIG_NUM_ZERO
+      positionStatsEntity.totalIncreasedCollateral = BIG_NUM_ZERO
       positionStatsEntity.totalROI = BIG_NUM_ZERO
       positionStatsEntity.closedAt = 0
       positionStatsEntity.closeHash = ""
@@ -648,6 +650,7 @@ import {
       positionStatsEntity.averagePrice = event.params.posData[2]
       positionStatsEntity.collateral = positionStatsEntity.collateral.plus(event.params.posData[0])
       positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.posData[0])
+      positionStatsEntity.totalIncreasedCollateral = positionStatsEntity.totalIncreasedCollateral.plus(event.params.posData[0])
       positionStatsEntity.positionFee = positionStatsEntity.positionFee.plus(event.params.posData[4])
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.minus(event.params.posData[4])
       positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])
@@ -660,6 +663,7 @@ import {
       positionStatsEntity.averagePrice = event.params.posData[2]
       positionStatsEntity.collateral = positionStatsEntity.collateral.plus(event.params.posData[0])
       positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.posData[0])
+      positionStatsEntity.totalIncreasedCollateral = positionStatsEntity.totalIncreasedCollateral.plus(event.params.posData[0])
       positionStatsEntity.positionFee = positionStatsEntity.positionFee.plus(event.params.posData[4])
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.minus(event.params.posData[4])
       positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])

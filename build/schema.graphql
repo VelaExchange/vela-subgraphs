@@ -420,6 +420,7 @@ type PositionStat @entity {
   size: BigInt!
   totalCollateral: BigInt!
   totalClosedSize: BigInt!
+  totalIncreasedCollateral: BigInt!
   totalSize: BigInt!
   totalROI: BigInt!
   stpPrice: BigInt!

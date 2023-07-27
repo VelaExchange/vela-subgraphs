@@ -685,6 +685,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionStatsEntity.totalCollateral = BIG_NUM_ZERO
         positionStatsEntity.totalSize = BIG_NUM_ZERO
         positionStatsEntity.totalClosedSize = BIG_NUM_ZERO
+        positionStatsEntity.totalIncreasedCollateral = BIG_NUM_ZERO
         positionStatsEntity.totalROI = BIG_NUM_ZERO
         positionStatsEntity.closedAt = 0
         positionStatsEntity.closeHash = ""

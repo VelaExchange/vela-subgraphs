@@ -373,10 +373,9 @@ import {
       if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
         let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
         let totalVolume = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
-        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI).times(positionStatsEntity.lastMaxCollateral).div(positionStatsEntity.maxCollateral)).plus(newROI.times(positionStatsEntity.size))
+        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(positionStatsEntity.size))
         positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
         positionStatsEntity.totalClosedSize = totalVolume
-        positionStatsEntity.lastMaxCollateral = positionStatsEntity.maxCollateral
       }
       positionStatsEntity.positionStatus = "CLOSED"
       positionStatsEntity.save()
@@ -436,10 +435,9 @@ import {
       if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
         let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
         let totalVolume = positionStatsEntity.totalClosedSize.plus(event.params.posData[1])
-        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI).times(positionStatsEntity.lastMaxCollateral).div(positionStatsEntity.maxCollateral)).plus(newROI.times(event.params.posData[1]))
+        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(event.params.posData[1]))
         positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
         positionStatsEntity.totalClosedSize = totalVolume
-        positionStatsEntity.lastMaxCollateral = positionStatsEntity.maxCollateral
       }
       processGlobalInfo(
         positionStatsEntity.tokenId, 
@@ -611,7 +609,6 @@ import {
       positionStatsEntity.totalClosedSize = BIG_NUM_ZERO
       positionStatsEntity.totalIncreasedCollateral = BIG_NUM_ZERO
       positionStatsEntity.maxCollateral = BIG_NUM_ZERO
-      positionStatsEntity.lastMaxCollateral = BIG_NUM_ZERO
       positionStatsEntity.totalROI = BIG_NUM_ZERO
       positionStatsEntity.closedAt = 0
       positionStatsEntity.closeHash = ""

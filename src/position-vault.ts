@@ -673,6 +673,9 @@ import {
     } else {
       positionStatsEntity.averagePrice = event.params.posData[2]
       positionStatsEntity.collateral = positionStatsEntity.collateral.plus(event.params.posData[0])
+      if (positionStatsEntity.collateral.gt(positionStatsEntity.maxCollateral)){
+        positionStatsEntity.maxCollateral = positionStatsEntity.collateral
+      }
       positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.posData[0])
       positionStatsEntity.totalIncreasedCollateral = positionStatsEntity.totalIncreasedCollateral.plus(event.params.posData[0])
       positionStatsEntity.positionFee = positionStatsEntity.positionFee.plus(event.params.posData[4])

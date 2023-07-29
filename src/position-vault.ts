@@ -62,6 +62,7 @@ import {
       positionStatsEntity.markPrice,
       positionStatsEntity.positionType,
       BIG_NUM_ZERO,
+      BIG_NUM_ZERO,
       event.params.size,
       positionStatsEntity.tokenId,
       event.transaction.hash.toHexString()
@@ -231,7 +232,11 @@ import {
     let closePositionEntity = new ClosePosition(event.params.posId.toString() + "-" + event.block.timestamp.toString())
     let feeUsd = event.params.posData[4].plus(event.params.pnlData[1]).plus(event.params.pnlData[2])
     let realisedPnl = event.params.pnlData[0].minus(event.params.posData[4])
+    let newROI = BIG_NUM_ZERO
     if (positionStatsEntity) {
+      if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
+        newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
+      }
       let tradeVolumeEntity = TradeVolume.load(positionStatsEntity.account);
       if (!tradeVolumeEntity) {
         tradeVolumeEntity = new TradeVolume(positionStatsEntity.account)
@@ -274,6 +279,7 @@ import {
         event.params.posData[3],
         positionStatsEntity.positionType,
         realisedPnl,
+        newROI,
         positionStatsEntity.size,
         positionStatsEntity.tokenId,
         event.transaction.hash.toHexString()
@@ -370,13 +376,7 @@ import {
       positionStatsEntity.borrowFee = positionStatsEntity.borrowFee.plus(event.params.pnlData[2])
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
-      if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
-        let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
-        let totalVolume = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
-        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(positionStatsEntity.size))
-        positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
-        positionStatsEntity.totalClosedSize = totalVolume
-      }
+      positionStatsEntity.totalROI = positionStatsEntity.totalROI.plus(newROI)
       positionStatsEntity.positionStatus = "CLOSED"
       positionStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
@@ -432,12 +432,10 @@ import {
       positionStatsEntity.size = positionStatsEntity.size.minus(event.params.posData[1])
       positionStatsEntity.collateral = positionStatsEntity.collateral.minus(event.params.posData[0])
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
+      let newROI = BIG_NUM_ZERO
       if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
-        let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
-        let totalVolume = positionStatsEntity.totalClosedSize.plus(event.params.posData[1])
-        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(event.params.posData[1]))
-        positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
-        positionStatsEntity.totalClosedSize = totalVolume
+        newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
+        positionStatsEntity.totalROI = positionStatsEntity.totalROI.plus(newROI)
       }
       processGlobalInfo(
         positionStatsEntity.tokenId, 
@@ -470,6 +468,7 @@ import {
         event.params.posData[3],
         positionStatsEntity.positionType,
         realisedPnl,
+        newROI,
         event.params.posData[1],
         event.params.tokenId,
         event.transaction.hash.toHexString()
@@ -651,6 +650,7 @@ import {
         event.params.posData[3],
         positionStatsEntity.positionType,
         BIG_NUM_ZERO,
+        BIG_NUM_ZERO,
         event.params.posData[1],
         event.params.tokenId,
         event.transaction.hash.toHexString()
@@ -702,6 +702,7 @@ import {
         true,
         event.params.posData[3],
         positionStatsEntity.positionType,
+        BIG_NUM_ZERO,
         BIG_NUM_ZERO,
         event.params.posData[1],
         event.params.tokenId,

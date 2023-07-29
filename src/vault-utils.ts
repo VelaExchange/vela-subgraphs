@@ -439,6 +439,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       } else {
         realisedPnl = event.params.pnlData[0]
       }
+      let newROI = BIG_NUM_ZERO
+      if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
+        newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
+      }
       processUserTradeStats(
         event.params.posId,
         event.block.timestamp,
@@ -456,6 +460,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         event.params.posData[3],
         positionStatsEntity.positionType,
         realisedPnl,
+        newROI,
         positionStatsEntity.size,
         positionStatsEntity.tokenId,
         event.transaction.hash.toHexString()
@@ -549,13 +554,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
-      if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
-        let newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
-        let totalVolume = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
-        let accumulatedSUM = (positionStatsEntity.totalClosedSize.times(positionStatsEntity.totalROI)).plus(newROI.times(positionStatsEntity.size))
-        positionStatsEntity.totalROI = accumulatedSUM.div(totalVolume)
-        positionStatsEntity.totalClosedSize = totalVolume
-      }
+      positionStatsEntity.totalROI = positionStatsEntity.totalROI.plus(newROI)
       positionStatsEntity.positionStatus = "LIQUIDATED"
       positionStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())

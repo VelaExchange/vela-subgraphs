@@ -93,6 +93,7 @@ type GlobalInfo @entity {
   wins: BigInt!
   losses: BigInt!
   volume: BigInt!
+  counts: BigInt!
   fees: BigInt!
 }
 type DailyGlobalInfo @entity {
@@ -417,6 +418,12 @@ type PositionStat @entity {
   positionType: String!
   realisedPnl: BigInt!
   size: BigInt!
+  totalCollateral: BigInt!
+  totalClosedSize: BigInt!
+  totalIncreasedCollateral: BigInt!
+  maxCollateral: BigInt!
+  totalSize: BigInt!
+  totalROI: BigInt!
   stpPrice: BigInt!
   tokenId: BigInt!
 }
@@ -463,6 +470,7 @@ type UserTradeStat @entity {
   posId: BigInt!
   positionType: String!
   profitLoss: BigInt!
+  roi: BigInt!
   tradeVolume: BigInt!
   transactionHash: String!
 }

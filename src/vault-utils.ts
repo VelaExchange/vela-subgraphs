@@ -66,6 +66,7 @@ import { VLP_DECIMALS, MAX_VLP_FOR_Hyper,
     getHourStartDate,
     getWeekStartDate,
     getMonthStartDate,
+    HYPER_END_TIME,
     getAccountDailyTradesId,
     getAccountHourlyTradesId,
     getAccountMonthlyTradesId,
@@ -344,6 +345,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       baseGlobalInfo.totalUSDC = baseGlobalInfo.totalUSDC.plus(event.params.amount)
       if (baseGlobalInfo.totalVLP.ge(MAX_VLP_FOR_Hyper)) {
         baseGlobalInfo.hyper_ended = true
+      } else if (event.block.timestamp.toI32() >= HYPER_END_TIME) {
+        baseGlobalInfo.hyper_ended = true
       }
     } else {
       baseGlobalInfo.totalVLP = baseGlobalInfo.totalVLP.plus(event.params.mintAmount)
@@ -436,6 +439,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       } else {
         realisedPnl = event.params.pnlData[0]
       }
+      let newROI = BIG_NUM_ZERO
+      if (positionStatsEntity.maxCollateral.gt(BIG_NUM_ZERO)) {
+        newROI = BigInt.fromString('100000').times(realisedPnl).div(positionStatsEntity.maxCollateral)
+      }
       processUserTradeStats(
         event.params.posId,
         event.block.timestamp,
@@ -453,6 +460,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         event.params.posData[3],
         positionStatsEntity.positionType,
         realisedPnl,
+        newROI,
         positionStatsEntity.size,
         positionStatsEntity.tokenId,
         event.transaction.hash.toHexString()
@@ -546,6 +554,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
+      positionStatsEntity.totalROI = positionStatsEntity.totalROI.plus(newROI)
       positionStatsEntity.positionStatus = "LIQUIDATED"
       positionStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
@@ -674,6 +683,12 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionStatsEntity.account = event.params.account.toHexString()
         positionStatsEntity.averagePrice = BIG_NUM_ZERO
         positionStatsEntity.collateral = BIG_NUM_ZERO
+        positionStatsEntity.totalCollateral = BIG_NUM_ZERO
+        positionStatsEntity.totalSize = BIG_NUM_ZERO
+        positionStatsEntity.totalClosedSize = BIG_NUM_ZERO
+        positionStatsEntity.totalIncreasedCollateral = BIG_NUM_ZERO
+        positionStatsEntity.maxCollateral = BIG_NUM_ZERO
+        positionStatsEntity.totalROI = BIG_NUM_ZERO
         positionStatsEntity.closedAt = 0
         positionStatsEntity.closeHash = ""
         positionStatsEntity.createdAt = event.block.timestamp.toI32()

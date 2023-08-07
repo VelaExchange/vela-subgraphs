@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "0x088cd8f5ef3652623c22d48b1605dcfe860cd704"
       abi: ERC20
-      startBlock: 115982582
+      startBlock: 119175740
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -354,4 +354,24 @@ dataSources:
           handler: handleClaim
         - event: Swap(indexed address,uint256)
           handler: handleSwap
+      file: SwapAndAirdrop/SwapAndAirdrop.wasm
+  - kind: ethereum
+    name: AirdropForHyperVLP
+    network: arbitrum-one
+    source:
+      address: "0x6627b81b3b677064d9Ff9762769d53051eb2C54f"
+      abi: AirdropForHyperVLP
+      startBlock: 119170698
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - UserVLPRewardStat
+      abis:
+        - name: AirdropForHyperVLP
+          file: AirdropForHyperVLP/abis/AirdropForHyperVLP.json
+      eventHandlers:
+        - event: AirdropDistributed(indexed address,uint256)
+          handler: handleAirdropDistributed
       file: SwapAndAirdrop/SwapAndAirdrop.wasm

@@ -157,6 +157,13 @@ type UserAirdropStat @entity {
   timestamp: Int!
 }
 
+type UserVLPRewardStat @entity {
+  id: ID!
+  account: String!
+  amount: BigInt!
+  timestamp: Int!
+}
+
 type UserStakingStat @entity {
   id: ID!
   account: String!

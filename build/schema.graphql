@@ -413,6 +413,7 @@ type PositionStat @entity {
   fundingFee: BigInt!
   borrowFee: BigInt!
   isLong:Boolean!
+  lastUpdateTime: Int!
   lmtPrice: BigInt!
   markPrice: BigInt!
   orderStatus: String!

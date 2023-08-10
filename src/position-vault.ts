@@ -370,6 +370,7 @@ import {
       dailyGlobalInfo.tradeCounts += 1
       dailyGlobalInfo.save()
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
+      positionStatsEntity.lastUpdateTime = event.block.timestamp.toI32()
       positionStatsEntity.closeHash = event.transaction.hash.toHexString()
       positionStatsEntity.positionFee = positionStatsEntity.positionFee.plus(event.params.posData[4])
       positionStatsEntity.fundingFee = positionStatsEntity.fundingFee.plus(event.params.pnlData[1])
@@ -450,6 +451,7 @@ import {
       positionStatsEntity.borrowFee = positionStatsEntity.borrowFee.plus(event.params.pnlData[2])
       positionStatsEntity.averagePrice = event.params.posData[2]
       positionStatsEntity.markPrice = event.params.posData[3]
+      positionStatsEntity.lastUpdateTime = event.block.timestamp.toI32()
       positionStatsEntity.save()
       processUserTradeStats(
         event.params.posId,
@@ -618,6 +620,7 @@ import {
       positionStatsEntity.fundingFee = BIG_NUM_ZERO
       positionStatsEntity.tokenId = event.params.tokenId
       positionStatsEntity.isLong = event.params.isLong
+      positionStatsEntity.lastUpdateTime = 0
       positionStatsEntity.lmtPrice = BIG_NUM_ZERO
       positionStatsEntity.markPrice = BIG_NUM_ZERO
       positionStatsEntity.orderStatus = "FILLED"
@@ -667,6 +670,7 @@ import {
       positionStatsEntity.size = positionStatsEntity.size.plus(event.params.posData[1])
       positionStatsEntity.totalSize = positionStatsEntity.totalSize.plus(event.params.posData[1])
       positionStatsEntity.markPrice = event.params.posData[3]
+      positionStatsEntity.lastUpdateTime = event.block.timestamp.toI32()
       positionStatsEntity.pendingDelayCollateral = BIG_NUM_ZERO
       positionStatsEntity.pendingDelaySize = BIG_NUM_ZERO
       positionStatsEntity.save()
@@ -684,6 +688,7 @@ import {
       positionStatsEntity.totalSize = positionStatsEntity.totalSize.plus(event.params.posData[1])
       positionStatsEntity.createdAt = event.block.timestamp.toI32()
       positionStatsEntity.createHash = event.transaction.hash.toHexString()
+      positionStatsEntity.lastUpdateTime = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.save()
       processUserTradeStats(

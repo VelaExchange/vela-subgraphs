@@ -552,6 +552,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyGlobalInfo.save()
 
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
+      positionStatsEntity.lastUpdateTime = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
       positionStatsEntity.totalROI = positionStatsEntity.totalROI.plus(newROI)
@@ -696,6 +697,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionStatsEntity.positionFee = BIG_NUM_ZERO
         positionStatsEntity.fundingFee = BIG_NUM_ZERO
         positionStatsEntity.borrowFee = BIG_NUM_ZERO
+        positionStatsEntity.lastUpdateTime = 0
         positionStatsEntity.tokenId = event.params.tokenId
         positionStatsEntity.isLong = event.params.isLong
         positionStatsEntity.markPrice = BIG_NUM_ZERO

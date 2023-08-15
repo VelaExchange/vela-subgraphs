@@ -18,6 +18,7 @@ export const REWARDER3_ADDRESS = "0xf9C059A25Bf9431d70A4504bD1CE3BFD9c21B477"
 export const VELA_ADDRESS = "0x088cd8f5ef3652623c22d48b1605dcfe860cd704"
 export const EVELA_ADDRESS = "0xeFD5A713C5bd85e9Ced46070b2532E4a47a18102"
 export const VLP_ADDRESS = "0xC5b2D9FDa8A82E8DcECD5e9e6e99b78a9188eB05"
+export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 export const WHITELISTED_TOKEN_ADDRESSES: string[] = '{{ legacy.whitelistedTokenAddresses }}'.split(',')
 
 export function getHourStartDate(timestamp: BigInt): i32 {

@@ -44,17 +44,18 @@ import {
     UserStakingTier,
     StrandedUSDCAmount,
     Withdraw,
-    WeeklyTrade,
-    ReferFeeTransfer,
     HourlyVolume,
     HyperStakingTier,
     TotalInfo,
     TokenConfig,
-    Token
+    ReferFee,
+    PlatformFee
   } from "../generated/schema"
 import {
     Deposit as DepositEvent,
     ReferFeeTransfer as ReferFeeTransferEvent,
+    ReferFeeTraderRebate as ReferFeeTraderRebateEvent,
+    PlatformFeeTransfer as PlatformFeeTransferEvent,
     Stake as StakeEvent,
     Unstake as UnstakeEvent,
     Withdraw as WithdrawEvent
@@ -71,7 +72,8 @@ import { VLP_DECIMALS, MAX_VLP_FOR_Hyper,
     getAccountHourlyTradesId,
     getAccountMonthlyTradesId,
     getAccountWeeklyTradesId,
-    HYPER_ONE_WALLETS
+    HYPER_ONE_WALLETS,
+    ZERO_ADDRESS
   } from "./constants"
 
 import {
@@ -85,6 +87,9 @@ import {
   UpdateTrailingStop,
   UpdateTriggerOrderStatus
 } from "../generated/OrderVault/OrderVault" 
+import {
+  Transfer as VLPTransfer
+} from "../generated/VLPToken/ERC20"
 
 const getRewardTier= (vlpAmount: BigInt, totalVLP: BigInt): i32 => {
   if ((totalVLP.plus(vlpAmount)).lt(BigInt.fromString('1000000').times(VLP_DECIMALS))) {
@@ -405,6 +410,16 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     baseUserInfo.save()
   }
 
+  export function handleVLPTransfer(event: VLPTransfer): void {
+    if (event.params.from.toHexString() == ZERO_ADDRESS) {
+      // Mint
+    } else if (event.params.to.toHexString() == ZERO_ADDRESS) {
+      // Burn
+    } else {
+      // Transfer
+    }
+  }
+
   export function handleLiquidatePosition(event: LiquidatePositionEvent): void {
     let liquidatePositionEntity = new LiquidatePosition(event.params.posId.toString() + "-" + event.block.timestamp.toString())
     let positionStatsEntity = PositionStat.load(event.params.posId.toString())
@@ -596,13 +611,37 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
   }
   
   export function handleReferFeeTransfer(event: ReferFeeTransferEvent): void {
-    let referFees = new ReferFeeTransfer(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
+    let referFees = new ReferFee(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
     referFees.amount = event.params.amount
     referFees.account = event.params.account.toHexString()
     referFees.createdAt = event.block.timestamp.toI32()
+    referFees.trader = ZERO_ADDRESS
+    referFees.rebate = BIG_NUM_ZERO
     referFees.trasactionHash = event.transaction.hash.toHexString()
     referFees.save()
   }
+
+  export function handleReferFeeTraderRebate(event: ReferFeeTraderRebateEvent): void {
+    let referFees = new ReferFee(event.params.account.toHexString() + "-" + event.block.timestamp.toString())
+    referFees.amount = event.params.amount
+    referFees.account = event.params.account.toHexString()
+    referFees.createdAt = event.block.timestamp.toI32()
+    referFees.trader = event.params.trader.toHexString()
+    referFees.rebate = event.params.rebate
+    referFees.trasactionHash = event.transaction.hash.toHexString()
+    referFees.save()
+  }
+
+  export function handlePlatformFeeTransfer(event: PlatformFeeTransferEvent): void {
+    let platformFees = new PlatformFee(event.params.account.toHexString() + "-" + event.params.trader.toHexString() + "-" + event.block.timestamp.toString())
+    platformFees.amount = event.params.amount
+    platformFees.createdAt = event.block.timestamp.toI32()
+    platformFees.platform = event.params.account.toHexString()
+    platformFees.trader = event.params.trader.toHexString()
+    platformFees.trasactionHash = event.transaction.hash.toHexString()
+    platformFees.save()
+  }
+
 
   export function handleRegisterLiquidation(event: RegisterLiquidation): void {
 

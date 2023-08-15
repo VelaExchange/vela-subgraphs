@@ -28,6 +28,29 @@ dataSources:
           handler: handleTransfer
       file: ./src/vela-token.ts
   - kind: ethereum
+    name: VLPToken
+    network: arbitrum-one
+    source:
+      address: "0xC5b2D9FDa8A82E8DcECD5e9e6e99b78a9188eB05"
+      abi: ERC20
+      startBlock: 97098168
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Account
+        - Token
+        - TokenApproval
+        - TokenBalance
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleVLPTransfer
+      file: ./src/vault-utils.ts
+  - kind: ethereum
     name: LiquidateVault
     network: arbitrum-one
     source:
@@ -128,6 +151,10 @@ dataSources:
           handler: handleUnstake
         - event: ReferFeeTransfer(indexed address,uint256)
           handler: handleReferFeeTransfer
+        - event: PlatformFeeTransfer(indexed address,uint256,indexed address)
+          handler: handlePlatformFeeTransfer
+        - event: ReferFeeTraderRebate(indexed address,uint256,indexed address,uint256)
+          handler: handleReferFeeTraderRebate
       file: ./src/vault-utils.ts
   - kind: ethereum
     name: OrderVault

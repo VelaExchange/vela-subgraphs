@@ -28,6 +28,29 @@ dataSources:
           handler: handleTransfer
       file: VelaToken/VelaToken.wasm
   - kind: ethereum
+    name: VLPToken
+    network: arbitrum-one
+    source:
+      address: "0xC5b2D9FDa8A82E8DcECD5e9e6e99b78a9188eB05"
+      abi: ERC20
+      startBlock: 97098168
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Account
+        - Token
+        - TokenApproval
+        - TokenBalance
+      abis:
+        - name: ERC20
+          file: VLPToken/abis/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleVLPTransfer
+      file: VLPToken/VLPToken.wasm
+  - kind: ethereum
     name: LiquidateVault
     network: arbitrum-one
     source:
@@ -52,7 +75,7 @@ dataSources:
         - event: LiquidatePosition(indexed uint256,indexed address,indexed
             uint256,bool,int256[3],uint256[5])
           handler: handleLiquidatePosition
-      file: LiquidateVault/LiquidateVault.wasm
+      file: VLPToken/VLPToken.wasm
   - kind: ethereum
     name: PositionVault
     network: arbitrum-one
@@ -131,7 +154,11 @@ dataSources:
           handler: handleUnstake
         - event: ReferFeeTransfer(indexed address,uint256)
           handler: handleReferFeeTransfer
-      file: LiquidateVault/LiquidateVault.wasm
+        - event: PlatformFeeTransfer(indexed address,uint256,indexed address)
+          handler: handlePlatformFeeTransfer
+        - event: ReferFeeTraderRebate(indexed address,uint256,indexed address,uint256)
+          handler: handleReferFeeTraderRebate
+      file: VLPToken/VLPToken.wasm
   - kind: ethereum
     name: OrderVault
     network: arbitrum-one
@@ -168,7 +195,7 @@ dataSources:
           handler: handleUpdateTrailingStop
         - event: UpdateTriggerOrderStatus(uint256,uint256,uint8)
           handler: handleUpdateTriggerOrderStatus
-      file: LiquidateVault/LiquidateVault.wasm
+      file: VLPToken/VLPToken.wasm
   - kind: ethereum
     name: VUSD
     network: arbitrum-one
@@ -190,7 +217,7 @@ dataSources:
           handler: handleMint
         - event: Burn(indexed address,uint256)
           handler: handleBurn
-      file: LiquidateVault/LiquidateVault.wasm
+      file: VLPToken/VLPToken.wasm
   - kind: ethereum
     name: SettingsManager
     network: arbitrum-one
@@ -214,7 +241,7 @@ dataSources:
           handler: handleDecreaseOpenInterest
         - event: IncreaseOpenInterest(indexed uint256,bool,uint256)
           handler: handleIncreaseOpenInterest
-      file: LiquidateVault/LiquidateVault.wasm
+      file: VLPToken/VLPToken.wasm
   - kind: ethereum
     name: TokenFarm
     network: arbitrum-one

@@ -141,11 +141,22 @@ type RewardStat @entity {
   amount: BigInt!
 }
 
-type ReferFeeTransfer @entity {
+type ReferFee @entity {
   id: ID!
   account: String!
   amount: BigInt!
   createdAt: Int!
+  trader: String!
+  rebate: BigInt!
+  trasactionHash: String!
+}
+
+type PlatformFee @entity {
+  id: ID!
+  amount: BigInt!
+  createdAt: Int!
+  platform: String!
+  trader: String!
   trasactionHash: String!
 }
 

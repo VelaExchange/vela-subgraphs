@@ -493,3 +493,30 @@ type UserTradeStat @entity {
   tradeVolume: BigInt!
   transactionHash: String!
 }
+
+type UserAccountStat @entity {
+  id: ID!
+  account: String!
+  biggestWin: BigInt!
+  collateral: BigInt!
+  leverage: BigInt!
+  losses: BigInt!
+  profitLoss: BigInt!
+  trades: BigInt!
+  volume: BigInt!
+  wins: BigInt!
+}
+
+type DailyUserAccountStat @entity {
+  id: ID!
+  account: String!
+  biggestWin: BigInt!
+  collateral: BigInt!
+  leverage: BigInt!
+  losses: BigInt!
+  profitLoss: BigInt!
+  timestamp: Int!
+  trades: BigInt!
+  volume: BigInt!
+  wins: BigInt!
+}

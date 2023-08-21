@@ -49,7 +49,9 @@ import {
     TotalInfo,
     TokenConfig,
     ReferFee,
-    PlatformFee
+    PlatformFee,
+    UserAccountStat,
+    DailyUserAccountStat
   } from "../generated/schema"
 import {
     Deposit as DepositEvent,
@@ -573,6 +575,37 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.totalROI = positionStatsEntity.totalROI.plus(newROI)
       positionStatsEntity.positionStatus = "LIQUIDATED"
       positionStatsEntity.save()
+      let userAccountStatsEntity = UserAccountStat.load(positionStatsEntity.account)
+      if (userAccountStatsEntity) {
+        userAccountStatsEntity.losses.plus(BigInt.fromString("1"))
+        userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.plus(positionStatsEntity.collateral)
+        userAccountStatsEntity.volume = userAccountStatsEntity.volume.plus(positionStatsEntity.size)
+        userAccountStatsEntity.profitLoss = userAccountStatsEntity.profitLoss.plus(realisedPnl)
+        userAccountStatsEntity.trades = userAccountStatsEntity.trades.plus(BigInt.fromString('1'))
+        userAccountStatsEntity.leverage = BigInt.fromString('1000').times(userAccountStatsEntity.volume).div(userAccountStatsEntity.collateral)
+        userAccountStatsEntity.save()      
+      }
+      let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
+      if (!userDailyAccountStatsEntity) {
+        userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
+        userDailyAccountStatsEntity.account = positionStatsEntity.account
+        userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.collateral = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.leverage = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.losses = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.profitLoss = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.trades = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.timestamp = getDayStartDate(event.block.timestamp)
+        userDailyAccountStatsEntity.volume = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.wins = BIG_NUM_ZERO       
+      }
+      userDailyAccountStatsEntity.losses.plus(BigInt.fromString("1"))
+      userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.plus(positionStatsEntity.collateral)
+      userDailyAccountStatsEntity.profitLoss = userDailyAccountStatsEntity.profitLoss.plus(realisedPnl)
+      userDailyAccountStatsEntity.trades = userDailyAccountStatsEntity.trades.plus(BigInt.fromString('1'))
+      userDailyAccountStatsEntity.volume = userDailyAccountStatsEntity.volume.plus(positionStatsEntity.size)
+      userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
+      userDailyAccountStatsEntity.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
       if (positionTriggerEntity) {
         positionTriggerEntity.status = "CLOSED";

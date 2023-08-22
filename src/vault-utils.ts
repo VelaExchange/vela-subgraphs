@@ -577,7 +577,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       positionStatsEntity.save()
       let userAccountStatsEntity = UserAccountStat.load(positionStatsEntity.account)
       if (userAccountStatsEntity) {
-        userAccountStatsEntity.losses.plus(BigInt.fromString("1"))
+        userAccountStatsEntity.losses = userAccountStatsEntity.losses.plus(BigInt.fromString("1"))
         userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.plus(positionStatsEntity.collateral)
         userAccountStatsEntity.volume = userAccountStatsEntity.volume.plus(positionStatsEntity.size)
         userAccountStatsEntity.profitLoss = userAccountStatsEntity.profitLoss.plus(realisedPnl)
@@ -599,7 +599,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         userDailyAccountStatsEntity.volume = BIG_NUM_ZERO
         userDailyAccountStatsEntity.wins = BIG_NUM_ZERO       
       }
-      userDailyAccountStatsEntity.losses.plus(BigInt.fromString("1"))
+      userDailyAccountStatsEntity.losses = userDailyAccountStatsEntity.losses.plus(BigInt.fromString("1"))
       userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.plus(positionStatsEntity.collateral)
       userDailyAccountStatsEntity.profitLoss = userDailyAccountStatsEntity.profitLoss.plus(realisedPnl)
       userDailyAccountStatsEntity.trades = userDailyAccountStatsEntity.trades.plus(BigInt.fromString('1'))

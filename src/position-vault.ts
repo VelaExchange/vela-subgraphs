@@ -429,9 +429,9 @@ import {
           userAccountStatsEntity.biggestWin = positionStatsEntity.realisedPnl;
         }
         if (realisedPnl.gt(BIG_NUM_ZERO)) {
-          userAccountStatsEntity.wins.plus(BigInt.fromString("1"))
+          userAccountStatsEntity.wins = userAccountStatsEntity.wins.plus(BigInt.fromString("1"))
         } else if (realisedPnl.lt(BIG_NUM_ZERO)){
-          userAccountStatsEntity.losses.plus(BigInt.fromString("1"))
+          userAccountStatsEntity.losses = userAccountStatsEntity.losses.plus(BigInt.fromString("1"))
         }
         userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.plus(event.params.posData[0])
         userAccountStatsEntity.profitLoss = userAccountStatsEntity.profitLoss.plus(realisedPnl)
@@ -458,9 +458,9 @@ import {
         userDailyAccountStatsEntity.biggestWin = positionStatsEntity.realisedPnl;
       }
       if (realisedPnl.gt(BIG_NUM_ZERO)) {
-        userDailyAccountStatsEntity.wins.plus(BigInt.fromString("1"))
+        userDailyAccountStatsEntity.wins = userDailyAccountStatsEntity.wins.plus(BigInt.fromString("1"))
       } else if (realisedPnl.lt(BIG_NUM_ZERO)){
-        userDailyAccountStatsEntity.losses.plus(BigInt.fromString("1"))
+        userDailyAccountStatsEntity.losses = userDailyAccountStatsEntity.losses.plus(BigInt.fromString("1"))
       }
       userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.plus(event.params.posData[0])
       userDailyAccountStatsEntity.profitLoss = userDailyAccountStatsEntity.profitLoss.plus(realisedPnl)
@@ -552,9 +552,9 @@ import {
           userAccountStatsEntity.biggestWin = positionStatsEntity.realisedPnl;
         }
         if (realisedPnl.gt(BIG_NUM_ZERO)) {
-          userAccountStatsEntity.wins.plus(BigInt.fromString("1"))
+          userAccountStatsEntity.wins = userAccountStatsEntity.wins.plus(BigInt.fromString("1"))
         } else if (realisedPnl.lt(BIG_NUM_ZERO)) {
-          userAccountStatsEntity.losses.plus(BigInt.fromString("1"))
+          userAccountStatsEntity.losses = userAccountStatsEntity.losses.plus(BigInt.fromString("1"))
         }
         userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.plus(event.params.posData[0])
         userAccountStatsEntity.profitLoss = userAccountStatsEntity.profitLoss.plus(realisedPnl)
@@ -581,9 +581,9 @@ import {
         userDailyAccountStatsEntity.biggestWin = positionStatsEntity.realisedPnl;
       }
       if (realisedPnl.gt(BIG_NUM_ZERO)) {
-        userDailyAccountStatsEntity.wins.plus(BigInt.fromString("1"))
+        userDailyAccountStatsEntity.wins = userDailyAccountStatsEntity.wins.plus(BigInt.fromString("1"))
       } else if (realisedPnl.lt(BIG_NUM_ZERO)){
-        userDailyAccountStatsEntity.losses.plus(BigInt.fromString("1"))
+        userDailyAccountStatsEntity.losses = userDailyAccountStatsEntity.losses.plus(BigInt.fromString("1"))
       }
       userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.plus(event.params.posData[0])
       userDailyAccountStatsEntity.profitLoss = userDailyAccountStatsEntity.profitLoss.plus(realisedPnl)

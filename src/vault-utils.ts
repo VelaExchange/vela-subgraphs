@@ -598,6 +598,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         dailyInfo.longOI = BIG_NUM_ZERO
         dailyInfo.shortOI = BIG_NUM_ZERO
         dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.liquidations = BIG_NUM_ZERO
         dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
         dailyInfo.save()
       }
@@ -623,7 +624,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userDailyAccountStatsEntity.volume = userDailyAccountStatsEntity.volume.plus(positionStatsEntity.size)
       userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
       userDailyAccountStatsEntity.save()
-      dailyInfo.pnls = dailyInfo.pnls.plus(realisedPnl)
+      dailyInfo.liquidations = dailyInfo.liquidations.plus(realisedPnl)
       dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
       dailyInfo.volumes = dailyInfo.volumes.plus(positionStatsEntity.size)
       dailyInfo.save()
@@ -923,6 +924,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyInfo.longOI = BIG_NUM_ZERO
       dailyInfo.shortOI = BIG_NUM_ZERO
       dailyInfo.pnls = BIG_NUM_ZERO
+      dailyInfo.liquidations = BIG_NUM_ZERO
       dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
       dailyInfo.save()
     }
@@ -963,6 +965,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyInfo.longOI = BIG_NUM_ZERO
       dailyInfo.shortOI = BIG_NUM_ZERO
       dailyInfo.pnls = BIG_NUM_ZERO
+      dailyInfo.liquidations = BIG_NUM_ZERO
       dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
       dailyInfo.save()
     }

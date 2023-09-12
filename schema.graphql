@@ -531,4 +531,5 @@ type DailyInfo @entity {
   pnls: BigInt!
   longOI: BigInt!
   shortOI: BigInt!
+  liquidations: BigInt!
 }

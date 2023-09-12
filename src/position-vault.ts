@@ -237,6 +237,7 @@ import {
       dailyInfo.longOI = BIG_NUM_ZERO
       dailyInfo.shortOI = BIG_NUM_ZERO
       dailyInfo.pnls = BIG_NUM_ZERO
+      dailyInfo.liquidations = BIG_NUM_ZERO
       dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
       dailyInfo.save()
     }
@@ -470,6 +471,7 @@ import {
         dailyInfo.longOI = BIG_NUM_ZERO
         dailyInfo.shortOI = BIG_NUM_ZERO
         dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.liquidations = BIG_NUM_ZERO
         dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
         dailyInfo.save()
       }
@@ -613,6 +615,7 @@ import {
         dailyInfo.longOI = BIG_NUM_ZERO
         dailyInfo.shortOI = BIG_NUM_ZERO
         dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.liquidations = BIG_NUM_ZERO
         dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
         dailyInfo.save()
       }
@@ -891,6 +894,7 @@ import {
         dailyInfo.longOI = BIG_NUM_ZERO
         dailyInfo.shortOI = BIG_NUM_ZERO
         dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.liquidations = BIG_NUM_ZERO
         dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
         dailyInfo.save()
       }
@@ -988,6 +992,7 @@ import {
         dailyInfo.longOI = BIG_NUM_ZERO
         dailyInfo.shortOI = BIG_NUM_ZERO
         dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.liquidations = BIG_NUM_ZERO
         dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
         dailyInfo.save()
       }

@@ -520,3 +520,15 @@ type DailyUserAccountStat @entity {
   volume: BigInt!
   wins: BigInt!
 }
+
+type DailyInfo @entity {
+  id: ID!
+  users: BigInt!
+  fees: BigInt!
+  trades: BigInt!
+  timestamp: Int!
+  volumes: BigInt!
+  pnls: BigInt!
+  longOI: BigInt!
+  shortOI: BigInt!
+}

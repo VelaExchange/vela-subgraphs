@@ -27,6 +27,7 @@ import {
     BaseGlobalInfo,
     BaseUserInfo,
     ClosePosition,
+    DailyInfo,
     DailyTrade,
     DailyGlobalInfo,
     Deposit,
@@ -65,6 +66,7 @@ import {
 import { BigInt } from "@graphprotocol/graph-ts"
 import { VLP_DECIMALS, MAX_VLP_FOR_Hyper, 
     BIG_NUM_ZERO,
+    getDailyInfoId,
     getDayStartDate,
     getHourStartDate,
     getWeekStartDate,
@@ -482,6 +484,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionStatsEntity.tokenId,
         event.transaction.hash.toHexString()
       )
+      let dailyInfoId = getDailyInfoId(event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
       let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.tokenId.toString(), event.block.timestamp)
       let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
@@ -585,8 +588,22 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         userAccountStatsEntity.leverage = BigInt.fromString('1000').times(userAccountStatsEntity.volume).div(userAccountStatsEntity.collateral)
         userAccountStatsEntity.save()      
       }
+      let dailyInfo = DailyInfo.load(dailyInfoId)
+      if (!dailyInfo) {
+        dailyInfo = new DailyInfo(dailyInfoId)
+        dailyInfo.fees = BIG_NUM_ZERO
+        dailyInfo.trades = BIG_NUM_ZERO
+        dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.volumes = BIG_NUM_ZERO
+        dailyInfo.longOI = BIG_NUM_ZERO
+        dailyInfo.shortOI = BIG_NUM_ZERO
+        dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+        dailyInfo.save()
+      }
       let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
       if (!userDailyAccountStatsEntity) {
+        dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
         userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
         userDailyAccountStatsEntity.account = positionStatsEntity.account
         userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
@@ -606,6 +623,10 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       userDailyAccountStatsEntity.volume = userDailyAccountStatsEntity.volume.plus(positionStatsEntity.size)
       userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
       userDailyAccountStatsEntity.save()
+      dailyInfo.pnls = dailyInfo.pnls.plus(realisedPnl)
+      dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
+      dailyInfo.volumes = dailyInfo.volumes.plus(positionStatsEntity.size)
+      dailyInfo.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
       if (positionTriggerEntity) {
         positionTriggerEntity.status = "CLOSED";
@@ -891,6 +912,20 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
   }
 
   export function handleDecreaseOpenInterest(event: DecreaseOpenInterest): void {
+    let dailyInfoId = getDailyInfoId(event.block.timestamp)
+    let dailyInfo = DailyInfo.load(dailyInfoId)
+    if (!dailyInfo) {
+      dailyInfo = new DailyInfo(dailyInfoId)
+      dailyInfo.fees = BIG_NUM_ZERO
+      dailyInfo.trades = BIG_NUM_ZERO
+      dailyInfo.users = BIG_NUM_ZERO
+      dailyInfo.volumes = BIG_NUM_ZERO
+      dailyInfo.longOI = BIG_NUM_ZERO
+      dailyInfo.shortOI = BIG_NUM_ZERO
+      dailyInfo.pnls = BIG_NUM_ZERO
+      dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+      dailyInfo.save()
+    }
     let allOpenInterest = OpenInterest.load("all")
     if (!allOpenInterest) {
       allOpenInterest = new OpenInterest("all")
@@ -907,10 +942,30 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       tokenOpenInterest.amount = BIG_NUM_ZERO
     }
     tokenOpenInterest.amount = tokenOpenInterest.amount.minus(event.params.amount)
-    tokenOpenInterest.save()      
+    tokenOpenInterest.save()     
+    if (event.params.isLong) {
+      dailyInfo.longOI = dailyInfo.longOI.minus(event.params.amount)
+    } else {
+      dailyInfo.shortOI = dailyInfo.shortOI.minus(event.params.amount)
+    }
+    dailyInfo.save()
   }
 
   export function handleIncreaseOpenInterest(event: IncreaseOpenInterest): void {
+    let dailyInfoId = getDailyInfoId(event.block.timestamp)
+    let dailyInfo = DailyInfo.load(dailyInfoId)
+    if (!dailyInfo) {
+      dailyInfo = new DailyInfo(dailyInfoId)
+      dailyInfo.fees = BIG_NUM_ZERO
+      dailyInfo.trades = BIG_NUM_ZERO
+      dailyInfo.users = BIG_NUM_ZERO
+      dailyInfo.volumes = BIG_NUM_ZERO
+      dailyInfo.longOI = BIG_NUM_ZERO
+      dailyInfo.shortOI = BIG_NUM_ZERO
+      dailyInfo.pnls = BIG_NUM_ZERO
+      dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+      dailyInfo.save()
+    }
     let allOpenInterest = OpenInterest.load("all")
     if (!allOpenInterest) {
       allOpenInterest = new OpenInterest("all")
@@ -928,6 +983,12 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
     }
     tokenOpenInterest.amount = tokenOpenInterest.amount.plus(event.params.amount)
     tokenOpenInterest.save()
+    if (event.params.isLong) {
+      dailyInfo.longOI = dailyInfo.longOI.plus(event.params.amount)
+    } else {
+      dailyInfo.shortOI = dailyInfo.shortOI.plus(event.params.amount)
+    }
+    dailyInfo.save()
   }
 
   export function handleUpdateTrailingStop(event: UpdateTrailingStop): void {

@@ -42,6 +42,10 @@ export function getMonthStartDate(timestamp: BigInt): i32 {
 }
 
 
+export function getDailyInfoId(timestamp: BigInt): string {
+    let startDate = getDayStartDate(timestamp)
+    return BigInt.fromI32(startDate).toString()
+}
   
 export function getAccountDailyTradesId(account: string, timestamp: BigInt): string {
     let startDate = getDayStartDate(timestamp)

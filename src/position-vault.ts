@@ -13,6 +13,7 @@ import {
   } from "../generated/PositionVault/PositionVault"
 
 import {
+    DailyInfo,
     DailyTrade,
     AllTrade,
     ClosePosition,
@@ -37,6 +38,7 @@ import {
     getAccountHourlyTradesId,
     getAccountMonthlyTradesId,
     getAccountWeeklyTradesId,
+    getDailyInfoId,
     getDayStartDate,
     getHourStartDate,
     getMonthStartDate,
@@ -69,6 +71,7 @@ import {
       positionStatsEntity.tokenId,
       event.transaction.hash.toHexString()
     )
+    let dailyInfoId = getDailyInfoId(event.block.timestamp)
     let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
     let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
     let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
@@ -224,8 +227,22 @@ import {
       }
       userAccountStatsEntity.save()
     }
+    let dailyInfo = DailyInfo.load(dailyInfoId)
+    if (!dailyInfo) {
+      dailyInfo = new DailyInfo(dailyInfoId)
+      dailyInfo.fees = BIG_NUM_ZERO
+      dailyInfo.trades = BIG_NUM_ZERO
+      dailyInfo.users = BIG_NUM_ZERO
+      dailyInfo.volumes = BIG_NUM_ZERO
+      dailyInfo.longOI = BIG_NUM_ZERO
+      dailyInfo.shortOI = BIG_NUM_ZERO
+      dailyInfo.pnls = BIG_NUM_ZERO
+      dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+      dailyInfo.save()
+    }
     let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
     if (!userDailyAccountStatsEntity) {
+      dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
       userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
       userDailyAccountStatsEntity.account = positionStatsEntity.account
       userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
@@ -250,6 +267,8 @@ import {
       }
     }
     userDailyAccountStatsEntity.save()
+    dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
+    dailyInfo.save()
     let tradeVolume = TradeVolume.load(positionStatsEntity.account);
     if (!tradeVolume) {
       tradeVolume = new TradeVolume(positionStatsEntity.account)
@@ -327,6 +346,7 @@ import {
         positionStatsEntity.tokenId,
         event.transaction.hash.toHexString()
       )
+      let dailyInfoId = getDailyInfoId(event.block.timestamp)
       let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
       let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.tokenId.toString(), event.block.timestamp)
@@ -440,8 +460,22 @@ import {
         userAccountStatsEntity.leverage = BigInt.fromString('1000').times(userAccountStatsEntity.volume).div(userAccountStatsEntity.collateral)
         userAccountStatsEntity.save()
       }
+      let dailyInfo = DailyInfo.load(dailyInfoId)
+      if (!dailyInfo) {
+        dailyInfo = new DailyInfo(dailyInfoId)
+        dailyInfo.fees = BIG_NUM_ZERO
+        dailyInfo.trades = BIG_NUM_ZERO
+        dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.volumes = BIG_NUM_ZERO
+        dailyInfo.longOI = BIG_NUM_ZERO
+        dailyInfo.shortOI = BIG_NUM_ZERO
+        dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+        dailyInfo.save()
+      }
       let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
       if (!userDailyAccountStatsEntity) {
+        dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
         userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
         userDailyAccountStatsEntity.account = positionStatsEntity.account
         userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
@@ -468,6 +502,11 @@ import {
       userDailyAccountStatsEntity.volume = userDailyAccountStatsEntity.volume.plus(event.params.posData[1])
       userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
       userDailyAccountStatsEntity.save()
+      dailyInfo.pnls = dailyInfo.pnls.plus(realisedPnl)
+      dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
+      dailyInfo.volumes = dailyInfo.volumes.plus(event.params.posData[1])
+      dailyInfo.fees = dailyInfo.fees.plus(event.params.posData[4]).plus(event.params.pnlData[1]).plus(event.params.pnlData[2])
+      dailyInfo.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
       if (positionTriggerEntity) {
         positionTriggerEntity.status = "CLOSED";
@@ -541,6 +580,7 @@ import {
       positionStatsEntity.markPrice = event.params.posData[3]
       positionStatsEntity.lastUpdateTime = event.block.timestamp.toI32()
       positionStatsEntity.save()
+      let dailyInfoId = getDailyInfoId(event.block.timestamp)
       let hourlyTradesId = getAccountHourlyTradesId(event.params.account.toHexString(), event.block.timestamp)
       let hourlyVolumeId = getAccountHourlyTradesId(event.params.tokenId.toString(), event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(event.params.account.toHexString(), event.block.timestamp)
@@ -563,8 +603,22 @@ import {
         userAccountStatsEntity.leverage = BigInt.fromString('1000').times(userAccountStatsEntity.volume).div(userAccountStatsEntity.collateral)
         userAccountStatsEntity.save()      
       }
+      let dailyInfo = DailyInfo.load(dailyInfoId)
+      if (!dailyInfo) {
+        dailyInfo = new DailyInfo(dailyInfoId)
+        dailyInfo.fees = BIG_NUM_ZERO
+        dailyInfo.trades = BIG_NUM_ZERO
+        dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.volumes = BIG_NUM_ZERO
+        dailyInfo.longOI = BIG_NUM_ZERO
+        dailyInfo.shortOI = BIG_NUM_ZERO
+        dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+        dailyInfo.save()
+      }
       let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
       if (!userDailyAccountStatsEntity) {
+        dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
         userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
         userDailyAccountStatsEntity.account = positionStatsEntity.account
         userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
@@ -591,6 +645,11 @@ import {
       userDailyAccountStatsEntity.volume = userDailyAccountStatsEntity.volume.plus(event.params.posData[1])
       userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
       userDailyAccountStatsEntity.save()
+      dailyInfo.pnls = dailyInfo.pnls.plus(realisedPnl)
+      dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
+      dailyInfo.volumes = dailyInfo.volumes.plus(event.params.posData[1])
+      dailyInfo.fees = dailyInfo.fees.plus(event.params.posData[4]).plus(event.params.pnlData[1]).plus(event.params.pnlData[2])
+      dailyInfo.save()
       processUserTradeStats(
         event.params.posId,
         event.block.timestamp,
@@ -768,6 +827,7 @@ import {
       positionStatsEntity.size = BIG_NUM_ZERO
       positionStatsEntity.stpPrice = BIG_NUM_ZERO
     }
+    let dailyInfoId = getDailyInfoId(event.block.timestamp)
     let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.tokenId.toString(), event.block.timestamp)
     let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
     let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
@@ -821,8 +881,22 @@ import {
         userAccountStatsEntity.trades = userAccountStatsEntity.trades.plus(BigInt.fromString('1'))
         userAccountStatsEntity.save()   
       }
+      let dailyInfo = DailyInfo.load(dailyInfoId)
+      if (!dailyInfo) {
+        dailyInfo = new DailyInfo(dailyInfoId)
+        dailyInfo.fees = BIG_NUM_ZERO
+        dailyInfo.trades = BIG_NUM_ZERO
+        dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.volumes = BIG_NUM_ZERO
+        dailyInfo.longOI = BIG_NUM_ZERO
+        dailyInfo.shortOI = BIG_NUM_ZERO
+        dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+        dailyInfo.save()
+      }
       let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
       if (!userDailyAccountStatsEntity) {
+        dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
         userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
         userDailyAccountStatsEntity.account = positionStatsEntity.account
         userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
@@ -841,6 +915,11 @@ import {
       userDailyAccountStatsEntity.volume = userDailyAccountStatsEntity.volume.plus(event.params.posData[1])
       userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
       userDailyAccountStatsEntity.save()
+      dailyInfo.pnls = dailyInfo.pnls.minus(event.params.posData[4])
+      dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
+      dailyInfo.volumes = dailyInfo.volumes.plus(event.params.posData[1])
+      dailyInfo.fees = dailyInfo.fees.plus(event.params.posData[4])
+      dailyInfo.save()
     } else {
       positionStatsEntity.averagePrice = event.params.posData[2]
       positionStatsEntity.collateral = positionStatsEntity.collateral.plus(event.params.posData[0])
@@ -899,8 +978,22 @@ import {
       userAccountStatsEntity.profitLoss = userAccountStatsEntity.profitLoss.minus(event.params.posData[4])
       userAccountStatsEntity.trades = userAccountStatsEntity.trades.plus(BigInt.fromString('1'))
       userAccountStatsEntity.save()
+      let dailyInfo = DailyInfo.load(dailyInfoId)
+      if (!dailyInfo) {
+        dailyInfo = new DailyInfo(dailyInfoId)
+        dailyInfo.fees = BIG_NUM_ZERO
+        dailyInfo.trades = BIG_NUM_ZERO
+        dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.volumes = BIG_NUM_ZERO
+        dailyInfo.longOI = BIG_NUM_ZERO
+        dailyInfo.shortOI = BIG_NUM_ZERO
+        dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+        dailyInfo.save()
+      }
       let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
       if (!userDailyAccountStatsEntity) {
+        dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
         userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
         userDailyAccountStatsEntity.account = positionStatsEntity.account
         userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
@@ -919,6 +1012,11 @@ import {
       userDailyAccountStatsEntity.volume = userDailyAccountStatsEntity.volume.plus(event.params.posData[1])
       userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
       userDailyAccountStatsEntity.save()   
+      dailyInfo.pnls = dailyInfo.pnls.minus(event.params.posData[4])
+      dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
+      dailyInfo.volumes = dailyInfo.volumes.plus(event.params.posData[1])
+      dailyInfo.fees = dailyInfo.fees.plus(event.params.posData[4])
+      dailyInfo.save()
     }
     let tradeVolume = TradeVolume.load(event.params.account.toHexString());
     if (!tradeVolume) {

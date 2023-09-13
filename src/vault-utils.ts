@@ -837,6 +837,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionStatsEntity.realisedPnl = BIG_NUM_ZERO
         positionStatsEntity.size = BIG_NUM_ZERO
         positionStatsEntity.stpPrice = event.params.triggerData[1]
+        positionStatsEntity.refer = event.params.refer.toHexString()
         positionStatsEntity.save()
     }
   }

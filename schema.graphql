@@ -445,6 +445,7 @@ type PositionStat @entity {
   totalROI: BigInt!
   stpPrice: BigInt!
   tokenId: BigInt!
+  refer: String!
 }
 
 type PositionTrigger @entity {

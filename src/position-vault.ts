@@ -34,6 +34,7 @@ import { process24HVolume, processAllTrades, processDailyTrades, processGlobalIn
 import { BigInt } from "@graphprotocol/graph-ts"
 import { 
     BIG_NUM_ZERO,
+    ZERO_ADDRESS,
     getAccountDailyTradesId,
     getAccountHourlyTradesId,
     getAccountMonthlyTradesId,
@@ -829,6 +830,7 @@ import {
       positionStatsEntity.realisedPnl = BIG_NUM_ZERO
       positionStatsEntity.size = BIG_NUM_ZERO
       positionStatsEntity.stpPrice = BIG_NUM_ZERO
+      positionStatsEntity.refer = ZERO_ADDRESS
     }
     let dailyInfoId = getDailyInfoId(event.block.timestamp)
     let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.tokenId.toString(), event.block.timestamp)

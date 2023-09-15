@@ -292,6 +292,7 @@ export function processUserTradeStats(
     positionType: string,
     profitLoss: BigInt,
     roi: BigInt,
+    refer: string,
     size: BigInt,
     tokenId: BigInt,
     transactionHash: string
@@ -315,6 +316,7 @@ export function processUserTradeStats(
     userTradeStatsEntity.positionType = positionType
     userTradeStatsEntity.profitLoss = profitLoss
     userTradeStatsEntity.roi = roi
+    userTradeStatsEntity.refer = refer
     userTradeStatsEntity.tradeVolume = size
     userTradeStatsEntity.transactionHash = transactionHash
     userTradeStatsEntity.save()

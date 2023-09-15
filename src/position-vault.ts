@@ -68,6 +68,7 @@ import {
       positionStatsEntity.positionType,
       BIG_NUM_ZERO,
       BIG_NUM_ZERO,
+      positionStatsEntity.refer,
       event.params.size,
       positionStatsEntity.tokenId,
       event.transaction.hash.toHexString()
@@ -344,6 +345,7 @@ import {
         positionStatsEntity.positionType,
         realisedPnl,
         newROI,
+        positionStatsEntity.refer,
         positionStatsEntity.size,
         positionStatsEntity.tokenId,
         event.transaction.hash.toHexString()
@@ -444,6 +446,7 @@ import {
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
       positionStatsEntity.totalROI = positionStatsEntity.totalROI.plus(newROI)
       positionStatsEntity.positionStatus = "CLOSED"
+      positionStatsEntity.totalClosedSize = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
       positionStatsEntity.save()
       let userAccountStatsEntity = UserAccountStat.load(positionStatsEntity.account)
       if (userAccountStatsEntity) {
@@ -561,6 +564,7 @@ import {
     let positionStatsEntity = PositionStat.load(event.params.posId.toString())
     if (positionStatsEntity) {
       positionStatsEntity.size = positionStatsEntity.size.minus(event.params.posData[1])
+      positionStatsEntity.totalClosedSize = positionStatsEntity.totalClosedSize.plus(event.params.posData[1])
       positionStatsEntity.collateral = positionStatsEntity.collateral.minus(event.params.posData[0])
       positionStatsEntity.realisedPnl = positionStatsEntity.realisedPnl.plus(realisedPnl)
       let newROI = BIG_NUM_ZERO
@@ -672,6 +676,7 @@ import {
         positionStatsEntity.positionType,
         realisedPnl,
         newROI,
+        positionStatsEntity.refer,
         event.params.posData[1],
         event.params.tokenId,
         event.transaction.hash.toHexString()
@@ -857,6 +862,7 @@ import {
         positionStatsEntity.positionType,
         BIG_NUM_ZERO.minus(event.params.posData[4]),
         BIG_NUM_ZERO,
+        positionStatsEntity.refer,
         event.params.posData[1],
         event.params.tokenId,
         event.transaction.hash.toHexString()
@@ -961,6 +967,7 @@ import {
         positionStatsEntity.positionType,
         BIG_NUM_ZERO.minus(event.params.posData[4]),
         BIG_NUM_ZERO,
+        positionStatsEntity.refer,
         event.params.posData[1],
         event.params.tokenId,
         event.transaction.hash.toHexString()

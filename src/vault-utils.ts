@@ -480,6 +480,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         positionStatsEntity.positionType,
         realisedPnl,
         newROI,
+        positionStatsEntity.refer,
         positionStatsEntity.size,
         positionStatsEntity.tokenId,
         event.transaction.hash.toHexString()
@@ -570,7 +571,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyGlobalInfo.tradeVolume = dailyGlobalInfo.tradeVolume.plus(positionStatsEntity.size)
       dailyGlobalInfo.tradeCounts += 1
       dailyGlobalInfo.save()
-
+      positionStatsEntity.totalClosedSize = positionStatsEntity.totalClosedSize.plus(positionStatsEntity.size)
       positionStatsEntity.closedAt = event.block.timestamp.toI32()
       positionStatsEntity.lastUpdateTime = event.block.timestamp.toI32()
       positionStatsEntity.markPrice = event.params.posData[3]

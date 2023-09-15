@@ -491,6 +491,7 @@ type UserTradeStat @entity {
   positionType: String!
   profitLoss: BigInt!
   roi: BigInt!
+  refer: String!
   tradeVolume: BigInt!
   transactionHash: String!
 }

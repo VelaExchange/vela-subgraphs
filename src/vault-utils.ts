@@ -704,7 +704,32 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
   }
 
   export function handleAddTrailingStop(event: AddTrailingStop): void {
-      
+    let positionStatsEntity = PositionStat.load(event.params.posId.toString())
+    if (positionStatsEntity) {
+      processUserTradeStats(
+        event.params.posId,
+        event.block.timestamp,
+        positionStatsEntity.account,
+        "ADD_TRAILING_STOP",
+        event.params.data[4],
+        positionStatsEntity.averagePrice,
+        event.params.data[0],
+        BIG_NUM_ZERO,
+        BIG_NUM_ZERO,
+        BIG_NUM_ZERO,
+        positionStatsEntity.isLong,
+        event.params.data[2].toI32() == 1 ? true : false,
+        false,
+        event.params.data[3],
+        positionStatsEntity.positionType,
+        BIG_NUM_ZERO,
+        event.params.data[1],
+        positionStatsEntity.refer,
+        BIG_NUM_ZERO,
+        positionStatsEntity.tokenId,
+        event.transaction.hash.toHexString()
+      )
+    }
   }
 
   export function handleAddTriggerOrders(event: AddTriggerOrders): void {

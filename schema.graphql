@@ -388,9 +388,9 @@ type TradeVolume @entity {
   openShorts: BigInt!
 }
 
-type HourlyVolume @entity {
+type DailyVolume @entity {
   id: ID!
-  amount: BigInt!
+  volume: BigInt!
   tokenId: BigInt!
   timestamp: Int!
   tradeCounts: Int!

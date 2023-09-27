@@ -15,6 +15,7 @@ import {
 import {
     DailyInfo,
     DailyTrade,
+    DailyVolume,
     AllTrade,
     ClosePosition,
     DecreasePosition,
@@ -265,6 +266,7 @@ import {
       )
       let dailyInfoId = getDailyInfoId(event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.tokenId.toString(), event.block.timestamp)
       processDailyTrades(
         dailyTradesId,
         positionStatsEntity.account, 
@@ -285,6 +287,17 @@ import {
         realisedPnl,
         positionStatsEntity.size
       )
+      let dailyVolume = DailyVolume.load(dailyVolumeId)
+      if (!dailyVolume) {
+        dailyVolume = new DailyVolume(dailyVolumeId)
+        dailyVolume.volume = BIG_NUM_ZERO
+        dailyVolume.tokenId = positionStatsEntity.tokenId
+        dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+        dailyVolume.tradeCounts = 0
+      }
+      dailyVolume.volume = dailyVolume.volume.plus(positionStatsEntity.size)
+      dailyVolume.tradeCounts += 1
+      dailyVolume.save()
       let dailyGlobalInfoId = getAccountDailyTradesId("global", event.block.timestamp)
       let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
       if (!dailyGlobalInfo) {
@@ -454,6 +467,7 @@ import {
       positionStatsEntity.save()
       let dailyInfoId = getDailyInfoId(event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(event.params.account.toHexString(), event.block.timestamp)
+      let dailyVolumeId = getAccountDailyTradesId(event.params.tokenId.toString(), event.block.timestamp)
       let userAccountStatsEntity = UserAccountStat.load(positionStatsEntity.account)
       if (userAccountStatsEntity) {
         if (positionStatsEntity.realisedPnl.gt(userAccountStatsEntity.biggestWin)) {
@@ -520,6 +534,17 @@ import {
       dailyInfo.volumes = dailyInfo.volumes.plus(event.params.posData[1])
       dailyInfo.fees = dailyInfo.fees.plus(event.params.posData[4]).plus(event.params.pnlData[1]).plus(event.params.pnlData[2])
       dailyInfo.save()
+      let dailyVolume = DailyVolume.load(dailyVolumeId)
+      if (!dailyVolume) {
+        dailyVolume = new DailyVolume(dailyVolumeId)
+        dailyVolume.volume = BIG_NUM_ZERO
+        dailyVolume.tokenId = positionStatsEntity.tokenId
+        dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+        dailyVolume.tradeCounts = 0
+      }
+      dailyVolume.volume = dailyVolume.volume.plus(event.params.posData[1])
+      dailyVolume.tradeCounts += 1
+      dailyVolume.save()
       processUserTradeStats(
         event.params.posId,
         event.block.timestamp,
@@ -656,6 +681,7 @@ import {
     }
     let dailyInfoId = getDailyInfoId(event.block.timestamp)
     let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+    let dailyVolumeId = getAccountDailyTradesId(event.params.tokenId.toString(), event.block.timestamp)
     if (positionStatsEntity.pendingDelayCollateral.gt(BIG_NUM_ZERO)) {
       processUserTradeStats(
         event.params.posId,
@@ -746,6 +772,17 @@ import {
       dailyInfo.volumes = dailyInfo.volumes.plus(event.params.posData[1])
       dailyInfo.fees = dailyInfo.fees.plus(event.params.posData[4])
       dailyInfo.save()
+      let dailyVolume = DailyVolume.load(dailyVolumeId)
+      if (!dailyVolume) {
+        dailyVolume = new DailyVolume(dailyVolumeId)
+        dailyVolume.volume = BIG_NUM_ZERO
+        dailyVolume.tokenId = positionStatsEntity.tokenId
+        dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+        dailyVolume.tradeCounts = 0
+      }
+      dailyVolume.volume = dailyVolume.volume.plus(event.params.posData[1])
+      dailyVolume.tradeCounts += 1
+      dailyVolume.save()
     } else {
       positionStatsEntity.averagePrice = event.params.posData[2]
       positionStatsEntity.collateral = positionStatsEntity.collateral.plus(event.params.posData[0])
@@ -847,6 +884,17 @@ import {
       dailyInfo.volumes = dailyInfo.volumes.plus(event.params.posData[1])
       dailyInfo.fees = dailyInfo.fees.plus(event.params.posData[4])
       dailyInfo.save()
+      let dailyVolume = DailyVolume.load(dailyVolumeId)
+      if (!dailyVolume) {
+        dailyVolume = new DailyVolume(dailyVolumeId)
+        dailyVolume.volume = BIG_NUM_ZERO
+        dailyVolume.tokenId = positionStatsEntity.tokenId
+        dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+        dailyVolume.tradeCounts = 0
+      }
+      dailyVolume.volume = dailyVolume.volume.plus(event.params.posData[1])
+      dailyVolume.tradeCounts += 1
+      dailyVolume.save()
     }
     let tradeVolume = TradeVolume.load(event.params.account.toHexString());
     if (!tradeVolume) {

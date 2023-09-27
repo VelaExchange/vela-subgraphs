@@ -24,6 +24,7 @@ import {
     BaseUserInfo,
     DailyInfo,
     DailyGlobalInfo,
+    DailyVolume,
     Deposit,
     Mint,
     LiquidatePosition,
@@ -472,6 +473,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       )
       let dailyInfoId = getDailyInfoId(event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let dailyVolumeId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
       processDailyTrades(
         dailyTradesId,
         positionStatsEntity.account, 
@@ -566,6 +568,17 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
       dailyInfo.volumes = dailyInfo.volumes.plus(positionStatsEntity.size)
       dailyInfo.save()
+      let dailyVolume = DailyVolume.load(dailyVolumeId)
+      if (!dailyVolume) {
+        dailyVolume = new DailyVolume(dailyVolumeId)
+        dailyVolume.volume = BIG_NUM_ZERO
+        dailyVolume.tokenId = positionStatsEntity.tokenId
+        dailyVolume.timestamp = getDayStartDate(event.block.timestamp)
+        dailyVolume.tradeCounts = 0
+      }
+      dailyVolume.volume = dailyVolume.volume.plus(positionStatsEntity.size)
+      dailyVolume.tradeCounts += 1
+      dailyVolume.save()
       let positionTriggerEntity = PositionTrigger.load(event.params.posId.toString())
       if (positionTriggerEntity) {
         positionTriggerEntity.status = "CLOSED";

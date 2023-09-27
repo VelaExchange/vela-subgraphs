@@ -526,6 +526,7 @@ type DailyUserAccountStat @entity {
 type DailyInfo @entity {
   id: ID!
   users: BigInt!
+  newUsers: BigInt!
   fees: BigInt!
   trades: BigInt!
   timestamp: Int!

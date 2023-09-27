@@ -20,30 +20,20 @@ import {
     DecreasePosition,
     DailyGlobalInfo,
     IncreasePosition,
-    MonthlyTrade,
-    WeeklyTrade,
     PositionStat,
     PositionTrigger,
     TradeVolume,
-    HourlyTrade,
-    HourlyVolume,
     UserAccountStat,
     DailyUserAccountStat,
   } from "../generated/schema"
-import { process24HVolume, processAllTrades, processDailyTrades, processGlobalInfo, processHourlyTrades, processMonthlyTrades, processUserTradeStats, processWeeklyTrades  } from "./process"
+import { processAllTrades, processDailyTrades, processGlobalInfo, processUserTradeStats  } from "./process"
 import { BigInt } from "@graphprotocol/graph-ts"
 import { 
     BIG_NUM_ZERO,
     ZERO_ADDRESS,
     getAccountDailyTradesId,
-    getAccountHourlyTradesId,
-    getAccountMonthlyTradesId,
-    getAccountWeeklyTradesId,
     getDailyInfoId,
     getDayStartDate,
-    getHourStartDate,
-    getMonthStartDate,
-    getWeekStartDate
  } from "./constants"
 
 
@@ -75,34 +65,6 @@ import {
     )
     let dailyInfoId = getDailyInfoId(event.block.timestamp)
     let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let hourlyTrades = HourlyTrade.load(hourlyTradesId)
-    if (!hourlyTrades) {
-        hourlyTrades = new HourlyTrade(hourlyTradesId)
-        hourlyTrades.account = positionStatsEntity.account
-        hourlyTrades.collateral = BIG_NUM_ZERO
-        hourlyTrades.fees = BIG_NUM_ZERO
-        hourlyTrades.timestamp = getHourStartDate(event.block.timestamp);
-        hourlyTrades.tradeVolume = BIG_NUM_ZERO
-        hourlyTrades.profitLoss = BIG_NUM_ZERO
-        hourlyTrades.tradeCount = 0
-        hourlyTrades.winCount = 0 
-        hourlyTrades.lossCount = 0
-        hourlyTrades.leverage = BIG_NUM_ZERO
-    }
-    if (event.params.isPlus) {
-        hourlyTrades.collateral = hourlyTrades.collateral.plus(event.params.amount)
-    } else {
-        hourlyTrades.collateral = hourlyTrades.collateral.minus(event.params.amount)
-    }
-    if (hourlyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        hourlyTrades.leverage = BIG_NUM_ZERO
-    } else {
-        hourlyTrades.leverage = hourlyTrades.tradeVolume.times(BigInt.fromString("1000")).div(hourlyTrades.collateral)
-    }
-    hourlyTrades.save()
     let dailyTrades = DailyTrade.load(dailyTradesId)
     if (!dailyTrades) {
         dailyTrades = new DailyTrade(dailyTradesId)
@@ -128,56 +90,6 @@ import {
         dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString("1000")).div(dailyTrades.collateral)
     }
     dailyTrades.save()
-    let monthlyTrades = MonthlyTrade.load(monthlyTradesId)
-    if (!monthlyTrades) {
-        monthlyTrades = new MonthlyTrade(monthlyTradesId)
-        monthlyTrades.account = positionStatsEntity.account
-        monthlyTrades.collateral = BIG_NUM_ZERO
-        monthlyTrades.fees = BIG_NUM_ZERO
-        monthlyTrades.timestamp = getMonthStartDate(event.block.timestamp);
-        monthlyTrades.tradeVolume = BIG_NUM_ZERO
-        monthlyTrades.profitLoss = BIG_NUM_ZERO
-        monthlyTrades.tradeCount = 0
-        monthlyTrades.winCount = 0 
-        monthlyTrades.lossCount = 0
-        monthlyTrades.leverage = BIG_NUM_ZERO
-    }
-    if (event.params.isPlus) {
-        monthlyTrades.collateral = monthlyTrades.collateral.plus(event.params.amount)
-    } else {
-        monthlyTrades.collateral = monthlyTrades.collateral.minus(event.params.amount)
-    }
-    if (monthlyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        monthlyTrades.leverage = BIG_NUM_ZERO
-    } else {
-        monthlyTrades.leverage = monthlyTrades.tradeVolume.times(BigInt.fromString("1000")).div(monthlyTrades.collateral)
-    }
-    monthlyTrades.save()
-    let weeklyTrades = WeeklyTrade.load(weeklyTradesId)
-    if (!weeklyTrades) {
-        weeklyTrades = new WeeklyTrade(weeklyTradesId)
-        weeklyTrades.account = positionStatsEntity.account
-        weeklyTrades.collateral = BIG_NUM_ZERO
-        weeklyTrades.fees = BIG_NUM_ZERO
-        weeklyTrades.timestamp = getWeekStartDate(event.block.timestamp);
-        weeklyTrades.tradeVolume = BIG_NUM_ZERO
-        weeklyTrades.profitLoss = BIG_NUM_ZERO
-        weeklyTrades.tradeCount = 0
-        weeklyTrades.winCount = 0 
-        weeklyTrades.lossCount = 0
-        weeklyTrades.leverage = BIG_NUM_ZERO
-    }
-    if (event.params.isPlus) {
-        weeklyTrades.collateral = weeklyTrades.collateral.plus(event.params.amount)
-    } else {
-        weeklyTrades.collateral = weeklyTrades.collateral.minus(event.params.amount)
-    }
-    if (weeklyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        weeklyTrades.leverage = BIG_NUM_ZERO
-    } else {
-        weeklyTrades.leverage = weeklyTrades.tradeVolume.times(BigInt.fromString("1000")).div(weeklyTrades.collateral)
-    }
-    weeklyTrades.save()
     let allTrades = AllTrade.load(positionStatsEntity.account)
     if (!allTrades) {
     allTrades = new AllTrade(positionStatsEntity.account)
@@ -235,6 +147,7 @@ import {
       dailyInfo.fees = BIG_NUM_ZERO
       dailyInfo.trades = BIG_NUM_ZERO
       dailyInfo.users = BIG_NUM_ZERO
+      dailyInfo.newUsers = BIG_NUM_ZERO
       dailyInfo.volumes = BIG_NUM_ZERO
       dailyInfo.longOI = BIG_NUM_ZERO
       dailyInfo.shortOI = BIG_NUM_ZERO
@@ -351,58 +264,9 @@ import {
         event.transaction.hash.toHexString()
       )
       let dailyInfoId = getDailyInfoId(event.block.timestamp)
-      let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.tokenId.toString(), event.block.timestamp)
-      let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
-      processHourlyTrades(
-        hourlyTradesId,
-        positionStatsEntity.account, 
-        positionStatsEntity.collateral, 
-        feeUsd,
-        realisedPnl.gt(BIG_NUM_ZERO),
-        realisedPnl.lt(BIG_NUM_ZERO),
-        realisedPnl,
-        positionStatsEntity.size,
-        event.block.timestamp
-      )
-      let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
-      if (!hourlyVolume) {
-        hourlyVolume = new HourlyVolume(hourlyVolumeId)
-        hourlyVolume.amount = BIG_NUM_ZERO
-        hourlyVolume.tokenId = positionStatsEntity.tokenId
-        hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
-        hourlyVolume.tradeCounts = 0
-      }
-      hourlyVolume.amount = hourlyVolume.amount.plus(positionStatsEntity.size)
-      hourlyVolume.tradeCounts += 1
-      hourlyVolume.save()
-      process24HVolume(positionStatsEntity.tokenId.toString(), event.block.timestamp.toI32())
       processDailyTrades(
         dailyTradesId,
-        positionStatsEntity.account, 
-        positionStatsEntity.collateral, 
-        feeUsd,
-        realisedPnl.gt(BIG_NUM_ZERO),
-        realisedPnl.lt(BIG_NUM_ZERO),
-        realisedPnl,
-        positionStatsEntity.size,
-        event.block.timestamp
-      )
-      processMonthlyTrades(
-        monthlyTradesId,
-        positionStatsEntity.account, 
-        positionStatsEntity.collateral, 
-        feeUsd,
-        realisedPnl.gt(BIG_NUM_ZERO),
-        realisedPnl.lt(BIG_NUM_ZERO),
-        realisedPnl,
-        positionStatsEntity.size,
-        event.block.timestamp
-      )
-      processWeeklyTrades(
-        weeklyTradesId,
         positionStatsEntity.account, 
         positionStatsEntity.collateral, 
         feeUsd,
@@ -471,6 +335,7 @@ import {
         dailyInfo.fees = BIG_NUM_ZERO
         dailyInfo.trades = BIG_NUM_ZERO
         dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.newUsers = BIG_NUM_ZERO
         dailyInfo.volumes = BIG_NUM_ZERO
         dailyInfo.longOI = BIG_NUM_ZERO
         dailyInfo.shortOI = BIG_NUM_ZERO
@@ -588,11 +453,7 @@ import {
       positionStatsEntity.lastUpdateTime = event.block.timestamp.toI32()
       positionStatsEntity.save()
       let dailyInfoId = getDailyInfoId(event.block.timestamp)
-      let hourlyTradesId = getAccountHourlyTradesId(event.params.account.toHexString(), event.block.timestamp)
-      let hourlyVolumeId = getAccountHourlyTradesId(event.params.tokenId.toString(), event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(event.params.account.toHexString(), event.block.timestamp)
-      let monthlyTradesId = getAccountMonthlyTradesId(event.params.account.toHexString(), event.block.timestamp)
-      let weeklyTradesId = getAccountWeeklyTradesId(event.params.account.toHexString(), event.block.timestamp)
       let userAccountStatsEntity = UserAccountStat.load(positionStatsEntity.account)
       if (userAccountStatsEntity) {
         if (positionStatsEntity.realisedPnl.gt(userAccountStatsEntity.biggestWin)) {
@@ -616,6 +477,7 @@ import {
         dailyInfo.fees = BIG_NUM_ZERO
         dailyInfo.trades = BIG_NUM_ZERO
         dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.newUsers = BIG_NUM_ZERO
         dailyInfo.volumes = BIG_NUM_ZERO
         dailyInfo.longOI = BIG_NUM_ZERO
         dailyInfo.shortOI = BIG_NUM_ZERO
@@ -681,53 +543,8 @@ import {
         event.params.tokenId,
         event.transaction.hash.toHexString()
       )
-      processHourlyTrades(
-        hourlyTradesId,
-        event.params.account.toHexString(),
-        event.params.posData[0],
-        feeUsd,
-        realisedPnl.gt(BIG_NUM_ZERO),
-        realisedPnl.lt(BIG_NUM_ZERO),
-        realisedPnl,
-        event.params.posData[1],
-        event.block.timestamp
-      )
-      let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
-      if (!hourlyVolume) {
-        hourlyVolume = new HourlyVolume(hourlyVolumeId)
-        hourlyVolume.amount = BIG_NUM_ZERO
-        hourlyVolume.tokenId = event.params.tokenId
-        hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
-        hourlyVolume.tradeCounts = 0
-      }
-      hourlyVolume.amount = hourlyVolume.amount.plus(event.params.posData[1])
-      hourlyVolume.tradeCounts += 1
-      hourlyVolume.save()
-      process24HVolume(event.params.tokenId.toString(), event.block.timestamp.toI32())
       processDailyTrades(
         dailyTradesId,
-        event.params.account.toHexString(),
-        event.params.posData[0],
-        feeUsd,
-        realisedPnl.gt(BIG_NUM_ZERO),
-        realisedPnl.lt(BIG_NUM_ZERO),
-        realisedPnl,
-        event.params.posData[1],
-        event.block.timestamp
-      )
-      processMonthlyTrades(
-        monthlyTradesId,
-        event.params.account.toHexString(),
-        event.params.posData[0],
-        feeUsd,
-        realisedPnl.gt(BIG_NUM_ZERO),
-        realisedPnl.lt(BIG_NUM_ZERO),
-        realisedPnl,
-        event.params.posData[1],
-        event.block.timestamp
-      )
-      processWeeklyTrades(
-        weeklyTradesId,
         event.params.account.toHexString(),
         event.params.posData[0],
         feeUsd,
@@ -838,11 +655,7 @@ import {
       positionStatsEntity.refer = ZERO_ADDRESS
     }
     let dailyInfoId = getDailyInfoId(event.block.timestamp)
-    let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.tokenId.toString(), event.block.timestamp)
     let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
     if (positionStatsEntity.pendingDelayCollateral.gt(BIG_NUM_ZERO)) {
       processUserTradeStats(
         event.params.posId,
@@ -898,6 +711,7 @@ import {
         dailyInfo.fees = BIG_NUM_ZERO
         dailyInfo.trades = BIG_NUM_ZERO
         dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.newUsers = BIG_NUM_ZERO
         dailyInfo.volumes = BIG_NUM_ZERO
         dailyInfo.longOI = BIG_NUM_ZERO
         dailyInfo.shortOI = BIG_NUM_ZERO
@@ -972,8 +786,24 @@ import {
         event.params.tokenId,
         event.transaction.hash.toHexString()
       )
+      let dailyInfo = DailyInfo.load(dailyInfoId)
+      if (!dailyInfo) {
+        dailyInfo = new DailyInfo(dailyInfoId)
+        dailyInfo.fees = BIG_NUM_ZERO
+        dailyInfo.trades = BIG_NUM_ZERO
+        dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.newUsers = BIG_NUM_ZERO
+        dailyInfo.volumes = BIG_NUM_ZERO
+        dailyInfo.longOI = BIG_NUM_ZERO
+        dailyInfo.shortOI = BIG_NUM_ZERO
+        dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.liquidations = BIG_NUM_ZERO
+        dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+        dailyInfo.save()
+      }
       let userAccountStatsEntity = UserAccountStat.load(event.params.account.toHexString())
       if (!userAccountStatsEntity) {
+        dailyInfo.newUsers = dailyInfo.newUsers.plus(BigInt.fromString("1"))
         userAccountStatsEntity = new UserAccountStat(event.params.account.toHexString())
         userAccountStatsEntity.account = event.params.account.toHexString()
         userAccountStatsEntity.biggestWin = BIG_NUM_ZERO
@@ -991,20 +821,6 @@ import {
       userAccountStatsEntity.profitLoss = userAccountStatsEntity.profitLoss.minus(event.params.posData[4])
       userAccountStatsEntity.trades = userAccountStatsEntity.trades.plus(BigInt.fromString('1'))
       userAccountStatsEntity.save()
-      let dailyInfo = DailyInfo.load(dailyInfoId)
-      if (!dailyInfo) {
-        dailyInfo = new DailyInfo(dailyInfoId)
-        dailyInfo.fees = BIG_NUM_ZERO
-        dailyInfo.trades = BIG_NUM_ZERO
-        dailyInfo.users = BIG_NUM_ZERO
-        dailyInfo.volumes = BIG_NUM_ZERO
-        dailyInfo.longOI = BIG_NUM_ZERO
-        dailyInfo.shortOI = BIG_NUM_ZERO
-        dailyInfo.pnls = BIG_NUM_ZERO
-        dailyInfo.liquidations = BIG_NUM_ZERO
-        dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
-        dailyInfo.save()
-      }
       let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
       if (!userDailyAccountStatsEntity) {
         dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
@@ -1052,53 +868,8 @@ import {
     tradeVolume.marginUsage = tradeVolume.marginUsage.plus(event.params.posData[4])
     tradeVolume.size = tradeVolume.size.plus(event.params.posData[1])
     tradeVolume.save()
-    processHourlyTrades(
-      hourlyTradesId,
-      positionStatsEntity.account,
-      event.params.posData[0],
-      event.params.posData[4],
-      false,
-      false,
-      BIG_NUM_ZERO.minus(event.params.posData[4]),
-      event.params.posData[1],
-      event.block.timestamp
-    )
-    let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
-    if (!hourlyVolume) {
-      hourlyVolume = new HourlyVolume(hourlyVolumeId)
-      hourlyVolume.amount = BIG_NUM_ZERO
-      hourlyVolume.tokenId = event.params.tokenId
-      hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
-      hourlyVolume.tradeCounts = 0
-    }
-    hourlyVolume.amount = hourlyVolume.amount.plus(event.params.posData[1])
-    hourlyVolume.tradeCounts += 1
-    hourlyVolume.save()
-    process24HVolume(event.params.tokenId.toString(), event.block.timestamp.toI32())
     processDailyTrades(
       dailyTradesId,
-      positionStatsEntity.account,
-      event.params.posData[0],
-      event.params.posData[4],
-      false,
-      false,
-      BIG_NUM_ZERO.minus(event.params.posData[4]),
-      event.params.posData[1],
-      event.block.timestamp
-    )
-    processMonthlyTrades(
-      monthlyTradesId,
-      positionStatsEntity.account,
-      event.params.posData[0],
-      event.params.posData[4],
-      false,
-      false,
-      BIG_NUM_ZERO.minus(event.params.posData[4]),
-      event.params.posData[1],
-      event.block.timestamp
-    )
-    processWeeklyTrades(
-      weeklyTradesId,
       positionStatsEntity.account,
       event.params.posData[0],
       event.params.posData[4],
@@ -1121,7 +892,7 @@ import {
     let dailyGlobalInfo = DailyGlobalInfo.load(dailyGlobalInfoId)
     if (!dailyGlobalInfo) {
       dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
-      dailyGlobalInfo.timestamp = getHourStartDate(event.block.timestamp)      
+      dailyGlobalInfo.timestamp = getDayStartDate(event.block.timestamp)      
       dailyGlobalInfo.fees = BIG_NUM_ZERO
       dailyGlobalInfo.openInterests = BIG_NUM_ZERO
       dailyGlobalInfo.tradeVolume = BIG_NUM_ZERO

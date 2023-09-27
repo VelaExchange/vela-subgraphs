@@ -8,12 +8,8 @@ import {
   UpdateFunding
 } from "../generated/SettingsManager/SettingsManager"
 import { 
-  process24HVolume, 
   processAllTrades,
   processDailyTrades,
-  processHourlyTrades,
-  processMonthlyTrades,
-  processWeeklyTrades,
   processUserTradeStats,
   processGlobalInfo
 } from "./process"
@@ -26,14 +22,10 @@ import {
     AllTrade,
     BaseGlobalInfo,
     BaseUserInfo,
-    ClosePosition,
     DailyInfo,
-    DailyTrade,
     DailyGlobalInfo,
     Deposit,
-    HourlyTrade,
     Mint,
-    MonthlyTrade,
     LiquidatePosition,
     OpenInterest,
     PositionStat,
@@ -45,7 +37,6 @@ import {
     UserStakingTier,
     StrandedUSDCAmount,
     Withdraw,
-    HourlyVolume,
     HyperStakingTier,
     TotalInfo,
     TokenConfig,
@@ -68,14 +59,8 @@ import { VLP_DECIMALS, MAX_VLP_FOR_Hyper,
     BIG_NUM_ZERO,
     getDailyInfoId,
     getDayStartDate,
-    getHourStartDate,
-    getWeekStartDate,
-    getMonthStartDate,
     HYPER_END_TIME,
     getAccountDailyTradesId,
-    getAccountHourlyTradesId,
-    getAccountMonthlyTradesId,
-    getAccountWeeklyTradesId,
     HYPER_ONE_WALLETS,
     ZERO_ADDRESS
   } from "./constants"
@@ -487,57 +472,8 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       )
       let dailyInfoId = getDailyInfoId(event.block.timestamp)
       let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let hourlyVolumeId = getAccountHourlyTradesId(positionStatsEntity.tokenId.toString(), event.block.timestamp)
-      let hourlyTradesId = getAccountHourlyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let monthlyTradesId = getAccountMonthlyTradesId(positionStatsEntity.account, event.block.timestamp)
-      let weeklyTradesId = getAccountWeeklyTradesId(positionStatsEntity.account, event.block.timestamp)
-      processHourlyTrades(
-        hourlyTradesId,
-        positionStatsEntity.account, 
-        positionStatsEntity.collateral, 
-        BIG_NUM_ZERO,
-        false,
-        true,
-        realisedPnl,
-        positionStatsEntity.size,
-        event.block.timestamp
-      )
       processDailyTrades(
         dailyTradesId,
-        positionStatsEntity.account, 
-        positionStatsEntity.collateral, 
-        BIG_NUM_ZERO,
-        false,
-        true,
-        realisedPnl,
-        positionStatsEntity.size,
-        event.block.timestamp
-      )
-      let hourlyVolume = HourlyVolume.load(hourlyVolumeId)
-      if (!hourlyVolume) {
-        hourlyVolume = new HourlyVolume(hourlyVolumeId)
-        hourlyVolume.amount = BIG_NUM_ZERO
-        hourlyVolume.tokenId = positionStatsEntity.tokenId
-        hourlyVolume.timestamp = getHourStartDate(event.block.timestamp)
-        hourlyVolume.tradeCounts = 0
-      }
-      hourlyVolume.amount = hourlyVolume.amount.plus(positionStatsEntity.size)
-      hourlyVolume.tradeCounts += 1
-      hourlyVolume.save()
-      process24HVolume(positionStatsEntity.tokenId.toString(), event.block.timestamp.toI32())
-      processMonthlyTrades(
-        monthlyTradesId,
-        positionStatsEntity.account, 
-        positionStatsEntity.collateral, 
-        BIG_NUM_ZERO,
-        false,
-        true,
-        realisedPnl,
-        positionStatsEntity.size,
-        event.block.timestamp
-      )
-      processWeeklyTrades(
-        weeklyTradesId,
         positionStatsEntity.account, 
         positionStatsEntity.collateral, 
         BIG_NUM_ZERO,
@@ -561,7 +497,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       if (!dailyGlobalInfo) {
         dailyGlobalInfo = new DailyGlobalInfo(dailyGlobalInfoId)
         dailyGlobalInfo.fees = BIG_NUM_ZERO
-        dailyGlobalInfo.timestamp = getHourStartDate(event.block.timestamp)      
+        dailyGlobalInfo.timestamp = getDayStartDate(event.block.timestamp)      
         dailyGlobalInfo.openInterests = BIG_NUM_ZERO
         dailyGlobalInfo.tradeVolume = BIG_NUM_ZERO
         dailyGlobalInfo.tradeCounts = 0
@@ -595,6 +531,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
         dailyInfo.fees = BIG_NUM_ZERO
         dailyInfo.trades = BIG_NUM_ZERO
         dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.newUsers = BIG_NUM_ZERO
         dailyInfo.volumes = BIG_NUM_ZERO
         dailyInfo.longOI = BIG_NUM_ZERO
         dailyInfo.shortOI = BIG_NUM_ZERO
@@ -947,6 +884,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyInfo.fees = BIG_NUM_ZERO
       dailyInfo.trades = BIG_NUM_ZERO
       dailyInfo.users = BIG_NUM_ZERO
+      dailyInfo.newUsers = BIG_NUM_ZERO
       dailyInfo.volumes = BIG_NUM_ZERO
       dailyInfo.longOI = BIG_NUM_ZERO
       dailyInfo.shortOI = BIG_NUM_ZERO
@@ -988,6 +926,7 @@ const getRewardAmount2 = (rewardTier: i32): BigInt => {
       dailyInfo.fees = BIG_NUM_ZERO
       dailyInfo.trades = BIG_NUM_ZERO
       dailyInfo.users = BIG_NUM_ZERO
+      dailyInfo.newUsers = BIG_NUM_ZERO
       dailyInfo.volumes = BIG_NUM_ZERO
       dailyInfo.longOI = BIG_NUM_ZERO
       dailyInfo.shortOI = BIG_NUM_ZERO

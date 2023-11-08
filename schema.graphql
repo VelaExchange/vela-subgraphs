@@ -388,9 +388,9 @@ type TradeVolume @entity {
   openShorts: BigInt!
 }
 
-type HourlyVolume @entity {
+type DailyVolume @entity {
   id: ID!
-  amount: BigInt!
+  volume: BigInt!
   tokenId: BigInt!
   timestamp: Int!
   tradeCounts: Int!
@@ -445,6 +445,7 @@ type PositionStat @entity {
   totalROI: BigInt!
   stpPrice: BigInt!
   tokenId: BigInt!
+  refer: String!
 }
 
 type PositionTrigger @entity {
@@ -490,6 +491,48 @@ type UserTradeStat @entity {
   positionType: String!
   profitLoss: BigInt!
   roi: BigInt!
+  refer: String!
   tradeVolume: BigInt!
   transactionHash: String!
+}
+
+type UserAccountStat @entity {
+  id: ID!
+  account: String!
+  biggestWin: BigInt!
+  collateral: BigInt!
+  leverage: BigInt!
+  losses: BigInt!
+  profitLoss: BigInt!
+  trades: BigInt!
+  volume: BigInt!
+  wins: BigInt!
+}
+
+type DailyUserAccountStat @entity {
+  id: ID!
+  account: String!
+  biggestWin: BigInt!
+  collateral: BigInt!
+  leverage: BigInt!
+  losses: BigInt!
+  profitLoss: BigInt!
+  timestamp: Int!
+  trades: BigInt!
+  volume: BigInt!
+  wins: BigInt!
+}
+
+type DailyInfo @entity {
+  id: ID!
+  users: BigInt!
+  newUsers: BigInt!
+  fees: BigInt!
+  trades: BigInt!
+  timestamp: Int!
+  volumes: BigInt!
+  pnls: BigInt!
+  longOI: BigInt!
+  shortOI: BigInt!
+  liquidations: BigInt!
 }

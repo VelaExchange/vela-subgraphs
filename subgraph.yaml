@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "0x088cd8f5ef3652623c22d48b1605dcfe860cd704"
       abi: ERC20
-      startBlock: 119385123
+      startBlock: 148203363
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -356,6 +356,34 @@ dataSources:
           handler: handleRewardRateUpdated3
         - event: UpdatePool(indexed uint256,uint256,uint256,uint256)
           handler: handleUpdatePool3
+      file: ./src/token-farm.ts
+  - kind: ethereum
+    name: ComplexRewardPerSec4
+    network: arbitrum-one
+    source:
+      address: "0x45fDC9A248aB240Fb13C79C375f2ca358f11Faa5"
+      abi: ComplexRewardPerSec
+      startBlock: 95731723
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - RewardInfo
+      abis:
+        - name: ComplexRewardPerSec
+          file: ./abis/ComplexRewardPerSec.json
+      eventHandlers:
+        - event: AddPool(indexed uint256)
+          handler: handleAddPool4
+        - event: AddRewardInfo(indexed uint256,indexed uint256,uint256,uint256)
+          handler: handleAddRewardInfo4
+        - event: OnReward(indexed address,uint256)
+          handler: handleOnReward4
+        - event: RewardRateUpdated(uint256,uint256)
+          handler: handleRewardRateUpdated4
+        - event: UpdatePool(indexed uint256,uint256,uint256,uint256)
+          handler: handleUpdatePool4
       file: ./src/token-farm.ts
   - kind: ethereum
     name: SwapAndAirdrop

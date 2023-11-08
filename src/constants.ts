@@ -15,6 +15,7 @@ export const BIG_NUM_ZERO = BigInt.fromString('0')
 export const REWARDER1_ADDRESS = "0x40c3bD6D4A07117fcE69B60Eb1d446984e0a1383"
 export const REWARDER2_ADDRESS = "0x12d4528E69e196a0c291DF3B28449E9Fc2769D11"
 export const REWARDER3_ADDRESS = "0xf9C059A25Bf9431d70A4504bD1CE3BFD9c21B477"
+export const REWARDER4_ADDRESS = "0x45fdc9a248ab240fb13c79c375f2ca358f11faa5"
 export const VELA_ADDRESS = "0x088cd8f5ef3652623c22d48b1605dcfe860cd704"
 export const EVELA_ADDRESS = "0xeFD5A713C5bd85e9Ced46070b2532E4a47a18102"
 export const VLP_ADDRESS = "0xC5b2D9FDa8A82E8DcECD5e9e6e99b78a9188eB05"
@@ -42,6 +43,10 @@ export function getMonthStartDate(timestamp: BigInt): i32 {
 }
 
 
+export function getDailyInfoId(timestamp: BigInt): string {
+    let startDate = getDayStartDate(timestamp)
+    return BigInt.fromI32(startDate).toString()
+}
   
 export function getAccountDailyTradesId(account: string, timestamp: BigInt): string {
     let startDate = getDayStartDate(timestamp)

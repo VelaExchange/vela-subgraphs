@@ -35,7 +35,16 @@ import {
     RewardRateUpdated as RewardRateUpdated3,
     UpdatePool as UpdatePool3
 } from "../generated/ComplexRewardPerSec3/ComplexRewardPerSec"
-import { BIG_NUM_ZERO, REWARDER1_ADDRESS, REWARDER2_ADDRESS, REWARDER3_ADDRESS, VELA_ADDRESS, EVELA_ADDRESS, VLP_ADDRESS } from "./constants"
+
+import {
+    AddRewardInfo as AddRewardInfo4,
+    AddPool as AddPool4,
+    OnReward as OnReward4,
+    RewardRateUpdated as RewardRateUpdated4,
+    UpdatePool as UpdatePool4
+} from "../generated/ComplexRewardPerSec4/ComplexRewardPerSec"
+
+import { BIG_NUM_ZERO, REWARDER1_ADDRESS, REWARDER2_ADDRESS, REWARDER3_ADDRESS, REWARDER4_ADDRESS, VELA_ADDRESS, EVELA_ADDRESS, VLP_ADDRESS } from "./constants"
 export function handleEmergencyWithdraw(event: EmergencyWithdraw): void {
     
 }
@@ -159,6 +168,9 @@ export function handleAddPool2(event: AddPool2): void {
 export function handleAddPool3(event: AddPool3): void {
 }
 
+export function handleAddPool4(event: AddPool4): void {
+}
+
 export function handleAddRewardInfo1(event: AddRewardInfo1): void {
     let addRewardInfo = RewardInfo.load(event.params.pid.toString() + "-" + REWARDER1_ADDRESS.toLowerCase())
     if (!addRewardInfo) {
@@ -205,6 +217,24 @@ export function handleAddRewardInfo3(event: AddRewardInfo3): void {
         addRewardInfo.save()
     }
     let rewarder = new Rewarder(REWARDER3_ADDRESS.toLowerCase() + "-" + event.block.timestamp.toString())
+    rewarder.info = addRewardInfo.id;
+    rewarder.timestamp = event.block.timestamp.toI32()
+    rewarder.rewardPerSec = event.params.rewardPerSec
+    rewarder.endTimestamp = event.params.endTimestamp.toI32()
+    rewarder.save()
+    addRewardInfo.save()
+}
+
+export function handleAddRewardInfo4(event: AddRewardInfo4): void {
+    let addRewardInfo = RewardInfo.load(event.params.pid.toString() + "-" + REWARDER4_ADDRESS.toLowerCase())
+    if (!addRewardInfo) {
+        addRewardInfo = new RewardInfo(event.params.pid.toString() + "-" + REWARDER4_ADDRESS.toLowerCase())
+        addRewardInfo.pId = event.params.pid
+        addRewardInfo.address = REWARDER4_ADDRESS.toLowerCase()
+        addRewardInfo.startTimestamp = event.block.timestamp.toI32()
+        addRewardInfo.save()
+    }
+    let rewarder = new Rewarder(REWARDER4_ADDRESS.toLowerCase() + "-" + event.block.timestamp.toString())
     rewarder.info = addRewardInfo.id;
     rewarder.timestamp = event.block.timestamp.toI32()
     rewarder.rewardPerSec = event.params.rewardPerSec
@@ -280,6 +310,28 @@ export function handleOnReward3(event: OnReward3): void {
     allRewardStats.save()
 }
 
+export function handleOnReward4(event: OnReward4): void {
+    let account = event.params.user.toHexString()
+    let rewardStats = RewardStat.load(REWARDER4_ADDRESS.toLowerCase() + "-" + account)
+    if (!rewardStats) {
+        rewardStats = new RewardStat(REWARDER4_ADDRESS.toLowerCase() + "-" + account)
+        rewardStats.rewarder = REWARDER4_ADDRESS.toLowerCase()
+        rewardStats.account = account
+        rewardStats.amount = BIG_NUM_ZERO
+    }
+    rewardStats.amount = rewardStats.amount.plus(event.params.amount)
+    rewardStats.save()
+    let allRewardStats = RewardStat.load(REWARDER4_ADDRESS.toLowerCase() + "-" + "all")
+    if (!allRewardStats) {
+        allRewardStats = new RewardStat(REWARDER4_ADDRESS.toLowerCase() + "-" + "all")
+        allRewardStats.rewarder = REWARDER4_ADDRESS.toLowerCase()
+        allRewardStats.account = "all"
+        allRewardStats.amount = BIG_NUM_ZERO
+    }
+    allRewardStats.amount = allRewardStats.amount.plus(event.params.amount)
+    allRewardStats.save()
+}
+
 export function handleRewardRateUpdated1(event: RewardRateUpdated1): void {
 
 }
@@ -292,6 +344,10 @@ export function handleRewardRateUpdated3(event: RewardRateUpdated3): void {
 
 }
 
+export function handleRewardRateUpdated4(event: RewardRateUpdated4): void {
+
+}
+
 export function handleUpdatePool1(event: UpdatePool1): void {
 
 }
@@ -301,6 +357,10 @@ export function handleUpdatePool2(event: UpdatePool2): void {
 }
 
 export function handleUpdatePool3(event: UpdatePool3): void {
+
+}
+
+export function handleUpdatePool4(event: UpdatePool4): void {
 
 }
 

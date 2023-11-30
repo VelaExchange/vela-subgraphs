@@ -4,6 +4,7 @@ import {
     IncreasePosition as IncreasePositionEvent,
     CreateAddPositionOrder,
     AddOrRemoveCollateral,
+    AddOrRemoveCollateral2,
     AddPositionExecutionError,
     CreateDecreasePositionOrder,
     DecreasePositionExecutionError,
@@ -39,173 +40,340 @@ import {
 
 
   export function handleAddOrRemoveCollateral(event: AddOrRemoveCollateral): void {
-  let positionStatsEntity = PositionStat.load(event.params.posId.toString())
-  if (positionStatsEntity) {
-    processUserTradeStats(
-      event.params.posId,
-      event.block.timestamp,
-      positionStatsEntity.account,
-      "EDIT_COLLATERAL",
-      event.params.amount,
-      positionStatsEntity.averagePrice,
-      event.params.collateral,
-      BIG_NUM_ZERO,
-      BIG_NUM_ZERO,
-      BIG_NUM_ZERO,
-      positionStatsEntity.isLong,
-      event.params.isPlus,
-      true,
-      positionStatsEntity.markPrice,
-      positionStatsEntity.positionType,
-      BIG_NUM_ZERO,
-      BIG_NUM_ZERO,
-      positionStatsEntity.refer,
-      event.params.size,
-      positionStatsEntity.tokenId,
-      event.transaction.hash.toHexString()
-    )
-    let dailyInfoId = getDailyInfoId(event.block.timestamp)
-    let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
-    let dailyTrades = DailyTrade.load(dailyTradesId)
-    if (!dailyTrades) {
-        dailyTrades = new DailyTrade(dailyTradesId)
-        dailyTrades.account = positionStatsEntity.account
-        dailyTrades.collateral = BIG_NUM_ZERO
-        dailyTrades.fees = BIG_NUM_ZERO
-        dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
-        dailyTrades.tradeVolume = BIG_NUM_ZERO
-        dailyTrades.profitLoss = BIG_NUM_ZERO
-        dailyTrades.tradeCount = 0
-        dailyTrades.winCount = 0 
-        dailyTrades.lossCount = 0
-        dailyTrades.leverage = BIG_NUM_ZERO
-    }
-    if (event.params.isPlus) {
-        dailyTrades.collateral = dailyTrades.collateral.plus(event.params.amount)
-    } else {
-        dailyTrades.collateral = dailyTrades.collateral.minus(event.params.amount)
-    }
-    if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
-        dailyTrades.leverage = BIG_NUM_ZERO
-    } else {
-        dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString("1000")).div(dailyTrades.collateral)
-    }
-    dailyTrades.save()
-    let allTrades = AllTrade.load(positionStatsEntity.account)
-    if (!allTrades) {
-    allTrades = new AllTrade(positionStatsEntity.account)
-    allTrades.account = positionStatsEntity.account
-    allTrades.collateral = BIG_NUM_ZERO
-    allTrades.fees = BIG_NUM_ZERO
-    allTrades.tradeVolume = BIG_NUM_ZERO
-    allTrades.profitLoss = BIG_NUM_ZERO
-    allTrades.tradeCount = 0
-    allTrades.winCount = 0 
-    allTrades.lossCount = 0
-    allTrades.leverage = BIG_NUM_ZERO
-    }
-    if (event.params.isPlus) {
-        allTrades.collateral = allTrades.collateral.plus(event.params.amount)
-    } else {
-        allTrades.collateral = allTrades.collateral.minus(event.params.amount)
-    }
-    if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
-        allTrades.leverage = BIG_NUM_ZERO
-    } else {
-        allTrades.leverage = allTrades.tradeVolume.times(BigInt.fromString("1000")).div(allTrades.collateral)
-    }
-    allTrades.save()
-    if (event.params.isPlus) {
-      positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.amount)
-      positionStatsEntity.totalIncreasedCollateral = positionStatsEntity.totalIncreasedCollateral.plus(event.params.amount)
-      if (event.params.collateral.gt(positionStatsEntity.maxCollateral)){
-        positionStatsEntity.maxCollateral = event.params.collateral
+    let positionStatsEntity = PositionStat.load(event.params.posId.toString())
+    if (positionStatsEntity) {
+      processUserTradeStats(
+        event.params.posId,
+        event.block.timestamp,
+        positionStatsEntity.account,
+        "EDIT_COLLATERAL",
+        event.params.amount,
+        positionStatsEntity.averagePrice,
+        event.params.collateral,
+        BIG_NUM_ZERO,
+        BIG_NUM_ZERO,
+        BIG_NUM_ZERO,
+        positionStatsEntity.isLong,
+        event.params.isPlus,
+        true,
+        positionStatsEntity.markPrice,
+        positionStatsEntity.positionType,
+        BIG_NUM_ZERO,
+        BIG_NUM_ZERO,
+        positionStatsEntity.refer,
+        event.params.size,
+        positionStatsEntity.tokenId,
+        event.transaction.hash.toHexString()
+      )
+      let dailyInfoId = getDailyInfoId(event.block.timestamp)
+      let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let dailyTrades = DailyTrade.load(dailyTradesId)
+      if (!dailyTrades) {
+          dailyTrades = new DailyTrade(dailyTradesId)
+          dailyTrades.account = positionStatsEntity.account
+          dailyTrades.collateral = BIG_NUM_ZERO
+          dailyTrades.fees = BIG_NUM_ZERO
+          dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
+          dailyTrades.tradeVolume = BIG_NUM_ZERO
+          dailyTrades.profitLoss = BIG_NUM_ZERO
+          dailyTrades.tradeCount = 0
+          dailyTrades.winCount = 0 
+          dailyTrades.lossCount = 0
+          dailyTrades.leverage = BIG_NUM_ZERO
       }
-    } else {
-      positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.minus(event.params.amount)
-    }
-    positionStatsEntity.collateral = event.params.collateral
-    positionStatsEntity.size = event.params.size
-    positionStatsEntity.save()
-    let userAccountStatsEntity = UserAccountStat.load(positionStatsEntity.account)
-    if (userAccountStatsEntity) {
       if (event.params.isPlus) {
-        userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.plus(event.params.amount)
-        userAccountStatsEntity.trades = userAccountStatsEntity.trades.plus(BigInt.fromString('1'))
-        userAccountStatsEntity.leverage = BigInt.fromString('1000').times(userAccountStatsEntity.volume).div(userAccountStatsEntity.collateral)
+          dailyTrades.collateral = dailyTrades.collateral.plus(event.params.amount)
       } else {
-        if (userAccountStatsEntity.collateral.gt(event.params.amount)) {
-          userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.minus(event.params.amount)
+          dailyTrades.collateral = dailyTrades.collateral.minus(event.params.amount)
+      }
+      if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          dailyTrades.leverage = BIG_NUM_ZERO
+      } else {
+          dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString("1000")).div(dailyTrades.collateral)
+      }
+      dailyTrades.save()
+      let allTrades = AllTrade.load(positionStatsEntity.account)
+      if (!allTrades) {
+      allTrades = new AllTrade(positionStatsEntity.account)
+      allTrades.account = positionStatsEntity.account
+      allTrades.collateral = BIG_NUM_ZERO
+      allTrades.fees = BIG_NUM_ZERO
+      allTrades.tradeVolume = BIG_NUM_ZERO
+      allTrades.profitLoss = BIG_NUM_ZERO
+      allTrades.tradeCount = 0
+      allTrades.winCount = 0 
+      allTrades.lossCount = 0
+      allTrades.leverage = BIG_NUM_ZERO
+      }
+      if (event.params.isPlus) {
+          allTrades.collateral = allTrades.collateral.plus(event.params.amount)
+      } else {
+          allTrades.collateral = allTrades.collateral.minus(event.params.amount)
+      }
+      if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
+          allTrades.leverage = BIG_NUM_ZERO
+      } else {
+          allTrades.leverage = allTrades.tradeVolume.times(BigInt.fromString("1000")).div(allTrades.collateral)
+      }
+      allTrades.save()
+      if (event.params.isPlus) {
+        positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.amount)
+        positionStatsEntity.totalIncreasedCollateral = positionStatsEntity.totalIncreasedCollateral.plus(event.params.amount)
+        if (event.params.collateral.gt(positionStatsEntity.maxCollateral)){
+          positionStatsEntity.maxCollateral = event.params.collateral
+        }
+      } else {
+        positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.minus(event.params.amount)
+      }
+      positionStatsEntity.collateral = event.params.collateral
+      positionStatsEntity.size = event.params.size
+      positionStatsEntity.save()
+      let userAccountStatsEntity = UserAccountStat.load(positionStatsEntity.account)
+      if (userAccountStatsEntity) {
+        if (event.params.isPlus) {
+          userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.plus(event.params.amount)
           userAccountStatsEntity.trades = userAccountStatsEntity.trades.plus(BigInt.fromString('1'))
           userAccountStatsEntity.leverage = BigInt.fromString('1000').times(userAccountStatsEntity.volume).div(userAccountStatsEntity.collateral)
+        } else {
+          if (userAccountStatsEntity.collateral.gt(event.params.amount)) {
+            userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.minus(event.params.amount)
+            userAccountStatsEntity.trades = userAccountStatsEntity.trades.plus(BigInt.fromString('1'))
+            userAccountStatsEntity.leverage = BigInt.fromString('1000').times(userAccountStatsEntity.volume).div(userAccountStatsEntity.collateral)
+          }
         }
+        userAccountStatsEntity.save()
       }
-      userAccountStatsEntity.save()
-    }
-    let dailyInfo = DailyInfo.load(dailyInfoId)
-    if (!dailyInfo) {
-      dailyInfo = new DailyInfo(dailyInfoId)
-      dailyInfo.fees = BIG_NUM_ZERO
-      dailyInfo.trades = BIG_NUM_ZERO
-      dailyInfo.users = BIG_NUM_ZERO
-      dailyInfo.newUsers = BIG_NUM_ZERO
-      dailyInfo.volumes = BIG_NUM_ZERO
-      dailyInfo.longOI = BIG_NUM_ZERO
-      dailyInfo.shortOI = BIG_NUM_ZERO
-      dailyInfo.pnls = BIG_NUM_ZERO
-      dailyInfo.liquidations = BIG_NUM_ZERO
-      dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
-      dailyInfo.save()
-    }
-    let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
-    if (!userDailyAccountStatsEntity) {
-      dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
-      userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
-      userDailyAccountStatsEntity.account = positionStatsEntity.account
-      userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
-      userDailyAccountStatsEntity.collateral = BIG_NUM_ZERO
-      userDailyAccountStatsEntity.leverage = BIG_NUM_ZERO
-      userDailyAccountStatsEntity.losses = BIG_NUM_ZERO
-      userDailyAccountStatsEntity.profitLoss = BIG_NUM_ZERO
-      userDailyAccountStatsEntity.trades = BIG_NUM_ZERO
-      userDailyAccountStatsEntity.timestamp = getDayStartDate(event.block.timestamp)
-      userDailyAccountStatsEntity.volume = BIG_NUM_ZERO
-      userDailyAccountStatsEntity.wins = BIG_NUM_ZERO       
-    }
-    if (event.params.isPlus) {
-      userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.plus(event.params.amount)
-      userDailyAccountStatsEntity.trades = userDailyAccountStatsEntity.trades.plus(BigInt.fromString('1'))
-      userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
-    } else {
-      if (userDailyAccountStatsEntity.collateral.gt(event.params.amount)) {
-        userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.minus(event.params.amount)
+      let dailyInfo = DailyInfo.load(dailyInfoId)
+      if (!dailyInfo) {
+        dailyInfo = new DailyInfo(dailyInfoId)
+        dailyInfo.fees = BIG_NUM_ZERO
+        dailyInfo.trades = BIG_NUM_ZERO
+        dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.newUsers = BIG_NUM_ZERO
+        dailyInfo.volumes = BIG_NUM_ZERO
+        dailyInfo.longOI = BIG_NUM_ZERO
+        dailyInfo.shortOI = BIG_NUM_ZERO
+        dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.liquidations = BIG_NUM_ZERO
+        dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+        dailyInfo.save()
+      }
+      let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
+      if (!userDailyAccountStatsEntity) {
+        dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
+        userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
+        userDailyAccountStatsEntity.account = positionStatsEntity.account
+        userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.collateral = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.leverage = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.losses = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.profitLoss = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.trades = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.timestamp = getDayStartDate(event.block.timestamp)
+        userDailyAccountStatsEntity.volume = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.wins = BIG_NUM_ZERO       
+      }
+      if (event.params.isPlus) {
+        userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.plus(event.params.amount)
         userDailyAccountStatsEntity.trades = userDailyAccountStatsEntity.trades.plus(BigInt.fromString('1'))
         userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
+      } else {
+        if (userDailyAccountStatsEntity.collateral.gt(event.params.amount)) {
+          userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.minus(event.params.amount)
+          userDailyAccountStatsEntity.trades = userDailyAccountStatsEntity.trades.plus(BigInt.fromString('1'))
+          userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
+        }
       }
-    }
-    userDailyAccountStatsEntity.save()
-    dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
-    dailyInfo.save()
-    let tradeVolume = TradeVolume.load(positionStatsEntity.account);
-    if (!tradeVolume) {
-      tradeVolume = new TradeVolume(positionStatsEntity.account)
-      tradeVolume.account = positionStatsEntity.account
-      tradeVolume.size = BIG_NUM_ZERO
-      tradeVolume.openLongs = BIG_NUM_ZERO
-      tradeVolume.openShorts = BIG_NUM_ZERO
-      tradeVolume.collateralUsage = BIG_NUM_ZERO
-      tradeVolume.marginUsage = BIG_NUM_ZERO
-      tradeVolume.vusdBalance = BIG_NUM_ZERO 
-    }
-    if (event.params.isPlus) {
-        tradeVolume.collateralUsage = tradeVolume.collateralUsage.plus(event.params.amount)
-    } else {
-        tradeVolume.collateralUsage = tradeVolume.collateralUsage.minus(event.params.amount)
-    }
-    tradeVolume.save()
-  }   
- }
+      userDailyAccountStatsEntity.save()
+      dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
+      dailyInfo.save()
+      let tradeVolume = TradeVolume.load(positionStatsEntity.account);
+      if (!tradeVolume) {
+        tradeVolume = new TradeVolume(positionStatsEntity.account)
+        tradeVolume.account = positionStatsEntity.account
+        tradeVolume.size = BIG_NUM_ZERO
+        tradeVolume.openLongs = BIG_NUM_ZERO
+        tradeVolume.openShorts = BIG_NUM_ZERO
+        tradeVolume.collateralUsage = BIG_NUM_ZERO
+        tradeVolume.marginUsage = BIG_NUM_ZERO
+        tradeVolume.vusdBalance = BIG_NUM_ZERO 
+      }
+      if (event.params.isPlus) {
+          tradeVolume.collateralUsage = tradeVolume.collateralUsage.plus(event.params.amount)
+      } else {
+          tradeVolume.collateralUsage = tradeVolume.collateralUsage.minus(event.params.amount)
+      }
+      tradeVolume.save()
+    }   
+  }
 
+  export function handleAddOrRemoveCollateral2(event: AddOrRemoveCollateral2): void {
+    let positionStatsEntity = PositionStat.load(event.params.posId.toString())
+    if (positionStatsEntity) {
+      processUserTradeStats(
+        event.params.posId,
+        event.block.timestamp,
+        positionStatsEntity.account,
+        "EDIT_COLLATERAL",
+        event.params.amount,
+        positionStatsEntity.averagePrice,
+        event.params.collateral,
+        BIG_NUM_ZERO,
+        BIG_NUM_ZERO,
+        BIG_NUM_ZERO,
+        positionStatsEntity.isLong,
+        event.params.isPlus,
+        true,
+        positionStatsEntity.markPrice,
+        positionStatsEntity.positionType,
+        BIG_NUM_ZERO,
+        BIG_NUM_ZERO,
+        positionStatsEntity.refer,
+        event.params.size,
+        positionStatsEntity.tokenId,
+        event.transaction.hash.toHexString()
+      )
+      let dailyInfoId = getDailyInfoId(event.block.timestamp)
+      let dailyTradesId = getAccountDailyTradesId(positionStatsEntity.account, event.block.timestamp)
+      let dailyTrades = DailyTrade.load(dailyTradesId)
+      if (!dailyTrades) {
+          dailyTrades = new DailyTrade(dailyTradesId)
+          dailyTrades.account = positionStatsEntity.account
+          dailyTrades.collateral = BIG_NUM_ZERO
+          dailyTrades.fees = BIG_NUM_ZERO
+          dailyTrades.timestamp = getDayStartDate(event.block.timestamp);
+          dailyTrades.tradeVolume = BIG_NUM_ZERO
+          dailyTrades.profitLoss = BIG_NUM_ZERO
+          dailyTrades.tradeCount = 0
+          dailyTrades.winCount = 0 
+          dailyTrades.lossCount = 0
+          dailyTrades.leverage = BIG_NUM_ZERO
+      }
+      if (event.params.isPlus) {
+          dailyTrades.collateral = dailyTrades.collateral.plus(event.params.amount)
+      } else {
+          dailyTrades.collateral = dailyTrades.collateral.minus(event.params.amount)
+      }
+      if (dailyTrades.collateral.equals(BIG_NUM_ZERO)) {
+          dailyTrades.leverage = BIG_NUM_ZERO
+      } else {
+          dailyTrades.leverage = dailyTrades.tradeVolume.times(BigInt.fromString("1000")).div(dailyTrades.collateral)
+      }
+      dailyTrades.save()
+      let allTrades = AllTrade.load(positionStatsEntity.account)
+      if (!allTrades) {
+      allTrades = new AllTrade(positionStatsEntity.account)
+      allTrades.account = positionStatsEntity.account
+      allTrades.collateral = BIG_NUM_ZERO
+      allTrades.fees = BIG_NUM_ZERO
+      allTrades.tradeVolume = BIG_NUM_ZERO
+      allTrades.profitLoss = BIG_NUM_ZERO
+      allTrades.tradeCount = 0
+      allTrades.winCount = 0 
+      allTrades.lossCount = 0
+      allTrades.leverage = BIG_NUM_ZERO
+      }
+      if (event.params.isPlus) {
+          allTrades.collateral = allTrades.collateral.plus(event.params.amount)
+      } else {
+          allTrades.collateral = allTrades.collateral.minus(event.params.amount)
+      }
+      if (allTrades.collateral.equals(BIG_NUM_ZERO)) {
+          allTrades.leverage = BIG_NUM_ZERO
+      } else {
+          allTrades.leverage = allTrades.tradeVolume.times(BigInt.fromString("1000")).div(allTrades.collateral)
+      }
+      allTrades.save()
+      if (event.params.isPlus) {
+        positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.plus(event.params.amount)
+        positionStatsEntity.totalIncreasedCollateral = positionStatsEntity.totalIncreasedCollateral.plus(event.params.amount)
+        if (event.params.collateral.gt(positionStatsEntity.maxCollateral)){
+          positionStatsEntity.maxCollateral = event.params.collateral
+        }
+      } else {
+        positionStatsEntity.totalCollateral = positionStatsEntity.totalCollateral.minus(event.params.amount)
+      }
+      positionStatsEntity.collateral = event.params.collateral
+      positionStatsEntity.size = event.params.size
+      positionStatsEntity.save()
+      let userAccountStatsEntity = UserAccountStat.load(positionStatsEntity.account)
+      if (userAccountStatsEntity) {
+        if (event.params.isPlus) {
+          userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.plus(event.params.amount)
+          userAccountStatsEntity.trades = userAccountStatsEntity.trades.plus(BigInt.fromString('1'))
+          userAccountStatsEntity.leverage = BigInt.fromString('1000').times(userAccountStatsEntity.volume).div(userAccountStatsEntity.collateral)
+        } else {
+          if (userAccountStatsEntity.collateral.gt(event.params.amount)) {
+            userAccountStatsEntity.collateral = userAccountStatsEntity.collateral.minus(event.params.amount)
+            userAccountStatsEntity.trades = userAccountStatsEntity.trades.plus(BigInt.fromString('1'))
+            userAccountStatsEntity.leverage = BigInt.fromString('1000').times(userAccountStatsEntity.volume).div(userAccountStatsEntity.collateral)
+          }
+        }
+        userAccountStatsEntity.save()
+      }
+      let dailyInfo = DailyInfo.load(dailyInfoId)
+      if (!dailyInfo) {
+        dailyInfo = new DailyInfo(dailyInfoId)
+        dailyInfo.fees = BIG_NUM_ZERO
+        dailyInfo.trades = BIG_NUM_ZERO
+        dailyInfo.users = BIG_NUM_ZERO
+        dailyInfo.newUsers = BIG_NUM_ZERO
+        dailyInfo.volumes = BIG_NUM_ZERO
+        dailyInfo.longOI = BIG_NUM_ZERO
+        dailyInfo.shortOI = BIG_NUM_ZERO
+        dailyInfo.pnls = BIG_NUM_ZERO
+        dailyInfo.liquidations = BIG_NUM_ZERO
+        dailyInfo.timestamp = getDayStartDate(event.block.timestamp)
+        dailyInfo.save()
+      }
+      let userDailyAccountStatsEntity = DailyUserAccountStat.load(dailyTradesId)
+      if (!userDailyAccountStatsEntity) {
+        dailyInfo.users = dailyInfo.users.plus(BigInt.fromString('1'))
+        userDailyAccountStatsEntity = new DailyUserAccountStat(dailyTradesId)
+        userDailyAccountStatsEntity.account = positionStatsEntity.account
+        userDailyAccountStatsEntity.biggestWin = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.collateral = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.leverage = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.losses = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.profitLoss = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.trades = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.timestamp = getDayStartDate(event.block.timestamp)
+        userDailyAccountStatsEntity.volume = BIG_NUM_ZERO
+        userDailyAccountStatsEntity.wins = BIG_NUM_ZERO       
+      }
+      if (event.params.isPlus) {
+        userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.plus(event.params.amount)
+        userDailyAccountStatsEntity.trades = userDailyAccountStatsEntity.trades.plus(BigInt.fromString('1'))
+        userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
+      } else {
+        if (userDailyAccountStatsEntity.collateral.gt(event.params.amount)) {
+          userDailyAccountStatsEntity.collateral = userDailyAccountStatsEntity.collateral.minus(event.params.amount)
+          userDailyAccountStatsEntity.trades = userDailyAccountStatsEntity.trades.plus(BigInt.fromString('1'))
+          userDailyAccountStatsEntity.leverage = BigInt.fromString('1000').times(userDailyAccountStatsEntity.volume).div(userDailyAccountStatsEntity.collateral)
+        }
+      }
+      userDailyAccountStatsEntity.save()
+      dailyInfo.trades = dailyInfo.trades.plus(BigInt.fromString('1'))
+      dailyInfo.save()
+      let tradeVolume = TradeVolume.load(positionStatsEntity.account);
+      if (!tradeVolume) {
+        tradeVolume = new TradeVolume(positionStatsEntity.account)
+        tradeVolume.account = positionStatsEntity.account
+        tradeVolume.size = BIG_NUM_ZERO
+        tradeVolume.openLongs = BIG_NUM_ZERO
+        tradeVolume.openShorts = BIG_NUM_ZERO
+        tradeVolume.collateralUsage = BIG_NUM_ZERO
+        tradeVolume.marginUsage = BIG_NUM_ZERO
+        tradeVolume.vusdBalance = BIG_NUM_ZERO 
+      }
+      if (event.params.isPlus) {
+          tradeVolume.collateralUsage = tradeVolume.collateralUsage.plus(event.params.amount)
+      } else {
+          tradeVolume.collateralUsage = tradeVolume.collateralUsage.minus(event.params.amount)
+      }
+      tradeVolume.save()
+    }   
+  }
  export function handleClosePosition(event: ClosePositionEvent): void {
     let positionStatsEntity = PositionStat.load(event.params.posId.toString())
     let closePositionEntity = new ClosePosition(event.params.posId.toString() + "-" + event.block.timestamp.toString())

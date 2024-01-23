@@ -46,6 +46,43 @@
         "type": "uint256"
       },
       {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isPlus",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "collateral",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "size",
+        "type": "uint256"
+      }
+    ],
+    "name": "AddOrRemoveCollateral2",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "posId",
+        "type": "uint256"
+      },
+      {
         "indexed": true,
         "internalType": "address",
         "name": "account",
@@ -990,19 +1027,6 @@
       }
     ],
     "name": "removeUserOpenOrder",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_posId",
-        "type": "uint256"
-      }
-    ],
-    "name": "selfExecuteDecreasePositionOrder",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

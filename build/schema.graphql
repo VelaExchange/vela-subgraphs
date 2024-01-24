@@ -14,6 +14,14 @@ type Account @entity {
   outgoingApprovals: [TokenApproval!]! @derivedFrom(field: "ownerAccount")
 }
 
+type TokenTransfer @entity {
+  id: ID!
+  from: String!
+  to: String!
+  value: BigInt!
+  timestamp: Int!
+}
+
 type TokenBalance @entity {
   id: ID!
   token: Token!

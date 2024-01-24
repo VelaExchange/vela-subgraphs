@@ -6,6 +6,7 @@ import {
   Token,
   TokenApproval,
   TokenBalance,
+  TokenTransfer,
 } from "../generated/schema";
 
 const zeroAddress = '0x0000000000000000000000000000000000000000';
@@ -88,41 +89,17 @@ export function handleApproval(event: Approval): void {
 }
 
 export function handleTransfer(event: Transfer): void {
-  let token = loadOrCreateToken(event);
-  if (!token) {
-    return;
-  }
-
   let from = event.params.from.toHex();
   let to = event.params.to.toHex();
-  let value = event.params.value.toBigDecimal();
-
-  let fromAccount = loadOrCreateAccount(from);
-  let toAccount = loadOrCreateAccount(to);
-
-  if (!fromAccount || !toAccount) {
-    return;
+  let value = event.params.value;
+  let tokenTransfer = TokenTransfer.load(from + "-" + to + "-" + value.toString() + "-" + event.block.timestamp.toString());
+  if (!tokenTransfer) {
+    tokenTransfer = new TokenTransfer(from + "-" + to + "-" + value.toString() + "-" + event.block.timestamp.toString());
+    tokenTransfer.from = from
+    tokenTransfer.to = to;
+    tokenTransfer.value = value;
+    tokenTransfer.timestamp = event.block.timestamp.toI32()
   }
-
-  if (fromAccount.id != zeroAddress) {
-    let fromTokenBalance = TokenBalance.load(token.id + "-" + fromAccount.id);
-    if (!fromTokenBalance) {
-      fromTokenBalance = new TokenBalance(token.id + "-" + fromAccount.id);
-      fromTokenBalance.token = token.id;
-      fromTokenBalance.account = fromAccount.id;
-      fromTokenBalance.value = BigDecimal.fromString("0");
-    }
-    fromTokenBalance.value = fromTokenBalance.value.minus(value);
-    fromTokenBalance.save();
-  }
-
-  let toTokenBalance = TokenBalance.load(token.id + "-" + toAccount.id);
-  if (!toTokenBalance) {
-    toTokenBalance = new TokenBalance(token.id + "-" + toAccount.id);
-    toTokenBalance.token = token.id;
-    toTokenBalance.account = toAccount.id;
-    toTokenBalance.value = BigDecimal.fromString("0");
-  }
-  toTokenBalance.value = toTokenBalance.value.plus(value);
-  toTokenBalance.save();
+  tokenTransfer.value = tokenTransfer.value.plus(value);
+  tokenTransfer.save();
 }

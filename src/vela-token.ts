@@ -93,6 +93,7 @@ export function handleTransfer(event: Transfer): void {
   let from = event.params.from.toHex();
   let to = event.params.to.toHex();
   let value = event.params.value;
+  //
   let tokenTransfer = TokenTransfer.load(from + "-" + to + "-" + value.toString() + "-" + event.block.timestamp.toString());
   if (!tokenTransfer) {
     tokenTransfer = new TokenTransfer(from + "-" + to + "-" + value.toString() + "-" + event.block.timestamp.toString());

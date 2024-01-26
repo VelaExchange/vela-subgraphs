@@ -8,6 +8,7 @@ import {
   TokenBalance,
   TokenTransfer,
 } from "../generated/schema";
+import { BIG_NUM_ZERO } from "./constants";
 
 const zeroAddress = '0x0000000000000000000000000000000000000000';
 
@@ -97,7 +98,7 @@ export function handleTransfer(event: Transfer): void {
     tokenTransfer = new TokenTransfer(from + "-" + to + "-" + value.toString() + "-" + event.block.timestamp.toString());
     tokenTransfer.from = from
     tokenTransfer.to = to;
-    tokenTransfer.value = value;
+    tokenTransfer.value = BIG_NUM_ZERO;
     tokenTransfer.timestamp = event.block.timestamp.toI32()
   }
   tokenTransfer.value = tokenTransfer.value.plus(value);
